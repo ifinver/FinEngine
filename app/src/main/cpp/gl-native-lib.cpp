@@ -68,7 +68,7 @@ void onDrawFrame() {
     glClear(GL_COLOR_BUFFER_BIT);
     checkGlError("glClear");
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, vVertices);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3* sizeof(float), vVertices);
     checkGlError("glVertexAttribPointer");
     glEnableVertexAttribArray(0);
     checkGlError("glEnableVertexAttribArray");
