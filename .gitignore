@@ -31,3 +31,4 @@ proguard/
 *.jks
 .DS_Store
 /captures
+.externalNativeBuild
