@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.ifinver.myopengles.MainActivity">
+
+    <com.ifinver.myopengles.MyGLSurfaceView
+        android:id="@+id/gl_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <ImageView
+            android:contentDescription="@string/iv_show"
+            android:id="@+id/iv_show_ori"
+            android:scaleType="centerCrop"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_height="0dp"/>
+        <View
+            android:layout_width="match_parent"
+            android:background="#FF0000"
+            android:layout_height="1dp"/>
+        <ImageView
+            android:contentDescription="@string/iv_show"
+            android:id="@+id/iv_show_grey"
+            android:scaleType="centerCrop"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_height="0dp"/>
+    </LinearLayout>
+
+</RelativeLayout>

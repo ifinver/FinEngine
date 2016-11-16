@@ -1,0 +1,46 @@
+
+{
+	"buildFiles" : [ "E:/OpenGL_OpenCV/MyOpenGLES/app/src/main/cpp/CMakeLists.txt" ],
+	"cleanCommands" : 
+	[
+		"D:\\android-sdk\\cmake\\3.6.3155560\\bin\\cmake.exe --build E:\\OpenGL_OpenCV\\MyOpenGLES\\app\\.externalNativeBuild\\cmake\\debug\\armeabi --target clean"
+	],
+	"cppFileExtensions" : [ "cpp" ],
+	"libraries" : 
+	{
+		"gl-native-lib-Debug-armeabi" : 
+		{
+			"abi" : "armeabi",
+			"artifactName" : "gl-native-lib",
+			"buildCommand" : "D:\\android-sdk\\cmake\\3.6.3155560\\bin\\cmake.exe --build E:\\OpenGL_OpenCV\\MyOpenGLES\\app\\.externalNativeBuild\\cmake\\debug\\armeabi --target gl-native-lib",
+			"buildType" : "debug",
+			"files" : 
+			[
+				
+				{
+					"flags" : "  -target armv5te-none-linux-androideabi -gcc-toolchain D:/android-sdk/ndk-bundle/toolchains/arm-linux-androideabi-4.9/prebuilt/windows-x86_64 --sysroot=D:/android-sdk/ndk-bundle/platforms/android-16/arch-arm  -Dgl_native_lib_EXPORTS -IE:\\OpenGL_OpenCV\\MyOpenGLES\\app\\src\\main\\cpp\\include -isystem D:\\android-sdk\\ndk-bundle\\sources\\cxx-stl\\gnu-libstdc++\\4.9\\include -isystem D:\\android-sdk\\ndk-bundle\\sources\\cxx-stl\\gnu-libstdc++\\4.9\\libs\\armeabi\\include -isystem D:\\android-sdk\\ndk-bundle\\sources\\cxx-stl\\gnu-libstdc++\\4.9\\include\\backward  -g -DANDROID -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -march=armv5te -mtune=xscale -msoft-float -fno-integrated-as -mthumb -Wa,--noexecstack -Wformat -Werror=format-security -fno-exceptions -fno-rtti -g -DANDROID -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -march=armv5te -mtune=xscale -msoft-float -fno-integrated-as -mthumb -Wa,--noexecstack -Wformat -Werror=format-security -fno-exceptions -fno-rtti -std=c++11 -frtti -fexceptions -std=gnu++11 -O0 -fno-limit-debug-info -O0 -fno-limit-debug-info  -fPIC    -c ",
+					"src" : "E:/OpenGL_OpenCV/MyOpenGLES/app/src/main/cpp/gl-native-lib.cpp",
+					"workingDirectory" : "E:/OpenGL_OpenCV/MyOpenGLES/app/.externalNativeBuild/cmake/debug/armeabi"
+				}
+			],
+			"output" : "E:/OpenGL_OpenCV/MyOpenGLES/app/build/intermediates/cmake/debug/obj/armeabi/libgl-native-lib.so",
+			"toolchain" : "2064229213"
+		},
+		"lib_opencv-Debug-armeabi" : 
+		{
+			"abi" : "armeabi",
+			"artifactName" : "lib_opencv",
+			"buildType" : "debug",
+			"output" : "E:/OpenGL_OpenCV/MyOpenGLES/app/src/main/jniLibs/armeabi/libopencv_java3.so",
+			"toolchain" : "2064229213"
+		}
+	},
+	"toolchains" : 
+	{
+		"2064229213" : 
+		{
+			"cCompilerExecutable" : "D:/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/windows-x86_64/bin/clang.exe",
+			"cppCompilerExecutable" : "D:/android-sdk/ndk-bundle/toolchains/llvm/prebuilt/windows-x86_64/bin/clang++.exe"
+		}
+	}
+}

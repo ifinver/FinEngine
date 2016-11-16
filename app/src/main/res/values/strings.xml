@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">MyOpenGLES</string>
+    <string name="iv_show">iv_show</string>
+</resources>
