@@ -20,6 +20,7 @@ import static android.content.ContentValues.TAG;
  */
 
 public class MyGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Renderer {
+    public static int count;
     public MyGLSurfaceView(Context context) {
         super(context);
         init(context);
@@ -49,6 +50,8 @@ public class MyGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Rend
         setEGLConfigChooser(new ConfigChooser(8, 8, 8, 8, 0, 0));
         /* Set the renderer responsible for frame rendering */
         setRenderer(this);
+
+        count++;
     }
 
     @Override
@@ -63,7 +66,9 @@ public class MyGLSurfaceView extends GLSurfaceView implements GLSurfaceView.Rend
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        GLNative.onDraw();
+        if(count >= 2) {
+            GLNative.onDraw();
+        }
     }
 
     private static void checkEglError(String prompt, EGL10 egl) {

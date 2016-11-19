@@ -16,7 +16,7 @@ include_directories(include/)
 #引入libopencv_java3.so文件
 set_target_properties(lib_opencv
                       PROPERTIES IMPORTED_LOCATION
-                      E:/OpenGL_OpenCV/MyOpenGLES/app/src/main/jniLibs/${ANDROID_ABI}/libopencv_java3.so)
+                      E:/WorkSpace/OpenGLES_CV/MyOpenGLES/app/src/main/jniLibs/${ANDROID_ABI}/libopencv_java3.so)
 
 # add lib dependencies
 target_link_libraries(gl-native-lib

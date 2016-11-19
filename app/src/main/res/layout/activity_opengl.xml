@@ -1,12 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/red"
+    android:orientation="vertical">
 
-    <com.ifinver.myopengles.MyGLSurfaceView
-        android:id="@+id/gl_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+    <FrameLayout
+        android:id="@+id/fl_content_1"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="1dp"
+        android:background="@color/black"/>
 
-</LinearLayout>
+    <FrameLayout
+        android:id="@+id/fl_content_2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_margin="1dp"
+        android:background="@color/black"/>
+
+    <FrameLayout
+        android:id="@+id/fl_content_3"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_margin="1dp"
+        android:background="@color/black"/>
+
+    <FrameLayout
+        android:id="@+id/fl_content_4"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="1dp"
+        android:background="@color/black"/>
+
+</RelativeLayout>
