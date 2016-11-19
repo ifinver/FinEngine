@@ -10,8 +10,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
-import org.opencv.android.Utils;
-import org.opencv.core.Mat;
 
 /**
  * Created by iFinVer on 2016/11/15.
@@ -53,25 +51,26 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Bu
 
     @Override
     public void onVideoBuffer(byte[] data) {
-//        Log.d(TAG, "收到视频数据,len=" + data.length);
+        Log.d(TAG, "收到视频数据,len=" + data.length);
+
+
         //摄像机数据
 //        long spend = SystemClock.elapsedRealtime();
-        long nativeRgbMat = GLNative.processFrameMat(data.length, data);
-        Mat rgb = new Mat(nativeRgbMat);
-        try {
-            Utils.matToBitmap(rgb, mCacheBitmap);
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    ivCanvas.setImageBitmap(mCacheBitmap);
-                }
-            });
-        }catch (Throwable t){
-            t.printStackTrace();
-        }
+//        long nativeRgbMat = GLNative.processFrameMat(data.length, data);
+//        Mat rgb = new Mat(nativeRgbMat);
+//        try {
+//            Utils.matToBitmap(rgb, mCacheBitmap);
+//            mHandler.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    ivCanvas.setImageBitmap(mCacheBitmap);
+//                }
+//            });
+//        }catch (Throwable t){
+//            t.printStackTrace();
+//        }
 //        spend = SystemClock.elapsedRealtime() - spend;
 //        Log.d(TAG,"转换耗时:"+spend);
-
     }
 
     @Override

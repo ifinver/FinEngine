@@ -21,25 +21,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ivOri = (ImageView) findViewById(R.id.iv_show_ori);
         ivGrey = (ImageView) findViewById(R.id.iv_show_grey);
 
-        ivOri.setImageResource(R.drawable.t);
         ivOri.setOnClickListener(this);
-
         ivGrey.setOnClickListener(this);
 
-        Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.t);
-        int w = bmp.getWidth();
-        int h = bmp.getHeight();
-        int[] pixels = new int[w * h];
-        bmp.getPixels(pixels, 0, w, 0, 0, w, h);
-        //recall JNI
-        int[] resultInt = GLNative.getGrayImage(pixels, w, h);
-        bmp.recycle();
-        if (resultInt != null) {
-            Bitmap resultImg = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-            resultImg.setPixels(resultInt, 0, w, 0, 0, w, h);
-
-            ivGrey.setImageBitmap(resultImg);
-        }
+        ivOri.setImageResource(R.drawable.t);
+        ivGrey.setImageBitmap(generateGreyBmp(R.drawable.t));
     }
 
     @Override
@@ -53,4 +39,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
     }
+
+    private Bitmap generateGreyBmp(int res){
+        Bitmap resultImg = null;
+        Bitmap bmp = BitmapFactory.decodeResource(getResources(), res);
+        int w = bmp.getWidth();
+        int h = bmp.getHeight();
+        int[] pixels = new int[w * h];
+        bmp.getPixels(pixels, 0, w, 0, 0, w, h);
+        //recall JNI
+        int[] resultInt = GLNative.getGrayImage(pixels, w, h);
+        bmp.recycle();
+        if (resultInt != null) {
+            resultImg = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+            resultImg.setPixels(resultInt, 0, w, 0, 0, w, h);
+        }
+        return resultImg;
+    }
+
 }

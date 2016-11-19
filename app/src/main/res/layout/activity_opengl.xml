@@ -1,49 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:alignmentMode="alignMargins"
     android:background="@color/red"
     android:orientation="vertical">
 
-    <FrameLayout
-        android:id="@+id/fl_content_1"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_margin="1dp"
-        android:background="@color/black"/>
+        android:layout_weight="1"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
 
-    <FrameLayout
-        android:id="@+id/fl_content_2"
-        android:layout_width="0dp"
+        <FrameLayout
+            android:id="@+id/fl_content_0"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="1dp"
+            android:layout_weight="1"
+            android:background="@color/black"
+            tools:ignore="NestedWeights"/>
+
+        <FrameLayout
+            android:id="@+id/fl_content_1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="fill"
+            android:layout_margin="1dp"
+            android:layout_weight="1"
+            android:background="@color/black"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_margin="1dp"
-        android:background="@color/black"/>
+        android:layout_weight="1"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
 
-    <FrameLayout
-        android:id="@+id/fl_content_3"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_margin="1dp"
-        android:background="@color/black"/>
+        <FrameLayout
+            android:id="@+id/fl_content_2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_margin="1dp"
+            android:layout_weight="1"
+            android:background="@color/black"
+            tools:ignore="NestedWeights"/>
 
-    <FrameLayout
-        android:id="@+id/fl_content_4"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_margin="1dp"
-        android:background="@color/black"/>
-
-</RelativeLayout>
+        <FrameLayout
+            android:id="@+id/fl_content_3"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="fill"
+            android:layout_margin="1dp"
+            android:layout_weight="1"
+            android:background="@color/black"/>
+    </LinearLayout>
+</LinearLayout>
