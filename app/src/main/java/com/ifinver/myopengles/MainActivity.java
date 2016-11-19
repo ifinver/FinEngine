@@ -10,16 +10,13 @@ import android.widget.ImageView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private ImageView ivGrey;
-    private ImageView ivOri;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ivOri = (ImageView) findViewById(R.id.iv_show_ori);
-        ivGrey = (ImageView) findViewById(R.id.iv_show_grey);
+        ImageView ivOri = (ImageView) findViewById(R.id.iv_show_ori);
+        ImageView ivGrey = (ImageView) findViewById(R.id.iv_show_grey);
 
         ivOri.setOnClickListener(this);
         ivGrey.setOnClickListener(this);
