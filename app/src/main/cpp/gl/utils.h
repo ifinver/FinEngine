@@ -7,7 +7,7 @@
 
 #define  LOG_TAG    "gl-utils"
 
-#include "gl-include-header.h"
+#include "include-header.h"
 
 static void checkGlError(const char *op);
 

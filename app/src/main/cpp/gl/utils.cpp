@@ -1,7 +1,7 @@
 //
 // Created by iFinVer on 2016/11/21.
 //
-#include "gl-utils.h"
+#include "utils.h"
 
 static void checkGlError(const char *op) {
     for (GLint error = glGetError(); error; error = glGetError()) {

@@ -5,8 +5,8 @@
 #ifndef MYOPENGLES_GL_NATIVE_LIB_H
 #define MYOPENGLES_GL_NATIVE_LIB_H
 
-#include "gl-include-header.h"
-#include "gl-utils.h"
+#include "include-header.h"
+#include "utils.h"
 
 extern "C" {
 JNIEXPORT jlong JNICALL Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass type,jobject jSurface);
@@ -16,11 +16,11 @@ JNIEXPORT void JNICALL Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIE
                                                                             jint frameHeight, jint imageFormat);
 }
 
-GL_Context_Holder *newGLContext(JNIEnv *env, jobject jSurface);
+GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface);
 
-void releaseGLContext(GL_Context_Holder *pHolder);
+void releaseGLContext(GLContextHolder *pHolder);
 
-void renderFrame(GL_Context_Holder *holder, jbyte *data, jint width, jint height);
+void renderFrame(GLContextHolder *holder, jbyte *data, jint width, jint height);
 
 #endif //MYOPENGLES_GL_NATIVE_LIB_H
 

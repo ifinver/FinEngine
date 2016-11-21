@@ -5,10 +5,10 @@
 #ifndef MYOPENGLES_GL_CONTEXT_H
 #define MYOPENGLES_GL_CONTEXT_H
 
-#include "gl-include-header.h"
-#include "gl-utils.h"
+#include "include-header.h"
+#include "utils.h"
 
-class GL_Context_Holder{
+class GLContextHolder{
 public:
     EGLContext eglContext;
 

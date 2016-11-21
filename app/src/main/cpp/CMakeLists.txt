@@ -19,9 +19,12 @@ cmake_minimum_required(VERSION 3.4.1)
 #加载本项目自己的库
 add_library(gl-native-lib
             SHARED
-            gl-main.cpp
-            gl-utils.cpp
-            gl-include-header.cpp)
+            Test.cpp
+            gl/GLContextHolder.cpp
+            gl/shaders.cpp
+            gl/main.cpp
+            gl/utils.cpp
+            gl/include-header.cpp)
 
 target_link_libraries(gl-native-lib
                       android

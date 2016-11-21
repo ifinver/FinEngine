@@ -1,10 +1,10 @@
-#include "gl-main.h"
-#include "gl-shaders.h"
+#include "main.h"
+#include "shaders.h"
 #include <android/native_window_jni.h>
 
 JNIEXPORT jlong JNICALL
 Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass, jobject jSurface) {
-    GL_Context_Holder *pHolder = newGLContext(env, jSurface);
+    GLContextHolder *pHolder = newGLContext(env, jSurface);
     if(pHolder == NULL){
         return 0;
     }
@@ -13,17 +13,17 @@ Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass, jobjec
 
 JNIEXPORT void JNICALL
 Java_com_ifinver_myopengles_GLNative_releaseGLContext(JNIEnv *, jclass , jlong nativeContext) {
-    releaseGLContext((GL_Context_Holder*)nativeContext);
+    releaseGLContext((GLContextHolder*)nativeContext);
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass type, jlong nativeGlContext, jbyteArray data_, jint frameWidth,
+Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass, jlong nativeGlContext, jbyteArray data_, jint frameWidth,
                                                      jint frameHeight, jint imageFormat) {
     jbyte *data = env->GetByteArrayElements(data_, NULL);
 
     switch (imageFormat){
         case 0x11://ImageFormat.NV21
-            renderFrame((GL_Context_Holder*)nativeGlContext,data,frameWidth,frameHeight);
+            renderFrame((GLContextHolder*)nativeGlContext,data,frameWidth,frameHeight);
             break;
         default:
             LOGE("不支持的视频编码格式！");
@@ -36,7 +36,7 @@ Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass type, j
 using namespace std;
 #define  LOG_TAG    "GLNativeLib"
 
-void renderFrame(GL_Context_Holder *holder, jbyte *data, jint width, jint height){
+void renderFrame(GLContextHolder *holder, jbyte *data, jint width, jint height){
     glUseProgram(holder->program);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -46,13 +46,13 @@ void renderFrame(GL_Context_Holder *holder, jbyte *data, jint width, jint height
 }
 
 //释放指定上下文
-void releaseGLContext(GL_Context_Holder *holder) {
+void releaseGLContext(GLContextHolder *holder) {
     eglDestroySurface(holder->eglDisplay,holder->eglSurface);
     eglDestroyContext(holder->eglDisplay,holder->eglContext);
 }
 
 //创建一个新的绘制上下文
-GL_Context_Holder *newGLContext(JNIEnv *env, jobject jSurface) {
+GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface) {
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
         checkGlError("eglGetDisplay");
@@ -115,7 +115,7 @@ GL_Context_Holder *newGLContext(JNIEnv *env, jobject jSurface) {
     }
 
     //success
-    GL_Context_Holder* gl_holder = new GL_Context_Holder();
+    GLContextHolder* gl_holder = new GLContextHolder();
     gl_holder->eglDisplay = display;
     gl_holder->eglContext = eglContext;
     gl_holder->eglSurface = eglSurface;
