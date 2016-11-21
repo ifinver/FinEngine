@@ -13,8 +13,6 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.graphics.ImageFormat.NV21;
-
 /**
  * Created by iFinVer on 2016/11/15.
  * ilzq@foxmail.com
@@ -24,13 +22,12 @@ import static android.graphics.ImageFormat.NV21;
 public class CameraHolder implements Camera.PreviewCallback {
 
     private static final String TAG = "CameraHolder";
-    private static final int MAGIC_TEXTURE_ID = 10;
+    private static final int MAGIC_TEXTURE_ID = 28;
     public static final int CAMERA_ID_ANY = -1;
     public static final int CAMERA_ID_BACK = 99;
     public static final int CAMERA_ID_FRONT = 98;
-    public static final int RGBA = 1;
-    public static final int GRAY = 2;
     private static final int MAX_UNSPECIFIED = -1;
+    private static int IMAGE_FORMAT = ImageFormat.NV21;
 
     private Camera mCamera;
     public int mCameraIndex;
@@ -46,12 +43,13 @@ public class CameraHolder implements Camera.PreviewCallback {
     private SurfaceTexture mSurfaceTexture;
     private boolean mCanNotifyFrame;//是否可以向监听者传输buffer了，用以控制onComplete之后才进行传输
 
-    public CameraHolder() {
-    }
+    public CameraHolder() {}
 
     public void setBufferCallback(BufferCallback callback) {
         this.mBufferCallback = callback;
     }
+
+    public SurfaceTexture getCameraSurfaceTexture(){return mSurfaceTexture;}
 
     /**
      * @param width    期望的宽
@@ -79,7 +77,7 @@ public class CameraHolder implements Camera.PreviewCallback {
                         @Override
                         public void run() {
                             if (mInitCallback != null) {
-                                mInitCallback.onComplete(success, mFrameWidth, mFrameHeight, ImageFormat.NV21);
+                                mInitCallback.onInitComplete(success, mFrameWidth, mFrameHeight, IMAGE_FORMAT);
                                 mCanNotifyFrame = true;
                             }
                         }
@@ -170,7 +168,7 @@ public class CameraHolder implements Camera.PreviewCallback {
                     /* Select the size that fits surface considering maximum size allowed */
                     CameraSize frameSize = calculateCameraFrameSize(sizes, width, height);
 
-                    params.setPreviewFormat(NV21);
+                    params.setPreviewFormat(IMAGE_FORMAT);
                     Log.d(TAG, "Set preview size to " + frameSize.width + "x" + frameSize.height);
                     params.setPreviewSize(frameSize.width, frameSize.height);
 
@@ -226,7 +224,7 @@ public class CameraHolder implements Camera.PreviewCallback {
         return result;
     }
 
-    public void deInit(final DeInitCallback callback) {
+    public void deInit(final ReleaseCallback callback) {
         mBufferProcessThread.execute(new Runnable() {
             @Override
             public void run() {
@@ -237,7 +235,7 @@ public class CameraHolder implements Camera.PreviewCallback {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            callback.onComplete();
+                            callback.onReleaseComplete();
                         }
                     });
                 }
@@ -297,7 +295,7 @@ public class CameraHolder implements Camera.PreviewCallback {
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
         if (mBufferCallback != null && mCanNotifyFrame) {
-            mBufferCallback.onVideoBuffer(data);
+            mBufferCallback.onVideoBuffer(data,mFrameWidth,mFrameHeight,IMAGE_FORMAT);
         }
         if (mCamera != null)
             mCamera.addCallbackBuffer(mBuffer);
@@ -312,11 +310,11 @@ public class CameraHolder implements Camera.PreviewCallback {
          * @param mFrameHeight 视频帧的高度
          * @param imageFormat  目前只支持ImageFormat.NV21
          */
-        void onComplete(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat);
+        void onInitComplete(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat);
     }
 
-    public interface DeInitCallback {
-        void onComplete();
+    public interface ReleaseCallback {
+        void onReleaseComplete();
     }
 
     public interface BufferCallback {
@@ -325,7 +323,7 @@ public class CameraHolder implements Camera.PreviewCallback {
          *
          * @param data NV21类型
          */
-        void onVideoBuffer(byte[] data);
+        void onVideoBuffer(byte[] data,int frameWidth,int frameHeight,int imageFormat);
     }
 
     private class BufferProcessThread extends HandlerThread {

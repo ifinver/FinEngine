@@ -45,7 +45,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int[] pixels = new int[w * h];
         bmp.getPixels(pixels, 0, w, 0, 0, w, h);
         //recall JNI
-        int[] resultInt = GLNative.getGrayImage(pixels, w, h);
+//        int[] resultInt = GLNative.getGrayImage(pixels, w, h);
+        int[] resultInt = null;
         bmp.recycle();
         if (resultInt != null) {
             resultImg = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);

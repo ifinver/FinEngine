@@ -36,9 +36,8 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Bu
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 mCameraHolder.init(ivCanvas.getWidth(), ivCanvas.getHeight(), new CameraHolder.InitCallback() {
                     @Override
-                    public void onComplete(boolean success, int mFrameWidth, int mFrameHeight,int imageFormat) {
+                    public void onInitComplete(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat) {
                         Log.d(TAG, "摄像头初始化成功");
-                        GLNative.initProcesser(mFrameWidth,mFrameHeight,imageFormat);
                         mCacheBitmap = Bitmap.createBitmap(mFrameWidth,mFrameHeight,Bitmap.Config.ARGB_8888);
                     }
                 });
@@ -48,9 +47,8 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Bu
         mHandler = new Handler(Looper.getMainLooper());
     }
 
-
     @Override
-    public void onVideoBuffer(byte[] data) {
+    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int imageFormat) {
         Log.d(TAG, "收到视频数据,len=" + data.length);
 
 
@@ -76,10 +74,10 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Bu
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mCameraHolder.deInit(new CameraHolder.DeInitCallback() {
+        mCameraHolder.deInit(new CameraHolder.ReleaseCallback() {
             @Override
-            public void onComplete() {
-                GLNative.releaseProcesser();
+            public void onReleaseComplete() {
+
             }
         });
     }

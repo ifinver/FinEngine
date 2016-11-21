@@ -16,7 +16,7 @@
         android:orientation="horizontal">
 
         <FrameLayout
-            android:id="@+id/fl_content_0"
+            android:id="@+id/av_0"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_margin="1dp"
@@ -25,7 +25,7 @@
             tools:ignore="NestedWeights"/>
 
         <FrameLayout
-            android:id="@+id/fl_content_1"
+            android:id="@+id/av_1"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_gravity="fill"
@@ -42,7 +42,7 @@
         android:orientation="horizontal">
 
         <FrameLayout
-            android:id="@+id/fl_content_2"
+            android:id="@+id/av_2"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_margin="1dp"
@@ -51,7 +51,7 @@
             tools:ignore="NestedWeights"/>
 
         <FrameLayout
-            android:id="@+id/fl_content_3"
+            android:id="@+id/av_3"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_gravity="fill"
