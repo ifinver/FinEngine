@@ -5,11 +5,9 @@
 #ifndef MYOPENGLES_GL_UTILS_H
 #define MYOPENGLES_GL_UTILS_H
 
-#define  LOG_TAG    "gl-utils"
-
 #include "include-header.h"
 
-static void checkGlError(const char *op);
+void checkGlError(const char *op);
 
 GLuint loadShader(GLenum shaderType, const char *shaderSource);
 

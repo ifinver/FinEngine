@@ -1,6 +1,6 @@
 package com.ifinver.myopengles;
 
-import android.graphics.SurfaceTexture;
+import android.view.Surface;
 
 /**
  * Created by iFinVer on 2016/11/12.
@@ -13,7 +13,7 @@ public class GLNative {
         System.loadLibrary("gl-native-lib");
     }
 
-    public static native long createGLContext(SurfaceTexture surfaceTexture);
+    public static native long createGLContext(Surface surface);
 
     public static native void releaseGLContext(long nativeContext);
 

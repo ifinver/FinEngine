@@ -1,7 +1,9 @@
 package com.ifinver.myopengles;
 
 import android.graphics.SurfaceTexture;
+import android.os.Looper;
 import android.util.Log;
+import android.view.Surface;
 import android.view.TextureView;
 
 /**
@@ -20,8 +22,10 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        Log.d(TAG,"onSurfaceTextureAvailable");
-        nativeGlContext = GLNative.createGLContext(surface);
+        Log.d(TAG,"onSurfaceTextureAvailable,main thread="+ (Looper.getMainLooper() == Looper.myLooper()));
+
+        // TODO: 2016/11/22 must sub thread!!
+        nativeGlContext = GLNative.createGLContext(new Surface(surface));
     }
 
     @Override
