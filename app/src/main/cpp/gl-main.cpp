@@ -1,9 +1,14 @@
 #include "gl-main.h"
+#include "gl-shaders.h"
 #include <android/native_window_jni.h>
 
 JNIEXPORT jlong JNICALL
 Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass, jobject jSurface) {
-    return (jlong) newGLContext(env,jSurface);
+    GL_Context_Holder *pHolder = newGLContext(env, jSurface);
+    if(pHolder == NULL){
+        return 0;
+    }
+    return (jlong) pHolder;
 }
 
 JNIEXPORT void JNICALL
@@ -32,6 +37,8 @@ using namespace std;
 #define  LOG_TAG    "GLNativeLib"
 
 void renderFrame(GL_Context_Holder *holder, jbyte *data, jint width, jint height){
+    glUseProgram(holder->program);
+    glClear(GL_COLOR_BUFFER_BIT);
 
 
 
@@ -100,11 +107,19 @@ GL_Context_Holder *newGLContext(JNIEnv *env, jobject jSurface) {
         return NULL;
     }
 
+    //context create success,now create program
+    ShaderYuv shaderYuv;
+    GLuint programYUV = createProgram(shaderYuv.vertexShader, shaderYuv.fragmentShader);
+    if(programYUV == 0){
+        return NULL;
+    }
+
     //success
     GL_Context_Holder* gl_holder = new GL_Context_Holder();
     gl_holder->eglDisplay = display;
     gl_holder->eglContext = eglContext;
     gl_holder->eglSurface = eglSurface;
+    gl_holder->program = programYUV;
 
     return gl_holder;
 }

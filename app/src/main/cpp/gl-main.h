@@ -11,7 +11,9 @@
 extern "C" {
 JNIEXPORT jlong JNICALL Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass type,jobject jSurface);
 JNIEXPORT void JNICALL Java_com_ifinver_myopengles_GLNative_releaseGLContext(JNIEnv *env, jclass type, jlong nativeContext);
-JNIEXPORT void JNICALL Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass type, jlong nativeGlContext, jbyteArray data_, jint frameWidth,
+JNIEXPORT void JNICALL Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass type, jlong nativeGlContext,
+                                                                            jbyteArray data_, jint frameWidth,
+                                                                            jint frameHeight, jint imageFormat);
 }
 
 GL_Context_Holder *newGLContext(JNIEnv *env, jobject jSurface);

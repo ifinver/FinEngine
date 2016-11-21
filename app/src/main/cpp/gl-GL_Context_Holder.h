@@ -15,6 +15,8 @@ public:
     EGLSurface eglSurface;
 
     EGLDisplay eglDisplay;
+
+    GLuint program;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H
