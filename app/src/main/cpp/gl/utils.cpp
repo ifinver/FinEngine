@@ -2,8 +2,8 @@
 // Created by iFinVer on 2016/11/21.
 //
 #include "utils.h"
+#include <stdlib.h>
 
-#define  LOG_TAG    "gl-utils"
 
 void checkGlError(const char *op) {
     for (GLint error = glGetError(); error; error = glGetError()) {

@@ -23,8 +23,7 @@ add_library(gl-native-lib
             gl/GLContextHolder.cpp
             gl/shaders.cpp
             gl/main.cpp
-            gl/utils.cpp
-            gl/include-header.cpp)
+            gl/utils.cpp)
 
 target_link_libraries(gl-native-lib
                       android

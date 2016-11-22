@@ -1,7 +1,6 @@
 package com.ifinver.myopengles;
 
 import android.graphics.SurfaceTexture;
-import android.os.Looper;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
@@ -13,19 +12,15 @@ import android.view.TextureView;
 
 public class TextureRenderer implements TextureView.SurfaceTextureListener {
     private static final String TAG = "TextureRenderer";
-    private final CameraHolder mCameraHolder;
-    private long nativeGlContext = 0;
+    private RenderThread mRenderThread;
 
-    public TextureRenderer(CameraHolder mCameraHolder) {
-        this.mCameraHolder = mCameraHolder;
+    public TextureRenderer() {
     }
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        Log.d(TAG,"onSurfaceTextureAvailable,main thread="+ (Looper.getMainLooper() == Looper.myLooper()));
-
-        // TODO: 2016/11/22 must sub thread!!
-        nativeGlContext = GLNative.createGLContext(new Surface(surface));
+        mRenderThread = new RenderThread(new Surface(surface));
+        mRenderThread.start();
     }
 
     @Override
@@ -37,8 +32,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
         Log.d(TAG,"onSurfaceTextureDestroyed");
-        GLNative.releaseGLContext(nativeGlContext);
-        nativeGlContext = 0;
+        mRenderThread.quit();
         return false;
     }
 
@@ -48,8 +42,81 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
     }
 
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int imageFormat) {
-        if(nativeGlContext != 0){
-            GLNative.renderOnContext(nativeGlContext,data,frameWidth,frameHeight,imageFormat);
+        if(mRenderThread != null){
+            mRenderThread.notifyWithBuffer(data,frameWidth,frameHeight,imageFormat);
+        }
+    }
+
+    private static class RenderThread extends Thread{
+        private static final String TAG = "RenderThread";
+        boolean quit = false;
+        Surface mSurface;
+        private long glContext;
+        private byte[] mData;
+        private int mFrameWidth;
+        private int mFrameHeight;
+        private int mImageFromat;
+
+        RenderThread(Surface surface){
+            this.mSurface = surface;
+        }
+
+        public void notifyWithBuffer(byte[] data, int frameWidth, int frameHeight, int imageFormat){
+            this.mData = data;
+            this.mFrameWidth = frameWidth;
+            this.mFrameHeight = frameHeight;
+            this.mImageFromat = imageFormat;
+            //wakeup
+            synchronized (this) {
+                notify();
+            }
+        }
+
+        private void onDrawFrame(){
+            if(glContext != 0){
+                GLNative.renderOnContext(glContext, mData,mFrameWidth,mFrameHeight,mImageFromat);
+            }
+        }
+
+        public void quit(){
+            Log.d(TAG,"开始退出渲染线程");
+            quit = true;
+            interrupt();
+        }
+
+        private void initGL() {
+            glContext = GLNative.createGLContext(mSurface);
+            if(glContext == 0){
+                Log.e(TAG,"渲染上下文创建失败！");
+            }else{
+                Log.d(TAG,"渲染初始化成功");
+            }
+        }
+
+        private void destroyGL() {
+            if(glContext != 0){
+                GLNative.releaseGLContext(glContext);
+            }
+            Log.d(TAG,"渲染线程已退出");
+        }
+
+        @Override
+        public void run() {
+            initGL();
+
+            while (!quit){
+                synchronized (this){
+                    onDrawFrame();
+
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        quit = true;
+                    }
+                }
+            }
+
+            destroyGL();
         }
     }
 }

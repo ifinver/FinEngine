@@ -5,8 +5,9 @@
 #ifndef MYOPENGLES_GL_CONTEXT_H
 #define MYOPENGLES_GL_CONTEXT_H
 
-#include "include-header.h"
-#include "utils.h"
+#include <EGL/egl.h>
+#include <GLES2/gl2.h>
+#include "shaders.h"
 
 class GLContextHolder{
 public:
@@ -17,6 +18,14 @@ public:
     EGLDisplay eglDisplay;
 
     GLuint program;
+
+    GLuint *positions;
+
+    int textureNums;
+
+    GLuint *textures;
+
+    ShaderBase *shader;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

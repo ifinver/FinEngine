@@ -5,8 +5,16 @@
 #ifndef MYOPENGLES_GL_NATIVE_LIB_H
 #define MYOPENGLES_GL_NATIVE_LIB_H
 
-#include "include-header.h"
-#include "utils.h"
+
+#define  LOG_TAG    "gl-native-lib"
+
+#include <jni.h>
+#include <android/log.h>
+
+#include "GLContextHolder.h"
+
+#define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
 extern "C" {
 JNIEXPORT jlong JNICALL Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass type,jobject jSurface);

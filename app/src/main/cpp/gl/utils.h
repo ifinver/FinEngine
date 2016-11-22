@@ -5,7 +5,8 @@
 #ifndef MYOPENGLES_GL_UTILS_H
 #define MYOPENGLES_GL_UTILS_H
 
-#include "include-header.h"
+#include <GLES2/gl2.h>
+#include "main.h"
 
 void checkGlError(const char *op);
 

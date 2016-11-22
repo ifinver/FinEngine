@@ -13,6 +13,9 @@ public class GLNative {
         System.loadLibrary("gl-native-lib");
     }
 
+    /**
+     * @return 0 means failed
+     */
     public static native long createGLContext(Surface surface);
 
     public static native void releaseGLContext(long nativeContext);

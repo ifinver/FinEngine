@@ -1,19 +1,19 @@
 #include "main.h"
-#include "shaders.h"
+#include "utils.h"
 #include <android/native_window_jni.h>
 
 JNIEXPORT jlong JNICALL
 Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass, jobject jSurface) {
     GLContextHolder *pHolder = newGLContext(env, jSurface);
-    if(pHolder == NULL){
+    if (pHolder == NULL) {
         return 0;
     }
     return (jlong) pHolder;
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_myopengles_GLNative_releaseGLContext(JNIEnv *, jclass , jlong nativeContext) {
-    releaseGLContext((GLContextHolder*)nativeContext);
+Java_com_ifinver_myopengles_GLNative_releaseGLContext(JNIEnv *, jclass, jlong nativeContext) {
+    releaseGLContext((GLContextHolder *) nativeContext);
 }
 
 JNIEXPORT void JNICALL
@@ -21,9 +21,9 @@ Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass, jlong 
                                                      jint frameHeight, jint imageFormat) {
     jbyte *data = env->GetByteArrayElements(data_, NULL);
 
-    switch (imageFormat){
+    switch (imageFormat) {
         case 0x11://ImageFormat.NV21
-            renderFrame((GLContextHolder*)nativeGlContext,data,frameWidth,frameHeight);
+            renderFrame((GLContextHolder *) nativeGlContext, data, frameWidth, frameHeight);
             break;
         default:
             LOGE("不支持的视频编码格式！");
@@ -33,22 +33,66 @@ Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass, jlong 
     env->ReleaseByteArrayElements(data_, data, 0);
 }
 //.........................................................................................................................
-using namespace std;
-#define  LOG_TAG    "GLNativeLib"
 
-void renderFrame(GLContextHolder *holder, jbyte *data, jint width, jint height){
+void renderFrame(GLContextHolder *holder, jbyte *data, jint width, jint height) {
     glUseProgram(holder->program);
     glClear(GL_COLOR_BUFFER_BIT);
+    /**
+     * 输入定点坐标
+     */
+    glEnableVertexAttribArray(holder->positions[0]);
+    glVertexAttribPointer(holder->positions[0], holder->shader->componentVertexPos, GL_FLOAT, GL_FALSE, holder->shader->stride,
+                          holder->shader->vertices);
 
+    /**
+     * 输入纹理坐标
+     */
+    glEnableVertexAttribArray(holder->positions[1]);
+    glVertexAttribPointer(holder->positions[1], holder->shader->componentTexCoord, GL_FLOAT, GL_FALSE, holder->shader->stride,
+                          holder->shader->vertices + holder->shader->componentVertexPos);
 
+    /**
+     * Y texture
+     */
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, holder->textures[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    eglSwapBuffers(holder->eglDisplay,holder->eglSurface);
+    /**
+     * uv texture
+     */
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, holder->textures[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, width / 2, height / 2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, data + (width * height));
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glUniform1i(holder->positions[2], 0);
+    glUniform1i(holder->positions[3], 1);
+
+    glDrawElements(GL_TRIANGLES,holder->shader->indicesNum,GL_SHORT,holder->shader->indices);
+
+    glDisableVertexAttribArray(holder->positions[0]);
+    glDisableVertexAttribArray(holder->positions[1]);
+
+    eglSwapBuffers(holder->eglDisplay, holder->eglSurface);
 }
 
 //释放指定上下文
 void releaseGLContext(GLContextHolder *holder) {
-    eglDestroySurface(holder->eglDisplay,holder->eglSurface);
-    eglDestroyContext(holder->eglDisplay,holder->eglContext);
+    glDeleteTextures(holder->textureNums, holder->textures);
+    glDeleteProgram(holder->program);
+    eglDestroySurface(holder->eglDisplay, holder->eglSurface);
+    eglDestroyContext(holder->eglDisplay, holder->eglContext);
+    delete[](holder->positions);
+    delete[](holder->textures);
+    delete (holder);
 }
 
 //创建一个新的绘制上下文
@@ -97,12 +141,12 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface) {
                     EGL_NONE
             };
     EGLContext eglContext = eglCreateContext(display, config, EGL_NO_CONTEXT, attrib_list);
-    if(eglContext == EGL_NO_CONTEXT){
+    if (eglContext == EGL_NO_CONTEXT) {
         checkGlError("eglCreateContext");
         return NULL;
     }
 
-    if (!eglMakeCurrent(display, surface, surface, eglContext)) {
+    if (!eglMakeCurrent(display, eglSurface, eglSurface, eglContext)) {
         checkGlError("eglMakeCurrent");
         return NULL;
     }
@@ -110,16 +154,35 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface) {
     //context create success,now create program
     ShaderYuv shaderYuv;
     GLuint programYUV = createProgram(shaderYuv.vertexShader, shaderYuv.fragmentShader);
-    if(programYUV == 0){
+    if (programYUV == 0) {
         return NULL;
     }
 
+    // Use tightly packed data
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
     //success
-    GLContextHolder* gl_holder = new GLContextHolder();
+    GLContextHolder *gl_holder = new GLContextHolder();
     gl_holder->eglDisplay = display;
     gl_holder->eglContext = eglContext;
     gl_holder->eglSurface = eglSurface;
     gl_holder->program = programYUV;
+
+    GLint posAttrVertices = glGetAttribLocation(programYUV, "aPosition");
+    GLint posAttrTexCoords = glGetAttribLocation(programYUV, "aTexCoord");
+    GLint posUniYTexture = glGetUniformLocation(programYUV, "yTexture");
+    GLint posUniUvTexture = glGetUniformLocation(programYUV, "uvTexture");
+    GLuint *positions = new GLuint[4];
+    positions[0] = (GLuint) posAttrVertices;
+    positions[1] = (GLuint) posAttrTexCoords;
+    positions[2] = (GLuint) posUniYTexture;
+    positions[3] = (GLuint) posUniUvTexture;
+    gl_holder->positions = positions;
+
+    GLuint *textures = new GLuint[2];
+    glGenTextures(2, textures);
+    gl_holder->textureNums = 2;
+    gl_holder->textures = textures;
 
     return gl_holder;
 }
