@@ -19,7 +19,7 @@ Java_com_ifinver_myopengles_GLNative_releaseGLContext(JNIEnv *, jclass, jlong na
 JNIEXPORT void JNICALL
 Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass, jlong nativeGlContext, jbyteArray data_, jint frameWidth,
                                                      jint frameHeight, jint imageFormat) {
-    jbyte *data = env->GetByteArrayElements(data_, NULL);
+    jbyte *data = env->GetByteArrayElements(data_, 0);
 
     switch (imageFormat) {
         case 0x11://ImageFormat.NV21
@@ -37,19 +37,18 @@ Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass, jlong 
 void renderFrame(GLContextHolder *holder, jbyte *data, jint width, jint height) {
     glUseProgram(holder->program);
     glClear(GL_COLOR_BUFFER_BIT);
+
     /**
      * 输入定点坐标
      */
     glEnableVertexAttribArray(holder->positions[0]);
-    glVertexAttribPointer(holder->positions[0], holder->shader->componentVertexPos, GL_FLOAT, GL_FALSE, holder->shader->stride,
-                          holder->shader->vertices);
+    glVertexAttribPointer(holder->positions[0], 2, GL_FLOAT, GL_FALSE, 4* sizeof(GLfloat),VERTICES_BASE);
 
     /**
      * 输入纹理坐标
      */
     glEnableVertexAttribArray(holder->positions[1]);
-    glVertexAttribPointer(holder->positions[1], holder->shader->componentTexCoord, GL_FLOAT, GL_FALSE, holder->shader->stride,
-                          holder->shader->vertices + holder->shader->componentVertexPos);
+    glVertexAttribPointer(holder->positions[1], 2, GL_FLOAT, GL_FALSE, 4* sizeof(GLfloat),VERTICES_BASE + 2);
 
     /**
      * Y texture
@@ -76,12 +75,13 @@ void renderFrame(GLContextHolder *holder, jbyte *data, jint width, jint height) 
     glUniform1i(holder->positions[2], 0);
     glUniform1i(holder->positions[3], 1);
 
-    glDrawElements(GL_TRIANGLES,holder->shader->indicesNum,GL_SHORT,holder->shader->indices);
+    glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_SHORT,INDICES_BASE);
 
     glDisableVertexAttribArray(holder->positions[0]);
     glDisableVertexAttribArray(holder->positions[1]);
 
     eglSwapBuffers(holder->eglDisplay, holder->eglSurface);
+
 }
 
 //释放指定上下文
@@ -178,6 +178,7 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface) {
     positions[2] = (GLuint) posUniYTexture;
     positions[3] = (GLuint) posUniUvTexture;
     gl_holder->positions = positions;
+//    LOGE("posAttrVertices=%d,posAttrTexCoords=%d,posUniYTexture=%d,posUniUvTexture=%d",posAttrVertices,posAttrTexCoords,posUniYTexture,posUniUvTexture);
 
     GLuint *textures = new GLuint[2];
     glGenTextures(2, textures);

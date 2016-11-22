@@ -38,7 +38,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
 
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-        Log.d(TAG,"onSurfaceTextureUpdated");
+        //do nothing.
     }
 
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int imageFormat) {
@@ -55,7 +55,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         private byte[] mData;
         private int mFrameWidth;
         private int mFrameHeight;
-        private int mImageFromat;
+        private int mImageFormat;
 
         RenderThread(Surface surface){
             this.mSurface = surface;
@@ -65,7 +65,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
             this.mData = data;
             this.mFrameWidth = frameWidth;
             this.mFrameHeight = frameHeight;
-            this.mImageFromat = imageFormat;
+            this.mImageFormat = imageFormat;
             //wakeup
             synchronized (this) {
                 notify();
@@ -73,8 +73,8 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         }
 
         private void onDrawFrame(){
-            if(glContext != 0){
-                GLNative.renderOnContext(glContext, mData,mFrameWidth,mFrameHeight,mImageFromat);
+            if(glContext != 0 && mData != null){
+                GLNative.renderOnContext(glContext, mData,mFrameWidth,mFrameHeight, mImageFormat);
             }
         }
 

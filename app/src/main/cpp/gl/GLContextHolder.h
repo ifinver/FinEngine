@@ -24,8 +24,6 @@ public:
     int textureNums;
 
     GLuint *textures;
-
-    ShaderBase *shader;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

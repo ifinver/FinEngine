@@ -7,34 +7,20 @@
 
 #include <GLES2/gl2.h>
 
-class ShaderBase {
-public:
-    const GLfloat vertices[16] =
-            {
-                    -1.0f, 1.0f,   // Position 0
-                    0.0f, 0.0f,   // TexCoord 0
-                    -1.0f, -1.0f,  // Position 1
-                    0.0f, 1.0f,   // TexCoord 1
-                    1.0f, -1.0f,  // Position 2
-                    1.0f, 1.0f,   // TexCoord 2
-                    1.0f, 1.0f,   // Position 3
-                    1.0f, 0.0f    // TexCoord 3
-            };
+const GLfloat VERTICES_BASE[] =
+        {
+                -1.0f, 1.0f,   // Position 0
+                0.0f, 0.0f,   // TexCoord 0
+                -1.0f, -1.0f,  // Position 1
+                0.0f, 1.0f,   // TexCoord 1
+                1.0f, -1.0f,  // Position 2
+                1.0f, 1.0f,   // TexCoord 2
+                1.0f, 1.0f,   // Position 3
+                1.0f, 0.0f    // TexCoord 3
+        };
+const GLushort INDICES_BASE[] = {0, 1, 2, 0, 2, 3};
 
-    const GLshort indices[6] = {0, 1, 2, 0, 2, 3};
-
-    const int indicesNum = 6;
-
-    const GLint componentVertexPos = 2;
-
-    const GLint componentTexCoord = 2;
-
-    const GLint stride = 4;
-
-    ShaderBase() {}
-};
-
-class ShaderYuv : ShaderBase {
+class ShaderYuv {
 public:
     const char *vertexShader;
     const char *fragmentShader;
