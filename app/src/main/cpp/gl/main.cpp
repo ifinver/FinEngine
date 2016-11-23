@@ -4,17 +4,17 @@
 #include <android/native_window_jni.h>
 
 JNIEXPORT jlong JNICALL
-Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass, jobject jSurface, int frameDegree, int imageFormat) {
-//    switch (imageFormat) {
-//        case 0x11://ImageFormat.NV21
-//
-//            break;
-//        default:
-//            LOGE("不支持的视频编码格式！");
-//            break;
-//    }
+Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass, jobject jSurface, int frameDegree, int imageFormat,int filterType) {
+    GLContextHolder *pHolder = NULL;
+    switch (imageFormat) {
+        case 0x11://ImageFormat.NV21
+            pHolder = newGLContext(env, jSurface, frameDegree,filterType);
+            break;
+        default:
+            LOGE("不支持的视频编码格式！");
+            break;
+    }
 
-    GLContextHolder *pHolder = newGLContext(env, jSurface, frameDegree);
     if (pHolder == NULL) {
         return 0;
     }
@@ -115,7 +115,7 @@ inline float d2r(float d) {
 }
 
 //创建一个新的绘制上下文
-GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int frameDegree) {
+GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int frameDegree,int filterType) {
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
         checkGlError("eglGetDisplay");
@@ -171,8 +171,22 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int frameDegree) {
     }
 
     //context create success,now create program
-    ShaderYuv shaderYuv;
-    GLuint programYUV = createProgram(shaderYuv.vertexShader, shaderYuv.fragmentShader);
+    ShaderBase shader;
+    switch (filterType){
+        default:
+        case FILTER_TYPE_NORMAL:
+            shader = ShaderYuv();
+            break;
+        case FILTER_TYPE_CYAN:
+            shader = ShaderCyan();
+            break;
+        case FILTER_TYPE_FISH_EYE:
+            shader = ShaderFishEye();
+            break;
+    }
+
+    GLuint programYUV = createProgram(shader.vertexShader, shader.fragmentShader);
+//    delete shader;
     if (programYUV == 0) {
         return NULL;
     }
@@ -223,20 +237,6 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int frameDegree) {
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_DITHER);
-
-//    /**
-//     * 输入定点坐标
-//     */
-//    glEnableVertexAttribArray(gl_holder->positions[0]);
-//    glVertexAttribPointer(gl_holder->positions[0], 2, GL_FLOAT, GL_FALSE, gl_holder->texStride, (const void *) gl_holder->offsetVertex);
-//    checkGlError("glVertexAttribPointer");
-//
-//    /**
-//     * 输入纹理坐标
-//     */
-//    glEnableVertexAttribArray(gl_holder->positions[1]);
-//    glVertexAttribPointer(gl_holder->positions[1], 2, GL_FLOAT, GL_FALSE, gl_holder->texStride, (const void *) gl_holder->offsetTex);
-
 
     return gl_holder;
 }

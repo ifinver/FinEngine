@@ -14,15 +14,27 @@ import java.nio.ByteBuffer;
 
 public class TextureRenderer implements TextureView.SurfaceTextureListener {
     private static final String TAG = "TextureRenderer";
+
+    public static final int FILTER_TYPE_NORMAL = 0;
+    public static final int FILTER_TYPE_CYAN = 1;
+    public static final int FILTER_TYPE_FISH_EYE = 2;
+    public static final int FILTER_TYPE_GREY_SCALE = 3;
+
     private RenderThread mRenderThread;
     private int mFrameDegree;
     private int mImageFormat;
     private Surface mSurface;
+    private int mFilterType;
 
-    public TextureRenderer() {
+    public TextureRenderer(){
+        this(FILTER_TYPE_NORMAL);
+    }
+
+    public TextureRenderer(int filterType) {
         mFrameDegree = -1;
         mSurface = null;
         mRenderThread = null;
+        mFilterType = filterType;
     }
 
     public void startContext(int frameDegree, int imageFormat) {
@@ -52,7 +64,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
 
     private void startRenderThread() {
         if (mSurface != null && mFrameDegree != -1) {
-            mRenderThread = new RenderThread(mSurface, mFrameDegree, mImageFormat);
+            mRenderThread = new RenderThread(mSurface, mFrameDegree, mImageFormat,mFilterType);
             mRenderThread.start();
         }
     }
@@ -87,11 +99,13 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         private int mFrameWidth;
         private int mFrameHeight;
         private ByteBuffer mData;
+        private int mFilterType;
 
-        RenderThread(Surface surface, int mFrameDegree, int mImageFormat) {
+        RenderThread(Surface surface, int mFrameDegree, int mImageFormat, int mFilterType) {
             this.mSurface = surface;
             this.mframeDegree = mFrameDegree;
             this.mImageFormat = mImageFormat;
+            this.mFilterType = mFilterType;
         }
 
         public void notifyWithBuffer(ByteBuffer data, int frameWidth, int frameHeight) {
@@ -121,7 +135,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
     }
 
     private void initGL() {
-        glContext = GLNative.createGLContext(mSurface, mframeDegree, mImageFormat);
+        glContext = GLNative.createGLContext(mSurface, mframeDegree, mImageFormat,mFilterType);
         if (glContext == 0) {
             Log.e(TAG, "渲染上下文创建失败！");
         } else {

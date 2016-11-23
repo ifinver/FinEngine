@@ -16,7 +16,7 @@ public class GLNative {
     /**
      * @return 0 means failed
      */
-    public static native long createGLContext(Surface surface, int frameDegree, int imageFormat);
+    public static native long createGLContext(Surface surface, int frameDegree, int imageFormat, int mFilterType);
 
     public static native void releaseGLContext(long nativeContext);
 
