@@ -3,10 +3,8 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
-    <ImageView
-        android:id="@+id/iv_canvas"
-        android:scaleType="centerCrop"
-        android:rotation="-90"
+    <TextureView
+        android:id="@+id/tex"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
