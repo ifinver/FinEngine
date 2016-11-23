@@ -127,7 +127,7 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int frameDegree) {
         LOGE("eglInitialize");
         return NULL;
     }
-    LOGI("majorVer=%d,minVer=%d", majorVer, minVer);
+//    LOGI("majorVer=%d,minVer=%d", majorVer, minVer);
     // EGL attributes
     const EGLint confAttr[] =
             {

@@ -75,7 +75,9 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
 
     @Override
     public void onReleaseComplete() {
-
+        for (TextureRenderer aMRenderer : mRenderer) {
+            aMRenderer.stopContext();
+        }
     }
 
     @Override

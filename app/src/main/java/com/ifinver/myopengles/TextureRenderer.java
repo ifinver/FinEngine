@@ -32,6 +32,11 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         startRenderThread();
     }
 
+    public void stopContext() {
+        this.mFrameDegree = -1;
+//        this.mImageFormat = -1;
+    }
+
     public void onVideoBuffer(ByteBuffer data, int frameWidth, int frameHeight) {
         if (mRenderThread != null) {
             mRenderThread.notifyWithBuffer(data, frameWidth, frameHeight);
@@ -60,7 +65,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        Log.d(TAG, "onSurfaceTextureDestroyed");
+        mSurface = null;
         if (mRenderThread != null) {
             mRenderThread.quit();
         }

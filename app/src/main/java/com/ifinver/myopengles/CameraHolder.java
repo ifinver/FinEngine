@@ -182,7 +182,7 @@ public class CameraHolder implements Camera.PreviewCallback {
             /* Now set camera parameters */
             try {
                 Camera.Parameters params = mCamera.getParameters();
-                Log.d(TAG, "getSupportedPreviewSizes()");
+//                Log.d(TAG, "getSupportedPreviewSizes()");
                 List<Camera.Size> sizes = params.getSupportedPreviewSizes();
 
                 if (sizes != null) {
@@ -190,7 +190,7 @@ public class CameraHolder implements Camera.PreviewCallback {
                     CameraSize frameSize = calculateCameraFrameSize(sizes, width, height);
 
                     params.setPreviewFormat(IMAGE_FORMAT);
-                    Log.d(TAG, "Set preview size to " + frameSize.width + "x" + frameSize.height);
+                    Log.d(TAG, "预览设置为 " + frameSize.width + "x" + frameSize.height);
                     params.setPreviewSize(frameSize.width, frameSize.height);
 
 //                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH && !android.os.Build.MODEL.equals("GT-I9100"))
