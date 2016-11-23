@@ -29,8 +29,8 @@ Java_com_ifinver_myopengles_GLNative_releaseGLContext(JNIEnv *, jclass, jlong na
 JNIEXPORT void JNICALL
 Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass, jlong nativeGlContext, jbyteArray data_, jint frameWidth,
                                                      jint frameHeight) {
-    jboolean isCopy;
-    jbyte *data = env->GetByteArrayElements(data_, &isCopy);
+//    jboolean isCopy;
+    jbyte *data = env->GetByteArrayElements(data_, 0);
 //    if (isCopy) {
 //        LOGI("isCopy=true");
 //    }else{
@@ -39,9 +39,9 @@ Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass, jlong 
 
     renderFrame((GLContextHolder *) nativeGlContext, data, frameWidth, frameHeight);
 
-    if (isCopy) {
+//    if (isCopy) {
         env->ReleaseByteArrayElements(data_, data, JNI_ABORT);
-    }
+//    }
 }
 //.........................................................................................................................
 

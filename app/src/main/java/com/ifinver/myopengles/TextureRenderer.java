@@ -1,6 +1,7 @@
 package com.ifinver.myopengles;
 
 import android.graphics.SurfaceTexture;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
@@ -101,10 +102,10 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
 
         private void onDrawFrame() {
             if (glContext != 0 && mData != null) {
-//                long spend = SystemClock.elapsedRealtime();
+                long spend = SystemClock.elapsedRealtime();
                 GLNative.renderOnContext(glContext, mData.array(), mFrameWidth, mFrameHeight);
-//                spend = SystemClock.elapsedRealtime() - spend;
-//                Log.d(TAG, "渲染一帧:" + spend);
+                spend = SystemClock.elapsedRealtime() - spend;
+                Log.d(TAG, "渲染一帧:" + spend);
             }
         }
 

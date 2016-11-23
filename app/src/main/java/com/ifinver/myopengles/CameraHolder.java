@@ -193,8 +193,8 @@ public class CameraHolder implements Camera.PreviewCallback {
                     Log.d(TAG, "Set preview size to " + frameSize.width + "x" + frameSize.height);
                     params.setPreviewSize(frameSize.width, frameSize.height);
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH && !android.os.Build.MODEL.equals("GT-I9100"))
-                        params.setRecordingHint(true);
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH && !android.os.Build.MODEL.equals("GT-I9100"))
+//                        params.setRecordingHint(true);
 
                     List<String> FocusModes = params.getSupportedFocusModes();
                     if (FocusModes != null && FocusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
