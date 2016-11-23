@@ -4,7 +4,7 @@
 #include <android/native_window_jni.h>
 
 JNIEXPORT jlong JNICALL
-Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass, jobject jSurface,int frameDegree, int imageFormat) {
+Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass, jobject jSurface, int frameDegree, int imageFormat) {
 //    switch (imageFormat) {
 //        case 0x11://ImageFormat.NV21
 //
@@ -29,29 +29,35 @@ Java_com_ifinver_myopengles_GLNative_releaseGLContext(JNIEnv *, jclass, jlong na
 JNIEXPORT void JNICALL
 Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass, jlong nativeGlContext, jbyteArray data_, jint frameWidth,
                                                      jint frameHeight) {
-    jbyte *data = env->GetByteArrayElements(data_, 0);
+    jboolean isCopy;
+    jbyte *data = env->GetByteArrayElements(data_, &isCopy);
+//    if (isCopy) {
+//        LOGI("isCopy=true");
+//    }else{
+//        LOGI("isCopy=false");
+//    }
 
     renderFrame((GLContextHolder *) nativeGlContext, data, frameWidth, frameHeight);
 
-    env->ReleaseByteArrayElements(data_, data, 0);
+    if (isCopy) {
+        env->ReleaseByteArrayElements(data_, data, JNI_ABORT);
+    }
 }
 //.........................................................................................................................
 
 void renderFrame(GLContextHolder *holder, jbyte *data, jint width, jint height) {
-    glUseProgram(holder->program);
-    glClear(GL_COLOR_BUFFER_BIT);
-
     /**
      * 输入定点坐标
      */
     glEnableVertexAttribArray(holder->positions[0]);
-    glVertexAttribPointer(holder->positions[0], 2, GL_FLOAT, GL_FALSE, 4* sizeof(GLfloat),VERTICES_BASE);
+    glVertexAttribPointer(holder->positions[0], 2, GL_FLOAT, GL_FALSE, holder->texStride, (const void *) holder->offsetVertex);
+    checkGlError("glVertexAttribPointer");
 
     /**
      * 输入纹理坐标
      */
     glEnableVertexAttribArray(holder->positions[1]);
-    glVertexAttribPointer(holder->positions[1], 2, GL_FLOAT, GL_FALSE, 4* sizeof(GLfloat),VERTICES_BASE + 2);
+    glVertexAttribPointer(holder->positions[1], 2, GL_FLOAT, GL_FALSE, holder->texStride, (const void *) holder->offsetTex);
 
     /**
      * Y texture
@@ -79,9 +85,11 @@ void renderFrame(GLContextHolder *holder, jbyte *data, jint width, jint height) 
     glUniform1i(holder->positions[3], 1);
 
     //rotation
-    glVertexAttrib4fv(holder->positions[4],holder->rotationMatrix);
+    glVertexAttrib4fv(holder->positions[4], holder->rotationMatrix);
 
-    glDrawArrays(GL_TRIANGLE_FAN,0,4);
+//    glClear(GL_COLOR_BUFFER_BIT);
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     glDisableVertexAttribArray(holder->positions[0]);
     glDisableVertexAttribArray(holder->positions[1]);
@@ -92,6 +100,7 @@ void renderFrame(GLContextHolder *holder, jbyte *data, jint width, jint height) 
 
 //释放指定上下文
 void releaseGLContext(GLContextHolder *holder) {
+    glDeleteBuffers(1,&(holder->vertexBuff));
     glDeleteTextures(holder->textureNums, holder->textures);
     glDeleteProgram(holder->program);
     eglDestroySurface(holder->eglDisplay, holder->eglSurface);
@@ -100,9 +109,11 @@ void releaseGLContext(GLContextHolder *holder) {
     delete[](holder->textures);
     delete (holder);
 }
-inline float d2r(float d){
+
+inline float d2r(float d) {
     return (float) (d / 180.0 * 3.141592653);
 }
+
 //创建一个新的绘制上下文
 GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int frameDegree) {
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -188,25 +199,44 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int frameDegree) {
     positions[3] = (GLuint) posUniUvTexture;
     positions[4] = (GLuint) posAttrRot;
     gl_holder->positions = positions;
-//    gl_holder->rotationMatrix = new GLfloat[4]{0,-1,1,0};
-//    LOGE("frameDegree=%d,sin(frameDegree)=%f",frameDegree,sin(frameDegree));
-    gl_holder->rotationMatrix = new GLfloat[4]{ cosf(d2r(frameDegree)), -sinf(d2r(frameDegree)), sinf(d2r(frameDegree)),cosf(d2r(frameDegree))};
-//    frameDegree %= 360;
-//    if(frameDegree < 0) frameDegree *= -1;
-//    switch (frameDegree){
-//        case 90:
-//            gl_holder->rotationMatrix = new GLfloat[4]{0,-1,1,0};
-//            break;
-//        case 180:
-//
-//            break;
-//    }
-//    LOGE("posAttrVertices=%d,posAttrTexCoords=%d,posUniYTexture=%d,posUniUvTexture=%d",posAttrVertices,posAttrTexCoords,posUniYTexture,posUniUvTexture);
+    gl_holder->rotationMatrix = new GLfloat[4]{cosf(d2r(frameDegree)), -sinf(d2r(frameDegree)), sinf(d2r(frameDegree)), cosf(d2r(frameDegree))};
 
+    //tex
     GLuint *textures = new GLuint[2];
     glGenTextures(2, textures);
     gl_holder->textureNums = 2;
     gl_holder->textures = textures;
+
+    //buff
+    glUseProgram(programYUV);
+    GLuint vertexBuff;
+    glGenBuffers(1,&vertexBuff);
+    glBindBuffer(GL_ARRAY_BUFFER,vertexBuff);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES_BASE),VERTICES_BASE,GL_STATIC_DRAW);
+    gl_holder->vertexBuff = vertexBuff;
+    gl_holder->vertexStride = 4 * sizeof(GLfloat);
+    gl_holder->texStride = 4 * sizeof(GLfloat);
+    gl_holder->offsetVertex = 0;
+    gl_holder->offsetTex = 2 * sizeof(GLfloat);
+
+    glDisable(GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_STENCIL_TEST);
+    glDisable(GL_DITHER);
+
+//    /**
+//     * 输入定点坐标
+//     */
+//    glEnableVertexAttribArray(gl_holder->positions[0]);
+//    glVertexAttribPointer(gl_holder->positions[0], 2, GL_FLOAT, GL_FALSE, gl_holder->texStride, (const void *) gl_holder->offsetVertex);
+//    checkGlError("glVertexAttribPointer");
+//
+//    /**
+//     * 输入纹理坐标
+//     */
+//    glEnableVertexAttribArray(gl_holder->positions[1]);
+//    glVertexAttribPointer(gl_holder->positions[1], 2, GL_FLOAT, GL_FALSE, gl_holder->texStride, (const void *) gl_holder->offsetTex);
+
 
     return gl_holder;
 }

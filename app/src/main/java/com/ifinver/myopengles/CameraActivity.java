@@ -10,6 +10,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import java.nio.ByteBuffer;
+
 
 /**
  * Created by iFinVer on 2016/11/15.
@@ -48,8 +50,8 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Bu
     }
 
     @Override
-    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight) {
-        Log.d(TAG, "收到视频数据,len=" + data.length);
+    public void onVideoBuffer(ByteBuffer frameByteBuffer, int frameWidth, int frameHeight) {
+        Log.d(TAG, "收到视频数据,len=" + frameByteBuffer.array().length);
 
 
         //摄像机数据

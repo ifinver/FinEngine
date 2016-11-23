@@ -8,6 +8,8 @@ import android.view.TextureView;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import java.nio.ByteBuffer;
+
 /**
  * Created by iFinVer on 2016/11/16.
  * ilzq@foxmail.com
@@ -77,9 +79,9 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
     }
 
     @Override
-    public void onVideoBuffer(byte[] data,int frameWidth,int frameHeight) {
+    public void onVideoBuffer(ByteBuffer frameByteBuffer, int frameWidth, int frameHeight) {
         for (TextureRenderer aMRenderer : mRenderer) {
-            aMRenderer.onVideoBuffer(data, frameWidth, frameHeight);
+            aMRenderer.onVideoBuffer(frameByteBuffer, frameWidth, frameHeight);
         }
     }
 }

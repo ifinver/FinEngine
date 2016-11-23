@@ -26,6 +26,16 @@ public:
     GLuint *textures;
 
     GLfloat *rotationMatrix;
+
+    GLuint vertexBuff;
+
+    GLsizei vertexStride;
+
+    GLsizei texStride;
+
+    GLuint offsetVertex;
+
+    GLuint offsetTex;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H
