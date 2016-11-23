@@ -36,7 +36,7 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
             fm[i].addView(textureViews[i],new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         }
 
-        mCameraHolder = new CameraHolder();
+        mCameraHolder = new CameraHolder(getWindowManager().getDefaultDisplay().getRotation());
         mCameraHolder.setBufferCallback(this);
 
         mRenderer[0] = new TextureRenderer();
@@ -64,8 +64,11 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
     }
 
     @Override
-    public void onInitComplete(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat) {
-
+    public void onInitComplete(boolean success, int frameDegree,int mFrameWidth, int mFrameHeight, int imageFormat) {
+        if(!success) return;
+        for (TextureRenderer aMRenderer : mRenderer) {
+            aMRenderer.startContext(frameDegree, imageFormat);
+        }
     }
 
     @Override
@@ -74,9 +77,9 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
     }
 
     @Override
-    public void onVideoBuffer(byte[] data,int frameWidth,int frameHeight,int imageFormat) {
+    public void onVideoBuffer(byte[] data,int frameWidth,int frameHeight) {
         for (TextureRenderer aMRenderer : mRenderer) {
-            aMRenderer.onVideoBuffer(data, frameWidth, frameHeight, imageFormat);
+            aMRenderer.onVideoBuffer(data, frameWidth, frameHeight);
         }
     }
 }

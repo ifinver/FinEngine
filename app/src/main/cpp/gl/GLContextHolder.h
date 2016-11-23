@@ -24,6 +24,8 @@ public:
     int textureNums;
 
     GLuint *textures;
+
+    GLfloat *rotationMatrix;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

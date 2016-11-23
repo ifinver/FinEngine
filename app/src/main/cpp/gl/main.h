@@ -17,14 +17,13 @@
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
 extern "C" {
-JNIEXPORT jlong JNICALL Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass type,jobject jSurface);
+JNIEXPORT jlong JNICALL Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass type, jobject jSurface,int frameDegree, int imageFormat);
 JNIEXPORT void JNICALL Java_com_ifinver_myopengles_GLNative_releaseGLContext(JNIEnv *env, jclass type, jlong nativeContext);
 JNIEXPORT void JNICALL Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass type, jlong nativeGlContext,
-                                                                            jbyteArray data_, jint frameWidth,
-                                                                            jint frameHeight, jint imageFormat);
+                                                                            jbyteArray data_, jint frameWidth, jint frameHeight);
 }
 
-GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface);
+GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int);
 
 void releaseGLContext(GLContextHolder *pHolder);
 

@@ -29,14 +29,14 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Bu
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         ivCanvas = (ImageView) findViewById(R.id.iv_canvas);
-        mCameraHolder = new CameraHolder();
+        mCameraHolder = new CameraHolder(getWindowManager().getDefaultDisplay().getRotation());
         mCameraHolder.setBufferCallback(this);
         ivCanvas.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 mCameraHolder.init(ivCanvas.getWidth(), ivCanvas.getHeight(), new CameraHolder.InitCallback() {
                     @Override
-                    public void onInitComplete(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat) {
+                    public void onInitComplete(boolean success,int frameDegree, int mFrameWidth, int mFrameHeight, int imageFormat) {
                         Log.d(TAG, "摄像头初始化成功");
                         mCacheBitmap = Bitmap.createBitmap(mFrameWidth,mFrameHeight,Bitmap.Config.ARGB_8888);
                     }
@@ -48,7 +48,7 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Bu
     }
 
     @Override
-    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int imageFormat) {
+    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight) {
         Log.d(TAG, "收到视频数据,len=" + data.length);
 
 

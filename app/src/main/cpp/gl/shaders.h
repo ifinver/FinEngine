@@ -18,8 +18,6 @@ const GLfloat VERTICES_BASE[] =
                 1.0f, 1.0f,   // Position 3
                 1.0f, 0.0f    // TexCoord 3
         };
-const GLushort INDICES_BASE[] = {0, 1, 2, 0, 2, 3};
-
 class ShaderYuv {
 public:
     const char *vertexShader;
@@ -27,29 +25,32 @@ public:
 
     ShaderYuv() {
         vertexShader =
-                "attribute vec4 aPosition;   \n"
-                        "attribute vec2 aTexCoord;   \n"
-                        "varying vec2 vTexCoord;     \n"
-                        "void main(){                \n"
-                        "   gl_Position = aPosition; \n"
-                        "   vTexCoord = aTexCoord;   \n"
-                        "}                           \n";
+                        "attribute vec2 aPosition;                          \n"
+                        "attribute vec2 aTexCoord;                          \n"
+                        "varying vec2 vTexCoord;                            \n"
+                        "attribute vec4 aRotVector;                       \n"
+                        "void main(){                                       \n"
+                        "   mat2 rotMat = mat2(aRotVector.x,aRotVector.y,aRotVector.z,aRotVector.w);\n"
+                        "   gl_Position = vec4(aPosition * rotMat,1,1);    \n"
+                        "   vTexCoord = aTexCoord;                          \n"
+                        "}                                                  \n";
 
         fragmentShader =
-                "precision highp float;                         \n"
-                        "varying vec2 vTexCoord;                        \n"
-                        "uniform sampler2D yTexture;                    \n"
-                        "uniform sampler2D uvTexture;                   \n"
-                        "void main(){                                   \n"
-                        "   float r,g,b,y,u,v;                          \n"
-                        "   y = texture2D(yTexture,vTexCoord).r;        \n"
-                        "   u = texture2D(uvTexture,vTexCoord).a - 0.5; \n"
-                        "   v = texture2D(uvTexture,vTexCoord).r - 0.5; \n"
-                        "   r = y + 1.13983*v;                          \n"
-                        "   g = y - 0.39465*u - 0.58060*v;              \n"
-                        "   b = y + 2.03211*u;                          \n"
-                        "   gl_FragColor = vec4(r, g, b, 1.0);          \n"
-                        "}                                              \n";
+                        "precision highp float;                             \n"
+                        "varying vec2 vTexCoord;                            \n"
+                        "uniform sampler2D yTexture;                        \n"
+                        "uniform sampler2D uvTexture;                       \n"
+                        "void main(){                                       \n"
+                        "   float r,g,b,y,u,v;                              \n"
+                        "   y = texture2D(yTexture,vTexCoord).r;            \n"
+                        "   vec4 uvColor = texture2D(uvTexture,vTexCoord);  \n"
+                        "   u = uvColor.a - 0.5;                            \n"
+                        "   v = uvColor.r - 0.5;                            \n"
+                        "   r = y + 1.13983*v;                              \n"
+                        "   g = y - 0.39465*u - 0.58060*v;                  \n"
+                        "   b = y + 2.03211*u;                              \n"
+                        "   gl_FragColor = vec4(r, g, b, 1.0);              \n"
+                        "}                                                  \n";
 
     }
 

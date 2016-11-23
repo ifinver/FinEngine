@@ -13,14 +13,41 @@ import android.view.TextureView;
 public class TextureRenderer implements TextureView.SurfaceTextureListener {
     private static final String TAG = "TextureRenderer";
     private RenderThread mRenderThread;
+    private int mFrameDegree;
+    private int mImageFormat;
+    private Surface mSurface;
 
     public TextureRenderer() {
+        mFrameDegree = -1;
+        mSurface = null;
+        mRenderThread = null;
+    }
+
+    public void startContext(int frameDegree, int imageFormat) {
+        this.mFrameDegree = frameDegree;
+        this.mImageFormat = imageFormat;
+
+        startRenderThread();
+    }
+
+    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight) {
+        if(mRenderThread != null){
+            mRenderThread.notifyWithBuffer(data,frameWidth,frameHeight);
+        }
     }
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        mRenderThread = new RenderThread(new Surface(surface));
-        mRenderThread.start();
+        mSurface = new Surface(surface);
+
+        startRenderThread();
+    }
+
+    private void startRenderThread() {
+        if(mSurface != null && mFrameDegree != -1) {
+            mRenderThread = new RenderThread(mSurface,mFrameDegree,mImageFormat);
+            mRenderThread.start();
+        }
     }
 
     @Override
@@ -32,7 +59,9 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
         Log.d(TAG,"onSurfaceTextureDestroyed");
-        mRenderThread.quit();
+        if(mRenderThread != null) {
+            mRenderThread.quit();
+        }
         return false;
     }
 
@@ -41,31 +70,27 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         //do nothing.
     }
 
-    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int imageFormat) {
-        if(mRenderThread != null){
-            mRenderThread.notifyWithBuffer(data,frameWidth,frameHeight,imageFormat);
-        }
-    }
-
     private static class RenderThread extends Thread{
         private static final String TAG = "RenderThread";
+        private final int mframeDegree;
+        private final int mImageFormat;
         boolean quit = false;
         Surface mSurface;
         private long glContext;
         private byte[] mData;
         private int mFrameWidth;
         private int mFrameHeight;
-        private int mImageFormat;
 
-        RenderThread(Surface surface){
+        RenderThread(Surface surface, int mFrameDegree, int mImageFormat){
             this.mSurface = surface;
+            this.mframeDegree = mFrameDegree;
+            this.mImageFormat = mImageFormat;
         }
 
-        public void notifyWithBuffer(byte[] data, int frameWidth, int frameHeight, int imageFormat){
+        public void notifyWithBuffer(byte[] data, int frameWidth, int frameHeight){
             this.mData = data;
             this.mFrameWidth = frameWidth;
             this.mFrameHeight = frameHeight;
-            this.mImageFormat = imageFormat;
             //wakeup
             synchronized (this) {
                 notify();
@@ -74,7 +99,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
 
         private void onDrawFrame(){
             if(glContext != 0 && mData != null){
-                GLNative.renderOnContext(glContext, mData,mFrameWidth,mFrameHeight, mImageFormat);
+                GLNative.renderOnContext(glContext, mData,mFrameWidth,mFrameHeight);
             }
         }
 
@@ -85,7 +110,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         }
 
         private void initGL() {
-            glContext = GLNative.createGLContext(mSurface);
+            glContext = GLNative.createGLContext(mSurface,mframeDegree,mImageFormat);
             if(glContext == 0){
                 Log.e(TAG,"渲染上下文创建失败！");
             }else{

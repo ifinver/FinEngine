@@ -1,10 +1,20 @@
 #include "main.h"
 #include "utils.h"
+#include <math.h>
 #include <android/native_window_jni.h>
 
 JNIEXPORT jlong JNICALL
-Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass, jobject jSurface) {
-    GLContextHolder *pHolder = newGLContext(env, jSurface);
+Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass, jobject jSurface,int frameDegree, int imageFormat) {
+//    switch (imageFormat) {
+//        case 0x11://ImageFormat.NV21
+//
+//            break;
+//        default:
+//            LOGE("不支持的视频编码格式！");
+//            break;
+//    }
+
+    GLContextHolder *pHolder = newGLContext(env, jSurface, frameDegree);
     if (pHolder == NULL) {
         return 0;
     }
@@ -18,17 +28,10 @@ Java_com_ifinver_myopengles_GLNative_releaseGLContext(JNIEnv *, jclass, jlong na
 
 JNIEXPORT void JNICALL
 Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass, jlong nativeGlContext, jbyteArray data_, jint frameWidth,
-                                                     jint frameHeight, jint imageFormat) {
+                                                     jint frameHeight) {
     jbyte *data = env->GetByteArrayElements(data_, 0);
 
-    switch (imageFormat) {
-        case 0x11://ImageFormat.NV21
-            renderFrame((GLContextHolder *) nativeGlContext, data, frameWidth, frameHeight);
-            break;
-        default:
-            LOGE("不支持的视频编码格式！");
-            break;
-    }
+    renderFrame((GLContextHolder *) nativeGlContext, data, frameWidth, frameHeight);
 
     env->ReleaseByteArrayElements(data_, data, 0);
 }
@@ -75,7 +78,10 @@ void renderFrame(GLContextHolder *holder, jbyte *data, jint width, jint height) 
     glUniform1i(holder->positions[2], 0);
     glUniform1i(holder->positions[3], 1);
 
-    glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_SHORT,INDICES_BASE);
+    //rotation
+    glVertexAttrib4fv(holder->positions[4],holder->rotationMatrix);
+
+    glDrawArrays(GL_TRIANGLE_FAN,0,4);
 
     glDisableVertexAttribArray(holder->positions[0]);
     glDisableVertexAttribArray(holder->positions[1]);
@@ -94,9 +100,11 @@ void releaseGLContext(GLContextHolder *holder) {
     delete[](holder->textures);
     delete (holder);
 }
-
+inline float d2r(float d){
+    return (float) (d / 180.0 * 3.141592653);
+}
 //创建一个新的绘制上下文
-GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface) {
+GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int frameDegree) {
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
         checkGlError("eglGetDisplay");
@@ -170,14 +178,29 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface) {
 
     GLint posAttrVertices = glGetAttribLocation(programYUV, "aPosition");
     GLint posAttrTexCoords = glGetAttribLocation(programYUV, "aTexCoord");
+    GLint posAttrRot = glGetAttribLocation(programYUV, "aRotVector");
     GLint posUniYTexture = glGetUniformLocation(programYUV, "yTexture");
     GLint posUniUvTexture = glGetUniformLocation(programYUV, "uvTexture");
-    GLuint *positions = new GLuint[4];
+    GLuint *positions = new GLuint[5];
     positions[0] = (GLuint) posAttrVertices;
     positions[1] = (GLuint) posAttrTexCoords;
     positions[2] = (GLuint) posUniYTexture;
     positions[3] = (GLuint) posUniUvTexture;
+    positions[4] = (GLuint) posAttrRot;
     gl_holder->positions = positions;
+//    gl_holder->rotationMatrix = new GLfloat[4]{0,-1,1,0};
+//    LOGE("frameDegree=%d,sin(frameDegree)=%f",frameDegree,sin(frameDegree));
+    gl_holder->rotationMatrix = new GLfloat[4]{ cosf(d2r(frameDegree)), -sinf(d2r(frameDegree)), sinf(d2r(frameDegree)),cosf(d2r(frameDegree))};
+//    frameDegree %= 360;
+//    if(frameDegree < 0) frameDegree *= -1;
+//    switch (frameDegree){
+//        case 90:
+//            gl_holder->rotationMatrix = new GLfloat[4]{0,-1,1,0};
+//            break;
+//        case 180:
+//
+//            break;
+//    }
 //    LOGE("posAttrVertices=%d,posAttrTexCoords=%d,posUniYTexture=%d,posUniUvTexture=%d",posAttrVertices,posAttrTexCoords,posUniYTexture,posUniUvTexture);
 
     GLuint *textures = new GLuint[2];

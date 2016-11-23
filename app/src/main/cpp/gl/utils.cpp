@@ -7,7 +7,7 @@
 
 void checkGlError(const char *op) {
     for (GLint error = glGetError(); error; error = glGetError()) {
-        LOGI("after %s() glError (0x%x)\n", op, error);
+        LOGE("after %s() glError (0x%x)\n", op, error);
     }
 }
 
