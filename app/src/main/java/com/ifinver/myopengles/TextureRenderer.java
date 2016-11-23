@@ -88,6 +88,10 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         }
 
         public void notifyWithBuffer(byte[] data, int frameWidth, int frameHeight){
+//            if(mData == null){
+//                mData = new byte[data.length];
+//            }
+//            System.arraycopy(data,0,mData,0,data.length);
             this.mData = data;
             this.mFrameWidth = frameWidth;
             this.mFrameHeight = frameHeight;

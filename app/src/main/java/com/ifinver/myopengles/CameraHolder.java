@@ -317,9 +317,12 @@ public class CameraHolder implements Camera.PreviewCallback {
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
         if (mBufferCallback != null && mCanNotifyFrame) {
+//            long spend = SystemClock.elapsedRealtime();
             mBufferCallback.onVideoBuffer(data, mFrameWidth, mFrameHeight);
+//            spend = SystemClock.elapsedRealtime() - spend;
+//            Log.d(TAG,"分派一帧数据耗时:"+spend);
         }
-        if (mCamera != null)
+//        if (mCamera != null)
             mCamera.addCallbackBuffer(mBuffer);
     }
 
