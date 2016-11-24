@@ -39,7 +39,7 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Bu
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         mCameraHolder.start(displayMetrics.widthPixels, displayMetrics.heightPixels, new CameraHolder.InitCallback() {
             @Override
-            public void onInitComplete(boolean success,  int mFrameWidth, int mFrameHeight, int imageFormat) {
+            public void onCameraStarted(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat) {
 
             }
         });
@@ -50,7 +50,7 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Bu
         super.onPause();
         mCameraHolder.stop(new CameraHolder.StopCallback() {
             @Override
-            public void onStopComplete() {
+            public void onCameraStopped() {
 
             }
         });

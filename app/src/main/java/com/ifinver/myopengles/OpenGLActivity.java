@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.TextureView;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
@@ -22,7 +21,7 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
 
     private CameraHolder mCameraHolder;
     private DisplayMetrics displayMetrics;
-    private TextureRenderer[] mRenderer = new TextureRenderer[4];
+    private TextureRenderView[] textures;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -35,24 +34,21 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
         fm[2] = (FrameLayout) findViewById(R.id.av_2);
         fm[3] = (FrameLayout) findViewById(R.id.av_3);
 
-        TextureView[] textureViews = new TextureView[4];
-        for (int i = 0; i < fm.length; i++) {
-            textureViews[i] = new TextureView(this);
-            fm[i].addView(textureViews[i], new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        }
         mCameraHolder = CameraHolder.getInstance();
         mCameraHolder.setCameraDegreeByWindowRotation(getWindowManager().getDefaultDisplay().getRotation());
         mCameraHolder.setBufferCallback(this);
 
         int imageFormat = mCameraHolder.getImageFormat();//现在只支持NV21
-        mRenderer[0] = new TextureRenderer(imageFormat,TextureRenderer.FILTER_TYPE_NEGATIVE_COLOR);
-        mRenderer[1] = new TextureRenderer(imageFormat,TextureRenderer.FILTER_TYPE_CYAN);
-        mRenderer[2] = new TextureRenderer(imageFormat,TextureRenderer.FILTER_TYPE_FISH_EYE);
-        mRenderer[3] = new TextureRenderer(imageFormat,TextureRenderer.FILTER_TYPE_GREY_SCALE);
-
-        for (int i = 0; i < 4; i++) {
-            textureViews[i].setSurfaceTextureListener(mRenderer[i]);
+        textures = new TextureRenderView[4];
+        for (int i = 0; i < fm.length; i++) {
+            textures[i] = new TextureRenderView(this);
+            textures[i].setAspectRatio(TextureRenderView.AR_ASPECT_FILL_PARENT);
+            fm[i].addView(textures[i], new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         }
+        textures[0].initRenderer(imageFormat, TextureRenderer.FILTER_TYPE_NEGATIVE_COLOR);
+        textures[1].initRenderer(imageFormat, TextureRenderer.FILTER_TYPE_CYAN);
+        textures[2].initRenderer(imageFormat, TextureRenderer.FILTER_TYPE_FISH_EYE);
+        textures[3].initRenderer(imageFormat, TextureRenderer.FILTER_TYPE_GREY_SCALE);
 
         displayMetrics = getResources().getDisplayMetrics();
     }
@@ -80,20 +76,10 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
     }
 
     @Override
-    public void onVideoBuffer(ByteBuffer frameByteBuffer,int frameDegree, int frameWidth, int frameHeight) {
-        for (TextureRenderer aMRenderer : mRenderer) {
-            aMRenderer.onVideoBuffer(frameByteBuffer,frameDegree, frameWidth, frameHeight);
+    public void onVideoBuffer(ByteBuffer frameByteBuffer, int frameDegree, int frameWidth, int frameHeight) {
+        for (TextureRenderView renderView : textures) {
+            renderView.onVideoBuffer(frameByteBuffer, frameDegree, frameWidth, frameHeight);
         }
-    }
-
-    @Override
-    public void onInitComplete(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat) {
-
-    }
-
-    @Override
-    public void onStopComplete() {
-
     }
 
     @Override
@@ -106,6 +92,18 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
     protected void onPause() {
         super.onPause();
         mCameraHolder.stop(this);
+    }
+
+    @Override
+    public void onCameraStarted(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat) {
+        for (TextureRenderView renderView : textures) {
+            renderView.setVideoSize(mFrameWidth,mFrameHeight);
+        }
+    }
+
+    @Override
+    public void onCameraStopped() {
+
     }
 
     @Override

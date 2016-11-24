@@ -65,7 +65,6 @@ public class CameraHolder implements Camera.PreviewCallback {
         mSurfaceTexture = new SurfaceTexture(MAGIC_TEXTURE_ID);
         mBufferProcessThread.start();
 //        mOrientationTracker = new CameraOrientationTracker(MyApp.getContext());
-
     }
 
     public void setCameraDegreeByWindowRotation(int windowRotation) {
@@ -122,12 +121,16 @@ public class CameraHolder implements Camera.PreviewCallback {
         mBufferProcessThread.execute(new Runnable() {
             @Override
             public void run() {
-                final boolean success = toggleCameraInternal();
+                boolean success = false;
+                if(mInitialized){
+                    success = toggleCameraInternal();
+                }
                 if (callback != null) {
+                    final boolean finalSuccess = success;
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            callback.onToggleCameraComplete(success, mCameraIndex);
+                            callback.onToggleCameraComplete(finalSuccess, mCameraIndex);
                         }
                     });
                 }
@@ -148,13 +151,13 @@ public class CameraHolder implements Camera.PreviewCallback {
         mBufferProcessThread.execute(new Runnable() {
             @Override
             public void run() {
-                mInitialized = initInternal(width, height);
+                mInitialized = startInternal(width, height);
 //                mOrientationTracker.enable();
                 if (callback != null) {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            callback.onInitComplete(mInitialized, mFrameWidth, mFrameHeight, IMAGE_FORMAT);
+                            callback.onCameraStarted(mInitialized, mFrameWidth, mFrameHeight, IMAGE_FORMAT);
                             mCanNotifyFrame = true;
                         }
                     });
@@ -165,7 +168,7 @@ public class CameraHolder implements Camera.PreviewCallback {
         });
     }
 
-    private boolean initInternal(int width, int height) {
+    private boolean startInternal(int width, int height) {
         boolean result = true;
         synchronized (this) {
             mCamera = null;
@@ -208,20 +211,16 @@ public class CameraHolder implements Camera.PreviewCallback {
             if (mCamera == null)
                 return false;
 
-            /* Now set camera parameters */
             try {
                 Camera.Parameters params = mCamera.getParameters();
-//                Log.d(TAG, "getSupportedPreviewSizes()");
                 List<Camera.Size> sizes = params.getSupportedPreviewSizes();
-
                 if (sizes != null) {
-                    /* Select the size that fits surface considering maximum size allowed */
-                    CameraSize frameSize = calculateCameraFrameSize(sizes, width, height);
-
                     params.setPreviewFormat(IMAGE_FORMAT);
+                    CameraSize frameSize = calculateCameraFrameSize(sizes, width, height);
                     Log.d(TAG, "预览设置为 " + frameSize.width + "x" + frameSize.height);
                     params.setPreviewSize(frameSize.width, frameSize.height);
 
+                    //三星的机型也有问题，未知的问题机型较多，所以不使用
 //                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH && !android.os.Build.MODEL.equals("GT-I9100"))
 //                        params.setRecordingHint(true);
 
@@ -234,33 +233,14 @@ public class CameraHolder implements Camera.PreviewCallback {
 
                     mFrameWidth = params.getPreviewSize().width;
                     mFrameHeight = params.getPreviewSize().height;
-
-                    //考虑着视频裁剪的事应该放在U3d里面
-//                    if ((getLayoutParams().width == ViewGroup.LayoutParams.MATCH_PARENT) && (getLayoutParams().height == ViewGroup.LayoutParams.MATCH_PARENT))
-//                        mScale = Math.min(((float)height)/mFrameHeight, ((float)width)/mFrameWidth);
-//                    else
-//                        mScale = 0;
-
                     int size = mFrameWidth * mFrameHeight;
                     size = size * ImageFormat.getBitsPerPixel(params.getPreviewFormat()) / 8;
                     mFrameByteBuffer = ByteBuffer.allocateDirect(size);
 
                     mCamera.addCallbackBuffer(mFrameByteBuffer.array());
                     mCamera.setPreviewCallbackWithBuffer(this);
-
-//                    mFrameChain = new Mat[2];
-//                    mFrameChain[0] = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
-//                    mFrameChain[1] = new Mat(mFrameHeight + (mFrameHeight/2), mFrameWidth, CvType.CV_8UC1);
-
                     mCamera.setPreviewTexture(mSurfaceTexture);
 
-
-//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-//                        mCamera.setPreviewTexture(new SurfaceTexture(MAGIC_TEXTURE_ID));
-//                    } else
-//                        mCamera.setPreviewDisplay(null);
-
-                    /* Finally we are ready to start the preview */
                     Log.d(TAG, "开始预览");
                     mCamera.startPreview();
                     setCameraDispOri();
@@ -271,14 +251,13 @@ public class CameraHolder implements Camera.PreviewCallback {
                 e.printStackTrace();
             }
         }
-
         return result;
     }
 
     private boolean toggleCameraInternal() {
         if (mCamera != null) {
             try {
-                deInitInternal();
+                stopInternal();
             } catch (Throwable ignored) {
                 return false;
             }
@@ -287,7 +266,7 @@ public class CameraHolder implements Camera.PreviewCallback {
             } else {
                 mCameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
             }
-            return initInternal(mFrameWidth, mFrameHeight);
+            return startInternal(mFrameWidth, mFrameHeight);
         }
         return false;
     }
@@ -298,12 +277,12 @@ public class CameraHolder implements Camera.PreviewCallback {
         mBufferProcessThread.execute(new Runnable() {
             @Override
             public void run() {
-                deInitInternal();
+                stopInternal();
                 if (callback != null) {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            callback.onStopComplete();
+                            callback.onCameraStopped();
                         }
                     });
                 }
@@ -311,7 +290,7 @@ public class CameraHolder implements Camera.PreviewCallback {
         });
     }
 
-    private void deInitInternal() {
+    private void stopInternal() {
         synchronized (this) {
             mInitialized = false;
             if (mCamera != null) {
@@ -342,7 +321,6 @@ public class CameraHolder implements Camera.PreviewCallback {
     private CameraSize calculateCameraFrameSize(List<Camera.Size> supportedSizes, int surfaceWidth, int surfaceHeight) {
         int calcWidth = 0;
         int calcHeight = 0;
-
         int maxAllowedWidth = (mMaxWidth != MAX_UNSPECIFIED && mMaxWidth < surfaceWidth) ? mMaxWidth : surfaceWidth;
         int maxAllowedHeight = (mMaxHeight != MAX_UNSPECIFIED && mMaxHeight < surfaceHeight) ? mMaxHeight : surfaceHeight;
 
@@ -389,11 +367,11 @@ public class CameraHolder implements Camera.PreviewCallback {
          * @param mFrameHeight 视频帧的高度
          * @param imageFormat  目前只支持ImageFormat.NV21
          */
-        void onInitComplete(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat);
+        void onCameraStarted(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat);
     }
 
     public interface StopCallback {
-        void onStopComplete();
+        void onCameraStopped();
     }
 
     public interface BufferCallback {
