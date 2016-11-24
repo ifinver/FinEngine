@@ -4,9 +4,12 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.TextureView;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import java.nio.ByteBuffer;
 
@@ -54,15 +57,36 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        mCameraHolder.init(displayMetrics.widthPixels,displayMetrics.heightPixels,this);
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.toggle_camera:
+                if(mCameraHolder != null){
+                    boolean ret = mCameraHolder.toggleCamera(new CameraHolder.ToggleCallback() {
+                        @Override
+                        public void onToggleCameraComplete(boolean success, int current) {
+                            if(success){
+                                Toast.makeText(OpenGLActivity.this,"success",Toast.LENGTH_SHORT).show();
+                            }else{
+                                Toast.makeText(OpenGLActivity.this,"error",Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                    if(ret) {
+                        Toast.makeText(this, "switching", Toast.LENGTH_SHORT).show();
+                    }else{
+                        Toast.makeText(this,"error",Toast.LENGTH_SHORT).show();
+                    }
+                }
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        mCameraHolder.deInit(this);
+    public void onVideoBuffer(ByteBuffer frameByteBuffer, int frameWidth, int frameHeight) {
+        for (TextureRenderer aMRenderer : mRenderer) {
+            aMRenderer.onVideoBuffer(frameByteBuffer, frameWidth, frameHeight);
+        }
     }
 
     @Override
@@ -81,9 +105,20 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
     }
 
     @Override
-    public void onVideoBuffer(ByteBuffer frameByteBuffer, int frameWidth, int frameHeight) {
-        for (TextureRenderer aMRenderer : mRenderer) {
-            aMRenderer.onVideoBuffer(frameByteBuffer, frameWidth, frameHeight);
-        }
+    protected void onResume() {
+        super.onResume();
+        mCameraHolder.init(displayMetrics.widthPixels,displayMetrics.heightPixels,this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mCameraHolder.deInit(this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
     }
 }

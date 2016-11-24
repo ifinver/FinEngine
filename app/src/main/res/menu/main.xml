@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="@string/toggle_camera"
+          android:id="@+id/toggle_camera"
+          android:icon="@mipmap/ic_launcher"
+          app:showAsAction="always"
+          android:checkable="false"
+          android:enabled="true"
+          android:visible="true"/>
+</menu>

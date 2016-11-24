@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">MyOpenGLES</string>
     <string name="iv_show">iv_show</string>
+    <string name="toggle_camera">Toggle camera</string>
 </resources>

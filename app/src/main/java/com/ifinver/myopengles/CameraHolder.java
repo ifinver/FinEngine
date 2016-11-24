@@ -46,6 +46,7 @@ public class CameraHolder implements Camera.PreviewCallback {
     private ByteBuffer mFrameByteBuffer;
 
     public CameraHolder(int windowRotation) {
+        mCameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
         this.updateCameraDegree(windowRotation);
     }
 
@@ -97,6 +98,27 @@ public class CameraHolder implements Camera.PreviewCallback {
         return mSurfaceTexture;
     }
 
+    public boolean toggleCamera(final ToggleCallback callback) {
+        if(mBufferProcessThread != null){
+            mBufferProcessThread.execute(new Runnable() {
+                @Override
+                public void run() {
+                    final boolean success = toggleCameraInternal();
+                    if(callback != null){
+                        new Handler(Looper.getMainLooper()).post(new Runnable() {
+                            @Override
+                            public void run() {
+                                    callback.onToggleCameraComplete(success, mCameraIndex);
+                            }
+                        });
+                    }
+                }
+            });
+            return true;
+        }
+        return false;
+    }
+
     /**
      * @param width    期望的宽
      * @param height   期望的高
@@ -105,7 +127,6 @@ public class CameraHolder implements Camera.PreviewCallback {
     public void init(final int width, final int height, InitCallback callback) {
         mMaxHeight = MAX_UNSPECIFIED;
         mMaxWidth = MAX_UNSPECIFIED;
-        mCameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
         mCanNotifyFrame = false;
         if(mBufferProcessThread == null) {
             mBufferProcessThread = new BufferProcessThread();
@@ -136,7 +157,6 @@ public class CameraHolder implements Camera.PreviewCallback {
     }
 
     private boolean initInternal(int width, int height) {
-        Log.d(TAG, "Initialize java camera");
         boolean result = true;
         synchronized (this) {
             mCamera = null;
@@ -246,6 +266,23 @@ public class CameraHolder implements Camera.PreviewCallback {
         return result;
     }
 
+    private boolean toggleCameraInternal() {
+        if(mCamera != null) {
+            try {
+                deInitInternal();
+            }catch (Throwable ignored){
+                return false;
+            }
+            if (Camera.CameraInfo.CAMERA_FACING_FRONT == mCameraIndex) {
+                mCameraIndex = Camera.CameraInfo.CAMERA_FACING_BACK;
+            } else {
+                mCameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
+            }
+            return initInternal(mFrameWidth, mFrameHeight);
+        }
+        return false;
+    }
+
     public void deInit(final ReleaseCallback callback) {
         mBufferProcessThread.deInit(new Runnable() {
             @Override
@@ -347,10 +384,16 @@ public class CameraHolder implements Camera.PreviewCallback {
     public interface BufferCallback {
         /**
          * 将回调在子线程
-         *
          * @param frameByteBuffer NV21类型
          */
         void onVideoBuffer(ByteBuffer frameByteBuffer, int frameWidth, int frameHeight);
+    }
+
+    public interface ToggleCallback{
+        /**
+         * @param current one of Camera.CameraInfo.CAMERA_FACING_BACK 、Camera.CameraInfo.CAMERA_FACING_FRONT
+         */
+        void onToggleCameraComplete(boolean success,int current);
     }
 
     private class BufferProcessThread extends HandlerThread {
