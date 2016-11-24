@@ -26,8 +26,9 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Bu
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         TextureView tex = (TextureView) findViewById(R.id.tex);
-        mCameraHolder = new CameraHolder(getWindowManager().getDefaultDisplay().getRotation());
-        mRenderer = new TextureRenderer();
+        mCameraHolder = CameraHolder.getInstance();
+        mCameraHolder.setCameraDegreeByWindowRotation(getWindowManager().getDefaultDisplay().getRotation());
+        mRenderer = new TextureRenderer(mCameraHolder.getImageFormat());
         tex.setSurfaceTextureListener(mRenderer);
     }
 
@@ -36,10 +37,10 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Bu
         super.onResume();
 
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-        mCameraHolder.init(displayMetrics.widthPixels, displayMetrics.heightPixels, new CameraHolder.InitCallback() {
+        mCameraHolder.start(displayMetrics.widthPixels, displayMetrics.heightPixels, new CameraHolder.InitCallback() {
             @Override
-            public void onInitComplete(boolean success, int frameDegree, int mFrameWidth, int mFrameHeight, int imageFormat) {
-                mRenderer.startContext(frameDegree,imageFormat);
+            public void onInitComplete(boolean success,  int mFrameWidth, int mFrameHeight, int imageFormat) {
+
             }
         });
     }
@@ -47,16 +48,16 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Bu
     @Override
     protected void onPause() {
         super.onPause();
-        mCameraHolder.deInit(new CameraHolder.ReleaseCallback() {
+        mCameraHolder.stop(new CameraHolder.StopCallback() {
             @Override
-            public void onReleaseComplete() {
+            public void onStopComplete() {
 
             }
         });
     }
 
     @Override
-    public void onVideoBuffer(ByteBuffer frameByteBuffer, int frameWidth, int frameHeight) {
+    public void onVideoBuffer(ByteBuffer frameByteBuffer,int frameDegree, int frameWidth, int frameHeight) {
         Log.d(TAG, "收到视频数据,len=" + frameByteBuffer.array().length);
 
     }

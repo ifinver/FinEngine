@@ -27,6 +27,8 @@ public class CameraHolder implements Camera.PreviewCallback {
     private static final int MAGIC_TEXTURE_ID = 28;
     private static final int MAX_UNSPECIFIED = -1;
     private static int IMAGE_FORMAT = ImageFormat.NV21;
+    private static CameraHolder mInstance;
+
 
     private Camera mCamera;
     public int mCameraIndex;
@@ -37,20 +39,37 @@ public class CameraHolder implements Camera.PreviewCallback {
 
     private BufferCallback mBufferCallback;
     private BufferProcessThread mBufferProcessThread;
-    private InitCallback mInitCallback;
     private SurfaceTexture mSurfaceTexture;
     private boolean mCanNotifyFrame;//是否可以向监听者传输buffer了，用以控制onComplete之后才进行传输
     private int mWindowDegree = 0;
     private boolean mInitialized = false;
     private int mCameraOrientation = 0;
     private ByteBuffer mFrameByteBuffer;
+//    private final CameraOrientationTracker mOrientationTracker;
+//    private int mLastOrientation = 0;
 
-    public CameraHolder(int windowRotation) {
-        mCameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
-        this.updateCameraDegree(windowRotation);
+    public static CameraHolder getInstance() {
+        if (mInstance == null) {
+            synchronized (CameraHolder.class) {
+                if (mInstance == null) {
+                    mInstance = new CameraHolder();
+                }
+            }
+        }
+        return mInstance;
     }
 
-    public void updateCameraDegree(int windowRotation) {
+    private CameraHolder() {
+        mCameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
+        mBufferProcessThread = new BufferProcessThread();
+        mSurfaceTexture = new SurfaceTexture(MAGIC_TEXTURE_ID);
+        mBufferProcessThread.start();
+//        mOrientationTracker = new CameraOrientationTracker(MyApp.getContext());
+
+    }
+
+    public void setCameraDegreeByWindowRotation(int windowRotation) {
+        Log.d(TAG, "调整摄像机角度,windowRotation=" + windowRotation);
         switch (windowRotation) {
             case Surface.ROTATION_0:
                 mWindowDegree = 0;
@@ -87,6 +106,7 @@ public class CameraHolder implements Camera.PreviewCallback {
                 mCameraOrientation = (info.orientation - mWindowDegree + 360) % 360;
             }
             mCamera.setDisplayOrientation(mCameraOrientation);
+            Log.d(TAG, "setCameraDispOri = " + mCameraOrientation);
         }
     }
 
@@ -98,25 +118,21 @@ public class CameraHolder implements Camera.PreviewCallback {
         return mSurfaceTexture;
     }
 
-    public boolean toggleCamera(final ToggleCallback callback) {
-        if(mBufferProcessThread != null){
-            mBufferProcessThread.execute(new Runnable() {
-                @Override
-                public void run() {
-                    final boolean success = toggleCameraInternal();
-                    if(callback != null){
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                    callback.onToggleCameraComplete(success, mCameraIndex);
-                            }
-                        });
-                    }
+    public void toggleCamera(final ToggleCallback callback) {
+        mBufferProcessThread.execute(new Runnable() {
+            @Override
+            public void run() {
+                final boolean success = toggleCameraInternal();
+                if (callback != null) {
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.onToggleCameraComplete(success, mCameraIndex);
+                        }
+                    });
                 }
-            });
-            return true;
-        }
-        return false;
+            }
+        });
     }
 
     /**
@@ -124,29 +140,22 @@ public class CameraHolder implements Camera.PreviewCallback {
      * @param height   期望的高
      * @param callback 初始化结果的回调，将会执行在主线程
      */
-    public void init(final int width, final int height, InitCallback callback) {
+    public void start(final int width, final int height, final InitCallback callback) {
         mMaxHeight = MAX_UNSPECIFIED;
         mMaxWidth = MAX_UNSPECIFIED;
         mCanNotifyFrame = false;
-        if(mBufferProcessThread == null) {
-            mBufferProcessThread = new BufferProcessThread();
-            mBufferProcessThread.start();
-            mSurfaceTexture = new SurfaceTexture(MAGIC_TEXTURE_ID);
-        }
 
-        this.mInitCallback = callback;
         mBufferProcessThread.execute(new Runnable() {
             @Override
             public void run() {
                 mInitialized = initInternal(width, height);
-                if (mInitCallback != null) {
+//                mOrientationTracker.enable();
+                if (callback != null) {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            if (mInitCallback != null) {
-                                mInitCallback.onInitComplete(mInitialized, mCameraOrientation, mFrameWidth, mFrameHeight, IMAGE_FORMAT);
-                                mCanNotifyFrame = true;
-                            }
+                            callback.onInitComplete(mInitialized, mFrameWidth, mFrameHeight, IMAGE_FORMAT);
+                            mCanNotifyFrame = true;
                         }
                     });
                 } else {
@@ -164,7 +173,7 @@ public class CameraHolder implements Camera.PreviewCallback {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
                 int localCameraIndex = mCameraIndex;
                 if (mCameraIndex == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                    Log.i(TAG, "Trying to open back camera");
+                    Log.d(TAG, "尝试打开后置摄像头");
                     Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
                     for (int camIdx = 0; camIdx < Camera.getNumberOfCameras(); ++camIdx) {
                         Camera.getCameraInfo(camIdx, cameraInfo);
@@ -174,7 +183,7 @@ public class CameraHolder implements Camera.PreviewCallback {
                         }
                     }
                 } else if (mCameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    Log.i(TAG, "Trying to open front camera");
+                    Log.d(TAG, "尝试打开后置摄像头");
                     Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
                     for (int camIdx = 0; camIdx < Camera.getNumberOfCameras(); ++camIdx) {
                         Camera.getCameraInfo(camIdx, cameraInfo);
@@ -187,12 +196,12 @@ public class CameraHolder implements Camera.PreviewCallback {
                 try {
                     mCamera = Camera.open(localCameraIndex);
                     if (localCameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                        Log.d(TAG, "front camera has been open");
+                        Log.d(TAG, "已打开前置摄像头");
                     } else {
-                        Log.d(TAG, "back camera has been open");
+                        Log.d(TAG, "已打开后置摄像头");
                     }
                 } catch (RuntimeException e) {
-                    Log.e(TAG, "Camera #" + localCameraIndex + "failed to open: " + e.getLocalizedMessage());
+                    Log.e(TAG, "摄像头 #" + localCameraIndex + "打开失败！: " + e.getLocalizedMessage());
                 }
             }
 
@@ -252,7 +261,7 @@ public class CameraHolder implements Camera.PreviewCallback {
 //                        mCamera.setPreviewDisplay(null);
 
                     /* Finally we are ready to start the preview */
-                    Log.d(TAG, "startPreview");
+                    Log.d(TAG, "开始预览");
                     mCamera.startPreview();
                     setCameraDispOri();
                 } else
@@ -267,10 +276,10 @@ public class CameraHolder implements Camera.PreviewCallback {
     }
 
     private boolean toggleCameraInternal() {
-        if(mCamera != null) {
+        if (mCamera != null) {
             try {
                 deInitInternal();
-            }catch (Throwable ignored){
+            } catch (Throwable ignored) {
                 return false;
             }
             if (Camera.CameraInfo.CAMERA_FACING_FRONT == mCameraIndex) {
@@ -283,8 +292,10 @@ public class CameraHolder implements Camera.PreviewCallback {
         return false;
     }
 
-    public void deInit(final ReleaseCallback callback) {
-        mBufferProcessThread.deInit(new Runnable() {
+    public void stop(final StopCallback callback) {
+        mBufferCallback = null;
+//        mOrientationTracker.disable();
+        mBufferProcessThread.execute(new Runnable() {
             @Override
             public void run() {
                 deInitInternal();
@@ -292,13 +303,12 @@ public class CameraHolder implements Camera.PreviewCallback {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            callback.onReleaseComplete();
+                            callback.onStopComplete();
                         }
                     });
                 }
             }
         });
-        mBufferProcessThread = null;
     }
 
     private void deInitInternal() {
@@ -311,6 +321,7 @@ public class CameraHolder implements Camera.PreviewCallback {
                 mCamera.release();
             }
             mCamera = null;
+            Log.d(TAG, "摄像机已释放");
 //            if (mFrameChain != null) {
 //                mFrameChain[0].release();
 //                mFrameChain[1].release();
@@ -354,15 +365,19 @@ public class CameraHolder implements Camera.PreviewCallback {
     public void onPreviewFrame(byte[] data, Camera camera) {
         if (mBufferCallback != null && mCanNotifyFrame) {
 //            long spend = SystemClock.elapsedRealtime();
-            mBufferCallback.onVideoBuffer(mFrameByteBuffer, mFrameWidth, mFrameHeight);
+            mBufferCallback.onVideoBuffer(mFrameByteBuffer, mCameraOrientation, mFrameWidth, mFrameHeight);
 //            spend = SystemClock.elapsedRealtime() - spend;
 //            Log.d(TAG, "分派一帧数据耗时:" + spend);
         }
 //        synchronized (this) {
-            if (mCamera != null) {
-                mCamera.addCallbackBuffer(mFrameByteBuffer.array());
-            }
+        if (mCamera != null) {
+            mCamera.addCallbackBuffer(mFrameByteBuffer.array());
+        }
 //        }
+    }
+
+    public int getImageFormat() {
+        return IMAGE_FORMAT;
     }
 
     public interface InitCallback {
@@ -374,26 +389,27 @@ public class CameraHolder implements Camera.PreviewCallback {
          * @param mFrameHeight 视频帧的高度
          * @param imageFormat  目前只支持ImageFormat.NV21
          */
-        void onInitComplete(boolean success, int frameDegree, int mFrameWidth, int mFrameHeight, int imageFormat);
+        void onInitComplete(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat);
     }
 
-    public interface ReleaseCallback {
-        void onReleaseComplete();
+    public interface StopCallback {
+        void onStopComplete();
     }
 
     public interface BufferCallback {
         /**
          * 将回调在子线程
+         *
          * @param frameByteBuffer NV21类型
          */
-        void onVideoBuffer(ByteBuffer frameByteBuffer, int frameWidth, int frameHeight);
+        void onVideoBuffer(ByteBuffer frameByteBuffer, int frameDegree, int frameWidth, int frameHeight);
     }
 
-    public interface ToggleCallback{
+    public interface ToggleCallback {
         /**
          * @param current one of Camera.CameraInfo.CAMERA_FACING_BACK 、Camera.CameraInfo.CAMERA_FACING_FRONT
          */
-        void onToggleCameraComplete(boolean success,int current);
+        void onToggleCameraComplete(boolean success, int current);
     }
 
     private class BufferProcessThread extends HandlerThread {
@@ -418,7 +434,7 @@ public class CameraHolder implements Camera.PreviewCallback {
             }
         }
 
-        public void execute(Runnable task) {
+        void execute(Runnable task) {
             if (mHandler != null) {
                 mHandler.post(task);
             } else {
@@ -442,17 +458,35 @@ public class CameraHolder implements Camera.PreviewCallback {
                 quit();
             }
         }
-
-        public void deInit(final Runnable runnable) {
-            execute(new Runnable() {
-                @Override
-                public void run() {
-                    runnable.run();
-                    close();
-                }
-            });
-        }
     }
+
+//    private class CameraOrientationTracker extends OrientationEventListener {
+//
+//        public CameraOrientationTracker(Context context) {
+//            super(context, SensorManager.SENSOR_DELAY_UI);
+//        }
+//
+//        @Override
+//        public void onOrientationChanged(int orientation) {
+//            if (orientation == OrientationEventListener.ORIENTATION_UNKNOWN) {
+//                mLastOrientation = orientation;
+//                return;
+//            }
+//
+//            if (mLastOrientation < 0) {
+//                mLastOrientation = 0;
+//            }
+//
+//            if (((orientation - mLastOrientation) < 20)
+//                    && ((orientation - mLastOrientation) > -20)) {
+//                return;
+//            }
+//            mLastOrientation = orientation;
+////            if(orientation % 90 == 0){
+//            Log.d(TAG, "onOrientationChanged = " + orientation);
+////            }
+//        }
+//    }
 
     private class CameraSize {
         int width;

@@ -4,11 +4,11 @@
 #include <android/native_window_jni.h>
 
 JNIEXPORT jlong JNICALL
-Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass, jobject jSurface, int frameDegree, int imageFormat,int filterType) {
+Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass, jobject jSurface, int imageFormat,int filterType) {
     GLContextHolder *pHolder = NULL;
     switch (imageFormat) {
         case 0x11://ImageFormat.NV21
-            pHolder = newGLContext(env, jSurface, frameDegree,filterType);
+            pHolder = newGLContext(env, jSurface, filterType);
             break;
         default:
             LOGE("不支持的视频编码格式！");
@@ -27,7 +27,7 @@ Java_com_ifinver_myopengles_GLNative_releaseGLContext(JNIEnv *, jclass, jlong na
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass, jlong nativeGlContext, jbyteArray data_, jint frameWidth,
+Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass, jlong nativeGlContext, jbyteArray data_,int frameDegree, jint frameWidth,
                                                      jint frameHeight) {
 //    jboolean isCopy;
     jbyte *data = env->GetByteArrayElements(data_, 0);
@@ -37,7 +37,7 @@ Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass, jlong 
 //        LOGI("isCopy=false");
 //    }
 
-    renderFrame((GLContextHolder *) nativeGlContext, data, frameWidth, frameHeight);
+    renderFrame((GLContextHolder *) nativeGlContext, data,frameDegree, frameWidth, frameHeight);
 
 //    if (isCopy) {
         env->ReleaseByteArrayElements(data_, data, JNI_ABORT);
@@ -45,7 +45,7 @@ Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass, jlong 
 }
 //.........................................................................................................................
 
-void renderFrame(GLContextHolder *holder, jbyte *data, jint width, jint height) {
+void renderFrame(GLContextHolder *holder, jbyte *data,int frameDegree ,jint width, jint height) {
     /**
      * 输入定点坐标
      */
@@ -84,6 +84,10 @@ void renderFrame(GLContextHolder *holder, jbyte *data, jint width, jint height) 
     glUniform1i(holder->positions[3], 1);
 
     //rotation
+    if (holder->frameDegree != frameDegree) {
+        holder->rotationMatrix = new GLfloat[4]{cosf(d2r(frameDegree)), -sinf(d2r(frameDegree)), sinf(d2r(frameDegree)), cosf(d2r(frameDegree))};
+        holder->frameDegree = frameDegree;
+    }
     glVertexAttrib4fv(holder->positions[4], holder->rotationMatrix);
 
 //    glClear(GL_COLOR_BUFFER_BIT);
@@ -109,7 +113,7 @@ void releaseGLContext(GLContextHolder *holder) {
 }
 
 //创建一个新的绘制上下文
-GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int frameDegree,int filterType) {
+GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int filterType) {
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
         checkGlError("eglGetDisplay");
@@ -213,7 +217,7 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int frameDegree,int
     positions[3] = (GLuint) posUniUvTexture;
     positions[4] = (GLuint) posAttrRot;
     gl_holder->positions = positions;
-    gl_holder->rotationMatrix = new GLfloat[4]{cosf(d2r(frameDegree)), -sinf(d2r(frameDegree)), sinf(d2r(frameDegree)), cosf(d2r(frameDegree))};
+    gl_holder->frameDegree = -1;
 
     //tex
     GLuint *textures = new GLuint[2];

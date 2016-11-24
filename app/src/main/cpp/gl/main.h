@@ -23,17 +23,17 @@ const int FILTER_TYPE_GREY_SCALE = 3;
 const int FILTER_TYPE_NEGATIVE_COLOR = 4;
 
 extern "C" {
-JNIEXPORT jlong JNICALL Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass type, jobject jSurface,int , int ,int);
+JNIEXPORT jlong JNICALL Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass type, jobject jSurface,int ,int);
 JNIEXPORT void JNICALL Java_com_ifinver_myopengles_GLNative_releaseGLContext(JNIEnv *env, jclass type, jlong nativeContext);
 JNIEXPORT void JNICALL Java_com_ifinver_myopengles_GLNative_renderOnContext(JNIEnv *env, jclass type, jlong nativeGlContext,
-                                                                            jbyteArray data_, jint frameWidth, jint frameHeight);
+                                                                            jbyteArray data_,int frameDegree, jint frameWidth, jint frameHeight);
 }
 
-GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int, int);
+GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int);
 
 void releaseGLContext(GLContextHolder *pHolder);
 
-void renderFrame(GLContextHolder *holder, jbyte *data, jint width, jint height);
+void renderFrame(GLContextHolder *holder, jbyte *data, int frameDegree ,jint width, jint height);
 
 #endif //MYOPENGLES_GL_NATIVE_LIB_H
 

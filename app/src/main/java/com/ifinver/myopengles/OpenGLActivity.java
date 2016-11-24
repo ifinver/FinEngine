@@ -18,7 +18,7 @@ import java.nio.ByteBuffer;
  * ilzq@foxmail.com
  */
 
-public class OpenGLActivity extends AppCompatActivity implements CameraHolder.InitCallback, CameraHolder.ReleaseCallback, CameraHolder.BufferCallback {
+public class OpenGLActivity extends AppCompatActivity implements CameraHolder.InitCallback, CameraHolder.StopCallback, CameraHolder.BufferCallback {
 
     private CameraHolder mCameraHolder;
     private DisplayMetrics displayMetrics;
@@ -36,20 +36,21 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
         fm[3] = (FrameLayout) findViewById(R.id.av_3);
 
         TextureView[] textureViews = new TextureView[4];
-        for(int i = 0;i < fm.length;i++){
+        for (int i = 0; i < fm.length; i++) {
             textureViews[i] = new TextureView(this);
-            fm[i].addView(textureViews[i],new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            fm[i].addView(textureViews[i], new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         }
-
-        mCameraHolder = new CameraHolder(getWindowManager().getDefaultDisplay().getRotation());
+        mCameraHolder = CameraHolder.getInstance();
+        mCameraHolder.setCameraDegreeByWindowRotation(getWindowManager().getDefaultDisplay().getRotation());
         mCameraHolder.setBufferCallback(this);
 
-        mRenderer[0] = new TextureRenderer(TextureRenderer.FILTER_TYPE_NEGATIVE_COLOR);
-        mRenderer[1] = new TextureRenderer(TextureRenderer.FILTER_TYPE_CYAN);
-        mRenderer[2] = new TextureRenderer(TextureRenderer.FILTER_TYPE_FISH_EYE);
-        mRenderer[3] = new TextureRenderer(TextureRenderer.FILTER_TYPE_GREY_SCALE);
+        int imageFormat = mCameraHolder.getImageFormat();//现在只支持NV21
+        mRenderer[0] = new TextureRenderer(imageFormat,TextureRenderer.FILTER_TYPE_NEGATIVE_COLOR);
+        mRenderer[1] = new TextureRenderer(imageFormat,TextureRenderer.FILTER_TYPE_CYAN);
+        mRenderer[2] = new TextureRenderer(imageFormat,TextureRenderer.FILTER_TYPE_FISH_EYE);
+        mRenderer[3] = new TextureRenderer(imageFormat,TextureRenderer.FILTER_TYPE_GREY_SCALE);
 
-        for(int i = 0;i < 4;i ++){
+        for (int i = 0; i < 4; i++) {
             textureViews[i].setSurfaceTextureListener(mRenderer[i]);
         }
 
@@ -58,24 +59,20 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.toggle_camera:
-                if(mCameraHolder != null){
-                    boolean ret = mCameraHolder.toggleCamera(new CameraHolder.ToggleCallback() {
+                if (mCameraHolder != null) {
+                    mCameraHolder.toggleCamera(new CameraHolder.ToggleCallback() {
                         @Override
                         public void onToggleCameraComplete(boolean success, int current) {
-                            if(success){
-                                Toast.makeText(OpenGLActivity.this,"success",Toast.LENGTH_SHORT).show();
-                            }else{
-                                Toast.makeText(OpenGLActivity.this,"error",Toast.LENGTH_SHORT).show();
+                            if (success) {
+                                Toast.makeText(OpenGLActivity.this, "success", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(OpenGLActivity.this, "error", Toast.LENGTH_SHORT).show();
                             }
                         }
                     });
-                    if(ret) {
-                        Toast.makeText(this, "switching", Toast.LENGTH_SHORT).show();
-                    }else{
-                        Toast.makeText(this,"error",Toast.LENGTH_SHORT).show();
-                    }
+                    Toast.makeText(this, "switching", Toast.LENGTH_SHORT).show();
                 }
                 return true;
         }
@@ -83,37 +80,32 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
     }
 
     @Override
-    public void onVideoBuffer(ByteBuffer frameByteBuffer, int frameWidth, int frameHeight) {
+    public void onVideoBuffer(ByteBuffer frameByteBuffer,int frameDegree, int frameWidth, int frameHeight) {
         for (TextureRenderer aMRenderer : mRenderer) {
-            aMRenderer.onVideoBuffer(frameByteBuffer, frameWidth, frameHeight);
+            aMRenderer.onVideoBuffer(frameByteBuffer,frameDegree, frameWidth, frameHeight);
         }
     }
 
     @Override
-    public void onInitComplete(boolean success, int frameDegree,int mFrameWidth, int mFrameHeight, int imageFormat) {
-        if(!success) return;
-        for (TextureRenderer aMRenderer : mRenderer) {
-            aMRenderer.startContext(frameDegree, imageFormat);
-        }
+    public void onInitComplete(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat) {
+
     }
 
     @Override
-    public void onReleaseComplete() {
-        for (TextureRenderer aMRenderer : mRenderer) {
-            aMRenderer.stopContext();
-        }
+    public void onStopComplete() {
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mCameraHolder.init(displayMetrics.widthPixels,displayMetrics.heightPixels,this);
+        mCameraHolder.start(displayMetrics.widthPixels, displayMetrics.heightPixels, this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        mCameraHolder.deInit(this);
+        mCameraHolder.stop(this);
     }
 
     @Override

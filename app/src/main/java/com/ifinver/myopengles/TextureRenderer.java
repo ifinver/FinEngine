@@ -22,33 +22,19 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
     public static final int FILTER_TYPE_NEGATIVE_COLOR = 4;
 
     private RenderThread mRenderThread;
-    private int mFrameDegree;
     private int mImageFormat;
     private Surface mSurface;
     private int mFilterType;
 
-    public TextureRenderer(){
-        this(FILTER_TYPE_NORMAL);
+    public TextureRenderer(int imageFormat){
+        this(imageFormat,FILTER_TYPE_NORMAL);
     }
 
-    public TextureRenderer(int filterType) {
-        mFrameDegree = -1;
-        mSurface = null;
-        mRenderThread = null;
-        mFilterType = filterType;
-    }
-
-    public void startContext(int frameDegree, int imageFormat) {
-        this.mFrameDegree = frameDegree;
+    public TextureRenderer(int imageFormat,int filterType) {
+        this.mSurface = null;
+        this.mRenderThread = null;
+        this.mFilterType = filterType;
         this.mImageFormat = imageFormat;
-
-        startRenderThread();
-    }
-
-    public void stopContext() {
-        this.mFrameDegree = -1;
-//        release();
-//        this.mImageFormat = -1;
     }
 
     private void release() {
@@ -58,9 +44,9 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         }
     }
 
-    public void onVideoBuffer(ByteBuffer data, int frameWidth, int frameHeight) {
+    public void onVideoBuffer(ByteBuffer data,int frameDegree, int frameWidth, int frameHeight) {
         if (mRenderThread != null) {
-            mRenderThread.notifyWithBuffer(data, frameWidth, frameHeight);
+            mRenderThread.notifyWithBuffer(data,frameDegree, frameWidth, frameHeight);
         }
     }
 
@@ -69,12 +55,8 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         Log.d(TAG, "onSurfaceTextureAvailable");
         mSurface = new Surface(surface);
 
-        startRenderThread();
-    }
-
-    private void startRenderThread() {
-        if (mSurface != null && mRenderThread == null && mFrameDegree != -1) {
-            mRenderThread = new RenderThread(mSurface, mFrameDegree, mImageFormat,mFilterType);
+        if ( mRenderThread == null ) {
+            mRenderThread = new RenderThread(mSurface, mImageFormat,mFilterType);
             mRenderThread.start();
         }
     }
@@ -100,7 +82,6 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
 
     private static class RenderThread extends Thread {
         private static final String TAG = "RenderThread";
-        private final int mframeDegree;
         private final int mImageFormat;
         boolean quit = false;
         Surface mSurface;
@@ -109,17 +90,18 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         private int mFrameHeight;
         private ByteBuffer mData;
         private int mFilterType;
+        private int mFrameDegree;
 
-        RenderThread(Surface surface, int mFrameDegree, int mImageFormat, int mFilterType) {
+        RenderThread(Surface surface,int mImageFormat, int mFilterType) {
             this.mSurface = surface;
-            this.mframeDegree = mFrameDegree;
             this.mImageFormat = mImageFormat;
             this.mFilterType = mFilterType;
         }
 
-        public void notifyWithBuffer(ByteBuffer data, int frameWidth, int frameHeight) {
+        public void notifyWithBuffer(ByteBuffer data,int frameDegree, int frameWidth, int frameHeight) {
             this.mFrameWidth = frameWidth;
             this.mFrameHeight = frameHeight;
+            this.mFrameDegree = frameDegree;
             this.mData = data;
             //wakeup
             synchronized (this) {
@@ -130,7 +112,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         private void onDrawFrame() {
             if (glContext != 0 && mData != null) {
 //                long spend = SystemClock.elapsedRealtime();
-                GLNative.renderOnContext(glContext, mData.array(), mFrameWidth, mFrameHeight);
+                GLNative.renderOnContext(glContext, mData.array(),mFrameDegree, mFrameWidth, mFrameHeight);
 //                spend = SystemClock.elapsedRealtime() - spend;
 //                Log.d(TAG, "渲染一帧:" + spend);
             }
@@ -144,7 +126,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
     }
 
     private void initGL() {
-        glContext = GLNative.createGLContext(mSurface, mframeDegree, mImageFormat,mFilterType);
+        glContext = GLNative.createGLContext(mSurface, mImageFormat,mFilterType);
         if (glContext == 0) {
             Log.e(TAG, "渲染上下文创建失败！");
         } else {

@@ -36,6 +36,8 @@ public:
     GLuint offsetVertex;
 
     GLuint offsetTex;
+
+    int frameDegree;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H
