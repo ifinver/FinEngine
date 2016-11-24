@@ -79,4 +79,3 @@ GLuint createProgram(const char *pVertexSrc, const char *pFragmentSrc) {
 float d2r(float d) {
     return (float) (d / 180.0 * 3.141592653);
 }
-

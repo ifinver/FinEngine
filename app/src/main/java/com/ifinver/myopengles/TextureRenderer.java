@@ -47,7 +47,15 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
 
     public void stopContext() {
         this.mFrameDegree = -1;
+//        release();
 //        this.mImageFormat = -1;
+    }
+
+    private void release() {
+        if (mRenderThread != null) {
+            mRenderThread.quit();
+            mRenderThread = null;
+        }
     }
 
     public void onVideoBuffer(ByteBuffer data, int frameWidth, int frameHeight) {
@@ -58,13 +66,14 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+        Log.d(TAG, "onSurfaceTextureAvailable");
         mSurface = new Surface(surface);
 
         startRenderThread();
     }
 
     private void startRenderThread() {
-        if (mSurface != null && mFrameDegree != -1) {
+        if (mSurface != null && mRenderThread == null && mFrameDegree != -1) {
             mRenderThread = new RenderThread(mSurface, mFrameDegree, mImageFormat,mFilterType);
             mRenderThread.start();
         }
@@ -78,10 +87,9 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+        Log.d(TAG, "onSurfaceTextureDestroyed");
         mSurface = null;
-        if (mRenderThread != null) {
-            mRenderThread.quit();
-        }
+        release();
         return false;
     }
 

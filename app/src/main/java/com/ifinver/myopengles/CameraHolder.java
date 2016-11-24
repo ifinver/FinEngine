@@ -107,11 +107,11 @@ public class CameraHolder implements Camera.PreviewCallback {
         mMaxWidth = MAX_UNSPECIFIED;
         mCameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
         mCanNotifyFrame = false;
-
-        mBufferProcessThread = new BufferProcessThread();
-        mBufferProcessThread.start();
-
-        mSurfaceTexture = new SurfaceTexture(MAGIC_TEXTURE_ID);
+        if(mBufferProcessThread == null) {
+            mBufferProcessThread = new BufferProcessThread();
+            mBufferProcessThread.start();
+            mSurfaceTexture = new SurfaceTexture(MAGIC_TEXTURE_ID);
+        }
 
         this.mInitCallback = callback;
         mBufferProcessThread.execute(new Runnable() {
@@ -247,12 +247,10 @@ public class CameraHolder implements Camera.PreviewCallback {
     }
 
     public void deInit(final ReleaseCallback callback) {
-        mBufferProcessThread.execute(new Runnable() {
+        mBufferProcessThread.deInit(new Runnable() {
             @Override
             public void run() {
                 deInitInternal();
-                mBufferProcessThread.close();
-                mBufferProcessThread = null;
                 if (callback != null) {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
@@ -263,7 +261,7 @@ public class CameraHolder implements Camera.PreviewCallback {
                 }
             }
         });
-
+        mBufferProcessThread = null;
     }
 
     private void deInitInternal() {
@@ -400,6 +398,16 @@ public class CameraHolder implements Camera.PreviewCallback {
             } else {
                 quit();
             }
+        }
+
+        public void deInit(final Runnable runnable) {
+            execute(new Runnable() {
+                @Override
+                public void run() {
+                    runnable.run();
+                    close();
+                }
+            });
         }
     }
 
