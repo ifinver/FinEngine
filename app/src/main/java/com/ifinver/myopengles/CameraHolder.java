@@ -101,10 +101,10 @@ public class CameraHolder implements Camera.PreviewCallback {
 
             if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
                 mCameraOrientation = (info.orientation + mWindowDegree) % 360;
-                mCameraOrientation = (360 - mCameraOrientation) % 360; // compensate the mirror
             } else { // back-facing
                 mCameraOrientation = (info.orientation - mWindowDegree + 360) % 360;
             }
+            mCameraOrientation = (360 - mCameraOrientation) % 360; // compensate the mirror
             mCamera.setDisplayOrientation(mCameraOrientation);
             Log.d(TAG, "setCameraDispOri = " + mCameraOrientation);
         }
