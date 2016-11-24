@@ -44,7 +44,7 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
         mRenderer[0] = new TextureRenderer();
         mRenderer[1] = new TextureRenderer(TextureRenderer.FILTER_TYPE_CYAN);
         mRenderer[2] = new TextureRenderer(TextureRenderer.FILTER_TYPE_FISH_EYE);
-        mRenderer[3] = new TextureRenderer();
+        mRenderer[3] = new TextureRenderer(TextureRenderer.FILTER_TYPE_GREY_SCALE);
 
         for(int i = 0;i < 4;i ++){
             textureViews[i].setSurfaceTextureListener(mRenderer[i]);

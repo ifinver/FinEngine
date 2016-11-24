@@ -110,10 +110,6 @@ void releaseGLContext(GLContextHolder *holder) {
     delete (holder);
 }
 
-inline float d2r(float d) {
-    return (float) (d / 180.0 * 3.141592653);
-}
-
 //创建一个新的绘制上下文
 GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int frameDegree,int filterType) {
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
@@ -182,6 +178,9 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int frameDegree,int
             break;
         case FILTER_TYPE_FISH_EYE:
             shader = ShaderFishEye();
+            break;
+        case FILTER_TYPE_GREY_SCALE:
+            shader = ShaderGreyScale();
             break;
     }
 
