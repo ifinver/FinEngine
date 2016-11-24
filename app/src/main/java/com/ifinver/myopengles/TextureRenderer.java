@@ -19,6 +19,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
     public static final int FILTER_TYPE_CYAN = 1;
     public static final int FILTER_TYPE_FISH_EYE = 2;
     public static final int FILTER_TYPE_GREY_SCALE = 3;
+    public static final int FILTER_TYPE_NEGATIVE_COLOR = 4;
 
     private RenderThread mRenderThread;
     private int mFrameDegree;

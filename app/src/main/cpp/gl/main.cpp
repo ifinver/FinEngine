@@ -51,7 +51,6 @@ void renderFrame(GLContextHolder *holder, jbyte *data, jint width, jint height) 
      */
     glEnableVertexAttribArray(holder->positions[0]);
     glVertexAttribPointer(holder->positions[0], 2, GL_FLOAT, GL_FALSE, holder->texStride, (const void *) holder->offsetVertex);
-    checkGlError("glVertexAttribPointer");
 
     /**
      * 输入纹理坐标
@@ -95,7 +94,6 @@ void renderFrame(GLContextHolder *holder, jbyte *data, jint width, jint height) 
     glDisableVertexAttribArray(holder->positions[1]);
 
     eglSwapBuffers(holder->eglDisplay, holder->eglSurface);
-
 }
 
 //释放指定上下文
@@ -181,6 +179,9 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int frameDegree,int
             break;
         case FILTER_TYPE_GREY_SCALE:
             shader = ShaderGreyScale();
+            break;
+        case FILTER_TYPE_NEGATIVE_COLOR:
+            shader = ShaderNegativeColor();
             break;
     }
 

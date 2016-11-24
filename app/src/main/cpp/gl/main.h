@@ -20,6 +20,7 @@ const int FILTER_TYPE_NORMAL = 0;
 const int FILTER_TYPE_CYAN = 1;
 const int FILTER_TYPE_FISH_EYE = 2;
 const int FILTER_TYPE_GREY_SCALE = 3;
+const int FILTER_TYPE_NEGATIVE_COLOR = 4;
 
 extern "C" {
 JNIEXPORT jlong JNICALL Java_com_ifinver_myopengles_GLNative_createGLContext(JNIEnv *env, jclass type, jobject jSurface,int , int ,int);

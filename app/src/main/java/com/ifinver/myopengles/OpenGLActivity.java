@@ -41,7 +41,7 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
         mCameraHolder = new CameraHolder(getWindowManager().getDefaultDisplay().getRotation());
         mCameraHolder.setBufferCallback(this);
 
-        mRenderer[0] = new TextureRenderer();
+        mRenderer[0] = new TextureRenderer(TextureRenderer.FILTER_TYPE_NEGATIVE_COLOR);
         mRenderer[1] = new TextureRenderer(TextureRenderer.FILTER_TYPE_CYAN);
         mRenderer[2] = new TextureRenderer(TextureRenderer.FILTER_TYPE_FISH_EYE);
         mRenderer[3] = new TextureRenderer(TextureRenderer.FILTER_TYPE_GREY_SCALE);
