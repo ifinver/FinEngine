@@ -1,11 +1,19 @@
-package com.ifinver.myopengles;
+package com.ifinver.myopengles.singleswitch;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.TextureView;
+import android.widget.Toast;
+
+import com.ifinver.myopengles.sdk.CameraHolder;
+import com.ifinver.myopengles.R;
+import com.ifinver.myopengles.sdk.TextureRenderer;
 
 import java.nio.ByteBuffer;
 
@@ -15,7 +23,7 @@ import java.nio.ByteBuffer;
  * ilzq@foxmail.com
  */
 
-public class CameraActivity extends AppCompatActivity implements CameraHolder.CameraCallback{
+public class CameraActivity extends AppCompatActivity implements CameraHolder.CameraCallback, FilterAdapter.OnItemClickListener {
     private static final String TAG = "CameraActivity";
 
     private CameraHolder mCameraHolder;
@@ -25,11 +33,22 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Ca
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
+
         TextureView tex = (TextureView) findViewById(R.id.tex);
+        RecyclerView rvFilter = (RecyclerView) findViewById(R.id.rv_filter);
+
         mCameraHolder = CameraHolder.getInstance();
         mCameraHolder.setCameraDegreeByWindowRotation(getWindowManager().getDefaultDisplay().getRotation());
-        mRenderer = new TextureRenderer(mCameraHolder.getImageFormat());
+        mRenderer = new TextureRenderer(mCameraHolder.getImageFormat(),TextureRenderer.FILTER_TYPE_CYAN);
         tex.setSurfaceTextureListener(mRenderer);
+
+        rvFilter.setAdapter(new FilterAdapter(this));
+
+    }
+
+    @Override
+    public void onFilterItemClick(int filter) {
+        Log.d(TAG,"onFilterItemClick,filter="+filter);
     }
 
     @Override
@@ -53,7 +72,7 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Ca
 
     @Override
     public void onVideoBuffer(ByteBuffer frameByteBuffer,int frameDegree, int frameWidth, int frameHeight) {
-        Log.d(TAG, "收到视频数据,len=" + frameByteBuffer.array().length);
+        mRenderer.onVideoBuffer(frameByteBuffer,frameDegree,frameWidth,frameHeight);
 
     }
 
@@ -66,4 +85,24 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Ca
     public void onCameraStopped() {
 
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.toggle_camera:
+                if (mCameraHolder != null) {
+                    mCameraHolder.toggleCamera();
+                    Toast.makeText(this, "switching", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 }

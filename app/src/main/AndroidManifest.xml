@@ -20,9 +20,9 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".CameraActivity"/>
+            android:name=".singleswitch.CameraActivity"/>
         <activity
-            android:name=".OpenGLActivity"/>
+            android:name=".multiscreen.OpenGLActivity"/>
     </application>
 
 </manifest>

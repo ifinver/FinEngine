@@ -1,4 +1,4 @@
-package com.ifinver.myopengles;
+package com.ifinver.myopengles.sdk;
 
 import android.graphics.SurfaceTexture;
 import android.util.Log;
