@@ -1,4 +1,4 @@
-package com.ifinver.myopengles;
+package com.ifinver.myopengles.multiscreen;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,6 +9,11 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+
+import com.ifinver.myopengles.sdk.CameraHolder;
+import com.ifinver.myopengles.R;
+import com.ifinver.myopengles.sdk.TextureRenderView;
+import com.ifinver.myopengles.sdk.TextureRenderer;
 
 import java.nio.ByteBuffer;
 

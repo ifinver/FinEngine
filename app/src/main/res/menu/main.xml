@@ -4,9 +4,10 @@
 
     <item android:title="@string/toggle_camera"
           android:id="@+id/toggle_camera"
-          android:icon="@mipmap/ic_launcher"
+          android:icon="@mipmap/toggle_camera"
           app:showAsAction="always"
           android:checkable="false"
           android:enabled="true"
           android:visible="true"/>
+
 </menu>
