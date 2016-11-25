@@ -15,7 +15,7 @@ import java.nio.ByteBuffer;
  * ilzq@foxmail.com
  */
 
-public class CameraActivity extends AppCompatActivity implements CameraHolder.BufferCallback{
+public class CameraActivity extends AppCompatActivity implements CameraHolder.CameraCallback{
     private static final String TAG = "CameraActivity";
 
     private CameraHolder mCameraHolder;
@@ -37,28 +37,33 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Bu
         super.onResume();
 
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-        mCameraHolder.start(displayMetrics.widthPixels, displayMetrics.heightPixels, new CameraHolder.InitCallback() {
-            @Override
-            public void onCameraStarted(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat) {
-
-            }
-        });
+        mCameraHolder.start(displayMetrics.widthPixels, displayMetrics.heightPixels, this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        mCameraHolder.stop(new CameraHolder.StopCallback() {
-            @Override
-            public void onCameraStopped() {
+        mCameraHolder.stop();
+    }
 
-            }
-        });
+    @Override
+    public void onCameraStarted(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat) {
+
     }
 
     @Override
     public void onVideoBuffer(ByteBuffer frameByteBuffer,int frameDegree, int frameWidth, int frameHeight) {
         Log.d(TAG, "收到视频数据,len=" + frameByteBuffer.array().length);
+
+    }
+
+    @Override
+    public void onToggleCameraComplete(boolean success, int current) {
+
+    }
+
+    @Override
+    public void onCameraStopped() {
 
     }
 }
