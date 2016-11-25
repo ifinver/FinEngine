@@ -118,7 +118,7 @@ public class CameraHolder implements Camera.PreviewCallback {
             @Override
             public void run() {
                 boolean success = false;
-                if(mInitialized){
+                if (mInitialized) {
                     success = toggleCameraInternal();
                 }
                 if (mCameraCallback != null) {
@@ -126,7 +126,7 @@ public class CameraHolder implements Camera.PreviewCallback {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            if(mCameraCallback != null) {
+                            if (mCameraCallback != null) {
                                 mCameraCallback.onToggleCameraComplete(finalSuccess, mCameraIndex);
                             }
                         }
@@ -156,7 +156,7 @@ public class CameraHolder implements Camera.PreviewCallback {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            if(mCameraCallback != null) {
+                            if (mCameraCallback != null) {
                                 mCameraCallback.onCameraStarted(mInitialized, mFrameWidth, mFrameHeight, IMAGE_FORMAT);
                             }
                             mCanNotifyFrame = true;
@@ -274,18 +274,17 @@ public class CameraHolder implements Camera.PreviewCallback {
 
     public void stop() {
 //        mOrientationTracker.disable();
+        final CameraCallback finalCallback = mCameraCallback;
+        mCameraCallback = null;
         mBufferProcessThread.execute(new Runnable() {
             @Override
             public void run() {
                 stopInternal();
-                if (mCameraCallback != null) {
+                if (finalCallback != null) {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            if(mCameraCallback != null) {
-                                mCameraCallback.onCameraStopped();
-                                mCameraCallback = null;
-                            }
+                            finalCallback.onCameraStopped();
                         }
                     });
                 }
@@ -361,7 +360,7 @@ public class CameraHolder implements Camera.PreviewCallback {
         return IMAGE_FORMAT;
     }
 
-    public interface CameraCallback{
+    public interface CameraCallback {
         /**
          * 将会执行在主线程
          *

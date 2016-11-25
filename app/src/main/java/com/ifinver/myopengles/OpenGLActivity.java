@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
@@ -42,8 +41,7 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.Ca
         textures = new TextureRenderView[4];
         for (int i = 0; i < fm.length; i++) {
             textures[i] = new TextureRenderView(this);
-            textures[i].setAspectRatio(TextureRenderView.AR_ASPECT_FILL_PARENT);
-            fm[i].addView(textures[i], new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            fm[i].addView(textures[i], new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         }
         textures[0].initRenderer(imageFormat, TextureRenderer.FILTER_TYPE_NEGATIVE_COLOR);
         textures[1].initRenderer(imageFormat, TextureRenderer.FILTER_TYPE_CYAN);
@@ -68,7 +66,7 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.Ca
 
     @Override
     public void onVideoBuffer(ByteBuffer frameByteBuffer, int frameDegree, int frameWidth, int frameHeight) {
-        Log.d("onVideoBuffer","onVideoBuffer");
+//        Log.d("onVideoBuffer","onVideoBuffer");
         for (TextureRenderView renderView : textures) {
             renderView.onVideoBuffer(frameByteBuffer, frameDegree, frameWidth, frameHeight);
         }
@@ -97,9 +95,9 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.Ca
 
     @Override
     public void onCameraStarted(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat) {
-        for (TextureRenderView renderView : textures) {
-            renderView.setVideoSize(mFrameWidth,mFrameHeight);
-        }
+//        for (TextureRenderView renderView : textures) {
+//            renderView.setVideoSize(mFrameWidth,mFrameHeight);
+//        }
     }
 
     @Override
