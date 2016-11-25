@@ -33,43 +33,57 @@ class FilterAdapter extends RecyclerView.Adapter<FilterViewHolder>{
 
         model = new FilterDataModel();
         model.filterName = "Normal";
+        model.filterImageResId = R.mipmap.ic_launcher;
         model.filterType = TextureRenderer.FILTER_TYPE_NORMAL;
         mDataList.add(model);
 
         model = new FilterDataModel();
         model.filterName = "Cyan";
+        model.filterImageResId = R.mipmap.ic_launcher;
         model.filterType = TextureRenderer.FILTER_TYPE_CYAN;
         mDataList.add(model);
 
         model = new FilterDataModel();
         model.filterName = "Fish eye";
+        model.filterImageResId = R.mipmap.ic_launcher;
         model.filterType = TextureRenderer.FILTER_TYPE_FISH_EYE;
         mDataList.add(model);
 
         model = new FilterDataModel();
         model.filterName = "Grey scale";
+        model.filterImageResId = R.mipmap.ic_launcher;
         model.filterType = TextureRenderer.FILTER_TYPE_GREY_SCALE;
         mDataList.add(model);
 
         model = new FilterDataModel();
         model.filterName = "Negative color";
+        model.filterImageResId = R.mipmap.ic_launcher;
         model.filterType = TextureRenderer.FILTER_TYPE_NEGATIVE_COLOR;
         mDataList.add(model);
+
+        for(int i = 0;i < 25;i ++){
+            model = new FilterDataModel();
+            model.filterName = "Coming soon";
+            model.filterImageResId = R.mipmap.coming_soon;
+            model.filterType = TextureRenderer.FILTER_TYPE_NORMAL;
+            mDataList.add(model);
+        }
     }
 
     @Override
     public FilterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View filterView = View.inflate(MyApp.getContext(), R.layout.list_item_filter, parent);
+        View filterView = View.inflate(MyApp.getContext(), R.layout.list_item_filter, null);
         return new FilterViewHolder(filterView);
     }
 
     @Override
     public void onBindViewHolder(final FilterViewHolder holder, int position) {
-        Resources resources = MyApp.getContext().getResources();
-        Bitmap bitmap = BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher);
-        RoundedBitmapDrawable drawable = RoundedBitmapDrawableFactory.create(resources, bitmap);
-        holder.ivFilter.setImageDrawable(drawable);
         final FilterDataModel filterDataModel = mDataList.get(position);
+        Resources resources = MyApp.getContext().getResources();
+        Bitmap bitmap = BitmapFactory.decodeResource(resources, filterDataModel.filterImageResId);
+        RoundedBitmapDrawable drawable = RoundedBitmapDrawableFactory.create(resources, bitmap);
+        drawable.setCircular(true);
+        holder.ivFilter.setImageDrawable(drawable);
         holder.tvFilter.setText(filterDataModel.filterName);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override

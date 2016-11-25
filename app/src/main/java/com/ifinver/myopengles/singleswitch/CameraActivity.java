@@ -3,6 +3,7 @@ package com.ifinver.myopengles.singleswitch;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -40,8 +41,9 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Ca
         mRenderer = new TextureRenderer(mCameraHolder.getImageFormat(),TextureRenderer.FILTER_TYPE_CYAN);
         tex.setSurfaceTextureListener(mRenderer);
 
+        rvFilter.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false));
+        rvFilter.addItemDecoration(new SpaceItemDecoration(10));
         rvFilter.setAdapter(new FilterAdapter(this));
-
     }
 
     @Override

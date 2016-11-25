@@ -6,7 +6,7 @@ package com.ifinver.myopengles.singleswitch;
  */
 
 class FilterDataModel{
-    public String filterImage;
+    public int filterImageResId; //resource id
     public String filterName;
     public int filterType;
 }
