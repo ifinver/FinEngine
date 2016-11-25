@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
@@ -17,7 +18,7 @@ import java.nio.ByteBuffer;
  * ilzq@foxmail.com
  */
 
-public class OpenGLActivity extends AppCompatActivity implements CameraHolder.InitCallback, CameraHolder.StopCallback, CameraHolder.BufferCallback {
+public class OpenGLActivity extends AppCompatActivity implements CameraHolder.CameraCallback {
 
     private CameraHolder mCameraHolder;
     private DisplayMetrics displayMetrics;
@@ -36,7 +37,6 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
 
         mCameraHolder = CameraHolder.getInstance();
         mCameraHolder.setCameraDegreeByWindowRotation(getWindowManager().getDefaultDisplay().getRotation());
-        mCameraHolder.setBufferCallback(this);
 
         int imageFormat = mCameraHolder.getImageFormat();//现在只支持NV21
         textures = new TextureRenderView[4];
@@ -58,16 +58,7 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
         switch (item.getItemId()) {
             case R.id.toggle_camera:
                 if (mCameraHolder != null) {
-                    mCameraHolder.toggleCamera(new CameraHolder.ToggleCallback() {
-                        @Override
-                        public void onToggleCameraComplete(boolean success, int current) {
-                            if (success) {
-                                Toast.makeText(OpenGLActivity.this, "success", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(OpenGLActivity.this, "error", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    });
+                    mCameraHolder.toggleCamera();
                     Toast.makeText(this, "switching", Toast.LENGTH_SHORT).show();
                 }
                 return true;
@@ -77,8 +68,18 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
 
     @Override
     public void onVideoBuffer(ByteBuffer frameByteBuffer, int frameDegree, int frameWidth, int frameHeight) {
+        Log.d("onVideoBuffer","onVideoBuffer");
         for (TextureRenderView renderView : textures) {
             renderView.onVideoBuffer(frameByteBuffer, frameDegree, frameWidth, frameHeight);
+        }
+    }
+
+    @Override
+    public void onToggleCameraComplete(boolean success, int current) {
+        if (success) {
+            Toast.makeText(OpenGLActivity.this, "success", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(OpenGLActivity.this, "error", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -91,7 +92,7 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.In
     @Override
     protected void onPause() {
         super.onPause();
-        mCameraHolder.stop(this);
+        mCameraHolder.stop();
     }
 
     @Override
