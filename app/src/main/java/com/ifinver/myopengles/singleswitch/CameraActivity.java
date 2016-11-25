@@ -11,11 +11,9 @@ import android.view.MenuItem;
 import android.view.TextureView;
 import android.widget.Toast;
 
-import com.ifinver.myopengles.sdk.CameraHolder;
 import com.ifinver.myopengles.R;
+import com.ifinver.myopengles.sdk.CameraHolder;
 import com.ifinver.myopengles.sdk.TextureRenderer;
-
-import java.nio.ByteBuffer;
 
 
 /**
@@ -72,7 +70,7 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Ca
 
     @Override
     public void onVideoBuffer(byte[] frameBytes,int frameDegree, int frameWidth, int frameHeight) {
-        mRenderer.onVideoBuffer(frameByteBuffer,frameDegree,frameWidth,frameHeight);
+        mRenderer.onVideoBuffer(frameBytes,frameDegree,frameWidth,frameHeight);
 
     }
 
