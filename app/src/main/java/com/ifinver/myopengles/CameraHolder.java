@@ -345,7 +345,7 @@ public class CameraHolder implements Camera.PreviewCallback {
     public void onPreviewFrame(byte[] data, Camera camera) {
         if (mCameraCallback != null && mCanNotifyFrame) {
 //            long spend = SystemClock.elapsedRealtime();
-            mCameraCallback.onVideoBuffer(mFrameByteBuffer, mCameraOrientation, mFrameWidth, mFrameHeight);
+            mCameraCallback.onVideoBuffer(mFrameByteBuffer.array(), mCameraOrientation, mFrameWidth, mFrameHeight);
 //            spend = SystemClock.elapsedRealtime() - spend;
 //            Log.d(TAG, "分派一帧数据耗时:" + spend);
         }
@@ -374,9 +374,9 @@ public class CameraHolder implements Camera.PreviewCallback {
         /**
          * 将回调在子线程
          *
-         * @param frameByteBuffer NV21类型
+         * @param frameBytes NV21类型
          */
-        void onVideoBuffer(ByteBuffer frameByteBuffer, int frameDegree, int frameWidth, int frameHeight);
+        void onVideoBuffer(byte[] frameBytes, int frameDegree, int frameWidth, int frameHeight);
 
         /**
          * @param current one of Camera.CameraInfo.CAMERA_FACING_BACK 、Camera.CameraInfo.CAMERA_FACING_FRONT

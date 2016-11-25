@@ -5,8 +5,6 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 
-import java.nio.ByteBuffer;
-
 /**
  * Created by iFinVer on 2016/11/21.
  * ilzq@foxmail.com
@@ -44,7 +42,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         }
     }
 
-    public void onVideoBuffer(ByteBuffer data,int frameDegree, int frameWidth, int frameHeight) {
+    public void onVideoBuffer(byte[] data,int frameDegree, int frameWidth, int frameHeight) {
         if (mRenderThread != null) {
             mRenderThread.notifyWithBuffer(data,frameDegree, frameWidth, frameHeight);
         }
@@ -88,7 +86,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         private long glContext;
         private int mFrameWidth;
         private int mFrameHeight;
-        private ByteBuffer mData;
+        private byte[] mData;
         private int mFilterType;
         private int mFrameDegree;
 
@@ -98,7 +96,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
             this.mFilterType = mFilterType;
         }
 
-        public void notifyWithBuffer(ByteBuffer data,int frameDegree, int frameWidth, int frameHeight) {
+        public void notifyWithBuffer(byte[] data,int frameDegree, int frameWidth, int frameHeight) {
             this.mFrameWidth = frameWidth;
             this.mFrameHeight = frameHeight;
             this.mFrameDegree = frameDegree;
@@ -112,7 +110,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         private void onDrawFrame() {
             if (glContext != 0 && mData != null) {
 //                long spend = SystemClock.elapsedRealtime();
-                GLNative.renderOnContext(glContext, mData.array(),mFrameDegree, mFrameWidth, mFrameHeight);
+                GLNative.renderOnContext(glContext, mData,mFrameDegree, mFrameWidth, mFrameHeight);
 //                spend = SystemClock.elapsedRealtime() - spend;
 //                Log.d(TAG, "渲染一帧:" + spend);
             }

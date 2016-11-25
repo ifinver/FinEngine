@@ -68,8 +68,8 @@ public class TextureRenderView extends TextureView {
         setSurfaceTextureListener(mRenderer);
     }
 
-    public void onVideoBuffer(ByteBuffer frameByteBuffer, int frameDegree, int frameWidth, int frameHeight) {
-        mRenderer.onVideoBuffer(frameByteBuffer,frameDegree,frameWidth,frameHeight);
+    public void onVideoBuffer(byte[] data, int frameDegree, int frameWidth, int frameHeight) {
+        mRenderer.onVideoBuffer(data,frameDegree,frameWidth,frameHeight);
     }
 
     @Override

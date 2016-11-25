@@ -7,8 +7,6 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.TextureView;
 
-import java.nio.ByteBuffer;
-
 
 /**
  * Created by iFinVer on 2016/11/15.
@@ -52,8 +50,8 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Ca
     }
 
     @Override
-    public void onVideoBuffer(ByteBuffer frameByteBuffer,int frameDegree, int frameWidth, int frameHeight) {
-        Log.d(TAG, "收到视频数据,len=" + frameByteBuffer.array().length);
+    public void onVideoBuffer(byte[] frameBytes,int frameDegree, int frameWidth, int frameHeight) {
+        Log.d(TAG, "收到视频数据,len=" + frameBytes.length);
 
     }
 
