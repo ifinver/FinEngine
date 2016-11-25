@@ -56,7 +56,7 @@ class FilterAdapter extends RecyclerView.Adapter<FilterViewHolder>{
         mDataList.add(model);
 
         model = new FilterDataModel();
-        model.filterName = "Negative color";
+        model.filterName = "Negative123456789color";
         model.filterImageResId = R.mipmap.ic_launcher;
         model.filterType = TextureRenderer.FILTER_TYPE_NEGATIVE_COLOR;
         mDataList.add(model);
