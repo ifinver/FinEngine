@@ -1,6 +1,7 @@
 #include "main.h"
 #include "utils.h"
 #include <math.h>
+#include <GLES2/gl2ext.h>
 #include <android/native_window_jni.h>
 
 JNIEXPORT jlong JNICALL

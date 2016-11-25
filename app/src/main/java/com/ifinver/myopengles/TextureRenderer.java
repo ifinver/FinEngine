@@ -109,6 +109,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
 
         private void onDrawFrame() {
             if (glContext != 0 && mData != null) {
+                // TODO: 2016/11/25 在这里进行frameAvailableSoon
 //                long spend = SystemClock.elapsedRealtime();
                 GLNative.renderOnContext(glContext, mData,mFrameDegree, mFrameWidth, mFrameHeight);
 //                spend = SystemClock.elapsedRealtime() - spend;
