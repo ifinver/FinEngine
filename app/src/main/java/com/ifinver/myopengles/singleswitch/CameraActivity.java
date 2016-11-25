@@ -10,6 +10,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.TextureView;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.ifinver.myopengles.R;
@@ -27,6 +29,7 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Ca
 
     private CameraHolder mCameraHolder;
     private TextureRenderer mRenderer;
+    private LinearLayout llFilters;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -35,6 +38,7 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Ca
 
         TextureView tex = (TextureView) findViewById(R.id.tex);
         RecyclerView rvFilter = (RecyclerView) findViewById(R.id.rv_filter);
+        llFilters = (LinearLayout) findViewById(R.id.ll_filters);
 
         mCameraHolder = CameraHolder.getInstance();
         mCameraHolder.setCameraDegreeByWindowRotation(getWindowManager().getDefaultDisplay().getRotation());
@@ -44,6 +48,8 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Ca
         rvFilter.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false));
         rvFilter.addItemDecoration(new SpaceItemDecoration(10));
         rvFilter.setAdapter(new FilterAdapter(this));
+
+
     }
 
     @Override
@@ -67,7 +73,7 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Ca
 
     @Override
     public void onCameraStarted(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat) {
-
+        llFilters.setVisibility(View.VISIBLE);
     }
 
     @Override
