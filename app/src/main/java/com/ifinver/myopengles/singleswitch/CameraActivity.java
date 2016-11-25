@@ -71,7 +71,7 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Ca
     }
 
     @Override
-    public void onVideoBuffer(ByteBuffer frameByteBuffer,int frameDegree, int frameWidth, int frameHeight) {
+    public void onVideoBuffer(byte[] frameBytes,int frameDegree, int frameWidth, int frameHeight) {
         mRenderer.onVideoBuffer(frameByteBuffer,frameDegree,frameWidth,frameHeight);
 
     }

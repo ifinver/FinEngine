@@ -70,10 +70,10 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.Ca
     }
 
     @Override
-    public void onVideoBuffer(ByteBuffer frameByteBuffer, int frameDegree, int frameWidth, int frameHeight) {
+    public void onVideoBuffer(byte[] data, int frameDegree, int frameWidth, int frameHeight) {
 //        Log.d("onVideoBuffer","onVideoBuffer");
         for (TextureRenderView renderView : textures) {
-            renderView.onVideoBuffer(frameByteBuffer, frameDegree, frameWidth, frameHeight);
+            renderView.onVideoBuffer(data, frameDegree, frameWidth, frameHeight);
         }
     }
 

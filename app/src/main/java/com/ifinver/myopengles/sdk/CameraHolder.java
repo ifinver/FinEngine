@@ -120,6 +120,8 @@ public class CameraHolder implements Camera.PreviewCallback {
                 boolean success = false;
                 if (mInitialized) {
                     success = toggleCameraInternal();
+                }else{
+                    Log.e(TAG,"调整摄像头时，未初始化！");
                 }
                 if (mCameraCallback != null) {
                     final boolean finalSuccess = success;
@@ -150,14 +152,14 @@ public class CameraHolder implements Camera.PreviewCallback {
         mBufferProcessThread.execute(new Runnable() {
             @Override
             public void run() {
-                mInitialized = startInternal(width, height);
+                final boolean success = startInternal(width, height);
 //                mOrientationTracker.enable();
                 if (mCameraCallback != null) {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
                         @Override
                         public void run() {
                             if (mCameraCallback != null) {
-                                mCameraCallback.onCameraStarted(mInitialized, mFrameWidth, mFrameHeight, IMAGE_FORMAT);
+                                mCameraCallback.onCameraStarted(success, mFrameWidth, mFrameHeight, IMAGE_FORMAT);
                             }
                             mCanNotifyFrame = true;
                         }
@@ -252,6 +254,7 @@ public class CameraHolder implements Camera.PreviewCallback {
                 e.printStackTrace();
             }
         }
+        mInitialized = result;
         return result;
     }
 
@@ -260,6 +263,7 @@ public class CameraHolder implements Camera.PreviewCallback {
             try {
                 stopInternal();
             } catch (Throwable ignored) {
+                Log.e(TAG,"调整摄像头时，关闭当前摄像头失败！",ignored);
                 return false;
             }
             if (Camera.CameraInfo.CAMERA_FACING_FRONT == mCameraIndex) {
@@ -345,7 +349,7 @@ public class CameraHolder implements Camera.PreviewCallback {
     public void onPreviewFrame(byte[] data, Camera camera) {
         if (mCameraCallback != null && mCanNotifyFrame) {
 //            long spend = SystemClock.elapsedRealtime();
-            mCameraCallback.onVideoBuffer(mFrameByteBuffer, mCameraOrientation, mFrameWidth, mFrameHeight);
+            mCameraCallback.onVideoBuffer(mFrameByteBuffer.array(), mCameraOrientation, mFrameWidth, mFrameHeight);
 //            spend = SystemClock.elapsedRealtime() - spend;
 //            Log.d(TAG, "分派一帧数据耗时:" + spend);
         }
@@ -374,9 +378,9 @@ public class CameraHolder implements Camera.PreviewCallback {
         /**
          * 将回调在子线程
          *
-         * @param frameByteBuffer NV21类型
+         * @param frameBytes NV21类型
          */
-        void onVideoBuffer(ByteBuffer frameByteBuffer, int frameDegree, int frameWidth, int frameHeight);
+        void onVideoBuffer(byte[] frameBytes, int frameDegree, int frameWidth, int frameHeight);
 
         /**
          * @param current one of Camera.CameraInfo.CAMERA_FACING_BACK 、Camera.CameraInfo.CAMERA_FACING_FRONT
