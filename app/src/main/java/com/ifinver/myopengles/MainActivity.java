@@ -5,10 +5,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.ifinver.myopengles.multiscreen.OpenGLActivity;
+import com.ifinver.myopengles.sdk.FinEngine;
 import com.ifinver.myopengles.singleswitch.CameraActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -26,6 +28,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         ivOri.setImageResource(R.drawable.t);
         ivGrey.setImageBitmap(generateGreyBmp(R.drawable.t));
+
+        Log.d("Text", FinEngine.test());
     }
 
     @Override

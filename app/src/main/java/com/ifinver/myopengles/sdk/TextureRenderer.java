@@ -111,7 +111,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
             if (glContext != 0 && mData != null) {
                 // TODO: 2016/11/25 在这里进行frameAvailableSoon
 //                long spend = SystemClock.elapsedRealtime();
-                GLNative.renderOnContext(glContext, mData,mFrameDegree, mFrameWidth, mFrameHeight);
+                FinRender.renderOnContext(glContext, mData,mFrameDegree, mFrameWidth, mFrameHeight);
 //                spend = SystemClock.elapsedRealtime() - spend;
 //                Log.d(TAG, "渲染一帧:" + spend);
             }
@@ -125,7 +125,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
     }
 
     private void initGL() {
-        glContext = GLNative.createGLContext(mSurface, mImageFormat,mFilterType);
+        glContext = FinRender.createGLContext(mSurface, mImageFormat,mFilterType);
         if (glContext == 0) {
             Log.e(TAG, "渲染上下文创建失败！");
         } else {
@@ -135,7 +135,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
 
     private void destroyGL() {
         if (glContext != 0) {
-            GLNative.releaseGLContext(glContext);
+            FinRender.releaseGLContext(glContext);
         }
         Log.d(TAG, "渲染线程已退出");
     }
