@@ -23,9 +23,9 @@ const int FILTER_TYPE_GREY_SCALE = 3;
 const int FILTER_TYPE_NEGATIVE_COLOR = 4;
 
 extern "C" {
-JNIEXPORT jlong JNICALL Java_com_ifinver_myopengles_sdk_FinRender_createGLContext(JNIEnv *env, jclass type, jobject jSurface,int ,int);
-JNIEXPORT void JNICALL Java_com_ifinver_myopengles_sdk_FinRender_releaseGLContext(JNIEnv *env, jclass type, jlong nativeContext);
-JNIEXPORT void JNICALL Java_com_ifinver_myopengles_sdk_FinRender_renderOnContext(JNIEnv *env, jclass type, jlong nativeGlContext,
+JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_sdk_FinRender_createGLContext(JNIEnv *env, jclass type, jobject jSurface,int ,int);
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_sdk_FinRender_releaseGLContext(JNIEnv *env, jclass type, jlong nativeContext);
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_sdk_FinRender_renderOnContext(JNIEnv *env, jclass type, jlong nativeGlContext,
                                                                             jbyteArray data_,int frameDegree, jint frameWidth, jint frameHeight);
 }
 

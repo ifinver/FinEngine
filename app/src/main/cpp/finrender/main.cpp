@@ -5,7 +5,7 @@
 #include <android/native_window_jni.h>
 
 JNIEXPORT jlong JNICALL
-Java_com_ifinver_myopengles_sdk_FinRender_createGLContext(JNIEnv *env, jclass, jobject jSurface, int imageFormat,int filterType) {
+Java_com_ifinver_finengine_sdk_FinRender_createGLContext(JNIEnv *env, jclass, jobject jSurface, int imageFormat,int filterType) {
     GLContextHolder *pHolder = NULL;
     switch (imageFormat) {
         case 0x11://ImageFormat.NV21
@@ -23,12 +23,12 @@ Java_com_ifinver_myopengles_sdk_FinRender_createGLContext(JNIEnv *env, jclass, j
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_myopengles_sdk_FinRender_releaseGLContext(JNIEnv *, jclass, jlong nativeContext) {
+Java_com_ifinver_finengine_sdk_FinRender_releaseGLContext(JNIEnv *, jclass, jlong nativeContext) {
     releaseGLContext((GLContextHolder *) nativeContext);
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_myopengles_sdk_FinRender_renderOnContext(JNIEnv *env, jclass, jlong nativeGlContext, jbyteArray data_,int frameDegree, jint frameWidth,
+Java_com_ifinver_finengine_sdk_FinRender_renderOnContext(JNIEnv *env, jclass, jlong nativeGlContext, jbyteArray data_,int frameDegree, jint frameWidth,
                                                      jint frameHeight) {
 //    jboolean isCopy;
     jbyte *data = env->GetByteArrayElements(data_, 0);
