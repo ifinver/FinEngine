@@ -22,7 +22,6 @@ add_library(fin-render-lib
             finrender/utils.cpp
             finrender/shaders.cpp
             finrender/GLContextHolder.cpp
-            finengine/finengine.cpp
             )
 #加载fin engine lib
 add_library(fin-engine-lib
