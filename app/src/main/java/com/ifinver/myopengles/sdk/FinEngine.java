@@ -11,4 +11,6 @@ public class FinEngine {
     }
 
     public static native long startEngine();
+
+    public static native void stopEngine(long engine);
 }
