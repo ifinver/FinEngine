@@ -1,11 +1,12 @@
-package com.ifinver.myopengles.singleswitch;
+package com.ifinver.finengine.singleswitch;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.ifinver.myopengles.R;
+import com.ifinver.finengine.R;
+
 
 /**
  * Created by iFinVer on 2016/11/25.

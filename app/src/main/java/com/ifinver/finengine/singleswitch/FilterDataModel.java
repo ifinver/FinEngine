@@ -1,4 +1,4 @@
-package com.ifinver.myopengles.singleswitch;
+package com.ifinver.finengine.singleswitch;
 
 /**
  * Created by iFinVer on 2016/11/25.

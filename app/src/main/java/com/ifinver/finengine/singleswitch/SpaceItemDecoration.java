@@ -1,4 +1,4 @@
-package com.ifinver.myopengles.singleswitch;
+package com.ifinver.finengine.singleswitch;
 
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;

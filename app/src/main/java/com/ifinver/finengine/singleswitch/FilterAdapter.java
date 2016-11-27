@@ -1,4 +1,4 @@
-package com.ifinver.myopengles.singleswitch;
+package com.ifinver.finengine.singleswitch;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -9,9 +9,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.ifinver.myopengles.MyApp;
-import com.ifinver.myopengles.R;
-import com.ifinver.myopengles.sdk.TextureRenderer;
+import com.ifinver.finengine.MyApp;
+import com.ifinver.finengine.R;
+import com.ifinver.finengine.sdk.TextureRenderer;
 
 import java.util.ArrayList;
 import java.util.List;

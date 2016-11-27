@@ -1,4 +1,4 @@
-package com.ifinver.myopengles.singleswitch;
+package com.ifinver.finengine.singleswitch;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -14,9 +14,9 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.ifinver.myopengles.R;
-import com.ifinver.myopengles.sdk.CameraHolder;
-import com.ifinver.myopengles.sdk.TextureRenderer;
+import com.ifinver.finengine.R;
+import com.ifinver.finengine.sdk.CameraHolder;
+import com.ifinver.finengine.sdk.TextureRenderer;
 
 
 /**

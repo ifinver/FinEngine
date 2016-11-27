@@ -1,4 +1,4 @@
-package com.ifinver.myopengles.sdk;
+package com.ifinver.finengine.sdk;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -6,8 +6,6 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.TextureView;
 import android.view.View;
-
-import java.nio.ByteBuffer;
 
 /**
  * Created by iFinVer on 2016/11/24.

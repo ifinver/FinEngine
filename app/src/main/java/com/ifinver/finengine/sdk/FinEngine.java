@@ -1,4 +1,4 @@
-package com.ifinver.myopengles.sdk;
+package com.ifinver.finengine.sdk;
 
 /**
  * Created by iFinVer on 2016/11/27.

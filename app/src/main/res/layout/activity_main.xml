@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.ifinver.myopengles.MainActivity">
+    tools:context="com.ifinver.myopengles.com.ifinver.finengine.MainActivity">
 
     <ImageView
         android:id="@+id/iv_show_ori"

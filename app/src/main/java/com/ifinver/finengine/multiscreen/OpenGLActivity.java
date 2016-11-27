@@ -1,4 +1,4 @@
-package com.ifinver.myopengles.multiscreen;
+package com.ifinver.finengine.multiscreen;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -10,12 +10,10 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
-import com.ifinver.myopengles.sdk.CameraHolder;
-import com.ifinver.myopengles.R;
-import com.ifinver.myopengles.sdk.TextureRenderView;
-import com.ifinver.myopengles.sdk.TextureRenderer;
-
-import java.nio.ByteBuffer;
+import com.ifinver.finengine.R;
+import com.ifinver.finengine.sdk.CameraHolder;
+import com.ifinver.finengine.sdk.TextureRenderView;
+import com.ifinver.finengine.sdk.TextureRenderer;
 
 /**
  * Created by iFinVer on 2016/11/16.

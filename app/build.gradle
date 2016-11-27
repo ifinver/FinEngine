@@ -4,17 +4,14 @@ android {
     compileSdkVersion 24
     buildToolsVersion "24.0.3"
     defaultConfig {
-        applicationId "com.ifinver.myopengles"
+        applicationId "com.ifinver.finengine"
         minSdkVersion 16
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
                 cppFlags "-std=c++11 -frtti -fexceptions"
-//                cppFlags.add("-ID:/opencv-sdk/sdk/native/jni/include".toString())
-//                arguments '-DANDROID_TOOLCHAIN=clang', '-DANDROID_STL=gnustl_static'
                 abiFilters 'armeabi'
             }
         }

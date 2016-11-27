@@ -1,4 +1,4 @@
-package com.ifinver.myopengles;
+package com.ifinver.finengine;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -8,8 +8,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.ifinver.myopengles.multiscreen.OpenGLActivity;
-import com.ifinver.myopengles.singleswitch.CameraActivity;
+import com.ifinver.finengine.multiscreen.OpenGLActivity;
+import com.ifinver.finengine.singleswitch.CameraActivity;
+
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 

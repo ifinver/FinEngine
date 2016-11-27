@@ -1,4 +1,4 @@
-package com.ifinver.myopengles.sdk;
+package com.ifinver.finengine.sdk;
 
 import android.view.Surface;
 

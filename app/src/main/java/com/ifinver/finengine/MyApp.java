@@ -1,4 +1,4 @@
-package com.ifinver.myopengles;
+package com.ifinver.finengine;
 
 import android.app.Application;
 
