@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ivOri.setImageResource(R.drawable.t);
         ivGrey.setImageBitmap(generateGreyBmp(R.drawable.t));
 
-        Log.d("Text", FinEngine.test());
+        Log.d("Text", ""+FinEngine.startEngine());
     }
 
     @Override
