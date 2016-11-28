@@ -27,6 +27,9 @@ add_library(fin-render-lib
 add_library(fin-engine-lib
             SHARED
             finengine/finengine.cpp
+            finrender/utils.cpp
+            finrender/shaders.cpp
+            finrender/GLContextHolder.cpp
             )
 
 target_link_libraries(fin-render-lib

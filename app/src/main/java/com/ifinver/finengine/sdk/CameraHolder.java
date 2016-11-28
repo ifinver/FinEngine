@@ -21,7 +21,7 @@ import java.util.List;
  */
 
 @SuppressWarnings("deprecation")
-public class CameraHolder implements Camera.PreviewCallback {
+public class CameraHolder implements Camera.PreviewCallback, SurfaceTexture.OnFrameAvailableListener {
 
     private static final String TAG = "CameraHolder";
     private static final int MAGIC_TEXTURE_ID = 28;
@@ -45,6 +45,7 @@ public class CameraHolder implements Camera.PreviewCallback {
     private boolean mInitialized = false;
     private int mCameraOrientation = 0;
     private ByteBuffer mFrameByteBuffer;
+    private boolean mNeedData = true;
 //    private final CameraOrientationTracker mOrientationTracker;
 //    private int mLastOrientation = 0;
 
@@ -139,20 +140,30 @@ public class CameraHolder implements Camera.PreviewCallback {
     }
 
     /**
+ * @param width    期望的宽
+     * @param height   期望的高
+ * @param callback 初始化结果的回调，将会执行在主线程
+     */
+    public void start(final int width, final int height, CameraCallback callback) {
+        start(width, height,true, callback);
+    }
+
+    /**
      * @param width    期望的宽
      * @param height   期望的高
      * @param callback 初始化结果的回调，将会执行在主线程
      */
-    public void start(final int width, final int height, CameraCallback callback) {
+    public void start(final int width, final int height, final boolean needData, CameraCallback callback) {
         mMaxHeight = MAX_UNSPECIFIED;
         mMaxWidth = MAX_UNSPECIFIED;
         mCanNotifyFrame = false;
         mCameraCallback = callback;
+        mNeedData = needData;
 
         mBufferProcessThread.execute(new Runnable() {
             @Override
             public void run() {
-                final boolean success = startInternal(width, height);
+                final boolean success = startInternal(width, height,mNeedData);
 //                mOrientationTracker.enable();
                 if (mCameraCallback != null) {
                     new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -171,7 +182,7 @@ public class CameraHolder implements Camera.PreviewCallback {
         });
     }
 
-    private boolean startInternal(int width, int height) {
+    private boolean startInternal(int width, int height,boolean needData) {
         boolean result = true;
         synchronized (this) {
             mCamera = null;
@@ -240,8 +251,12 @@ public class CameraHolder implements Camera.PreviewCallback {
                     size = size * ImageFormat.getBitsPerPixel(params.getPreviewFormat()) / 8;
                     mFrameByteBuffer = ByteBuffer.allocateDirect(size);
 
-                    mCamera.addCallbackBuffer(mFrameByteBuffer.array());
-                    mCamera.setPreviewCallbackWithBuffer(this);
+                    if(needData) {
+                        mCamera.addCallbackBuffer(mFrameByteBuffer.array());
+                        mCamera.setPreviewCallbackWithBuffer(this);
+                    }else{
+                        mSurfaceTexture.setOnFrameAvailableListener(this);
+                    }
                     mCamera.setPreviewTexture(mSurfaceTexture);
 
                     Log.d(TAG, "开始预览");
@@ -272,7 +287,7 @@ public class CameraHolder implements Camera.PreviewCallback {
             } else {
                 mCameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
             }
-            return startInternal(mFrameWidth, mFrameHeight);
+            return startInternal(mFrameWidth, mFrameHeight,mNeedData);
         }
         return false;
     }
@@ -346,6 +361,21 @@ public class CameraHolder implements Camera.PreviewCallback {
         return new CameraSize(calcWidth, calcHeight);
     }
 
+    /**
+     * 启动时 needData == false 会回调这里
+     */
+    @Override
+    public void onFrameAvailable(SurfaceTexture surfaceTexture) {
+        if (mCameraCallback != null && mCanNotifyFrame) {
+//            long spend = SystemClock.elapsedRealtime();
+            mCameraCallback.onFrameAvailable();
+//            spend = SystemClock.elapsedRealtime() - spend;
+//            Log.d(TAG, "分派一帧数据耗时:" + spend);
+        }
+    }
+    /**
+     * 启动时 needData == true  会回调这里
+     */
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
         if (mCameraCallback != null && mCanNotifyFrame) {
@@ -377,11 +407,17 @@ public class CameraHolder implements Camera.PreviewCallback {
         void onCameraStarted(boolean success, int mFrameWidth, int mFrameHeight, int imageFormat);
 
         /**
-         * 将回调在子线程
+         * 将回调在子线程,
+         * start方法传入的needData==true时，本方法才会回调
          *
          * @param frameBytes NV21类型
          */
         void onVideoBuffer(byte[] frameBytes, int frameDegree, int frameWidth, int frameHeight);
+
+        /**
+         * start方法传入的needData==false时，本方法才会回调
+         */
+        void onFrameAvailable();
 
         /**
          * @param current one of Camera.CameraInfo.CAMERA_FACING_BACK 、Camera.CameraInfo.CAMERA_FACING_FRONT
@@ -397,7 +433,7 @@ public class CameraHolder implements Camera.PreviewCallback {
         private List<Runnable> taskToExecute;
 
         private BufferProcessThread() {
-            super("BufferProcess", Process.THREAD_PRIORITY_URGENT_DISPLAY);
+            super("BufferProcess", Process.THREAD_PRIORITY_DISPLAY);
         }
 
         @Override

@@ -1,5 +1,6 @@
 package com.ifinver.finengine.offscreen;
 
+import android.graphics.ImageFormat;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -19,6 +20,6 @@ public class OffScreenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_offscreen);
         TextureView tvRender = (TextureView) findViewById(R.id.tex);
-
+        tvRender.setSurfaceTextureListener(new OffScreenRenderer(ImageFormat.NV21,OffScreenRenderer.FILTER_TYPE_CYAN));
     }
 }

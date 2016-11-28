@@ -36,5 +36,3 @@ void releaseGLContext(GLContextHolder *pHolder);
 void renderFrame(GLContextHolder *holder, jbyte *data, int frameDegree ,jint width, jint height);
 
 #endif //MYOPENGLES_GL_NATIVE_LIB_H
-
-

@@ -238,6 +238,7 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int filterType) {
     gl_holder->offsetVertex = 0;
     gl_holder->offsetTex = 2 * sizeof(GLfloat);
 
+    glDepthMask(GL_FALSE);
     glDisable(GL_BLEND);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_STENCIL_TEST);

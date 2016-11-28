@@ -1,16 +1,19 @@
-package com.ifinver.finengine.sdk;
+package com.ifinver.finengine.offscreen;
 
 import android.graphics.SurfaceTexture;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
+
+import com.ifinver.finengine.sdk.FinEngine;
 
 /**
  * Created by iFinVer on 2016/11/21.
  * ilzq@foxmail.com
  */
 
-public class TextureRenderer implements TextureView.SurfaceTextureListener {
+public class OffScreenRenderer implements TextureView.SurfaceTextureListener {
     private static final String TAG = "TextureRenderer";
 
     public static final int FILTER_TYPE_NORMAL = 0;
@@ -24,11 +27,11 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
     private Surface mSurface;
     private int mFilterType;
 
-    public TextureRenderer(int imageFormat){
+    public OffScreenRenderer(int imageFormat){
         this(imageFormat,FILTER_TYPE_NORMAL);
     }
 
-    public TextureRenderer(int imageFormat,int filterType) {
+    public OffScreenRenderer(int imageFormat, int filterType) {
         this.mSurface = null;
         this.mRenderThread = null;
         this.mFilterType = filterType;
@@ -83,7 +86,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         private final int mImageFormat;
         boolean quit = false;
         Surface mSurface;
-        private long glContext;
+        private long mEngine;
         private int mFrameWidth;
         private int mFrameHeight;
         private byte[] mData;
@@ -108,11 +111,12 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         }
 
         private void onDrawFrame() {
-            if (glContext != 0 && mData != null) {
-//                long spend = SystemClock.elapsedRealtime();
-                FinRender.renderOnContext(glContext, mData,mFrameDegree, mFrameWidth, mFrameHeight);
-//                spend = SystemClock.elapsedRealtime() - spend;
-//                Log.d(TAG, "渲染一帧:" + spend);
+            if (mEngine != 0 && mData != null) {
+                // TODO: 2016/11/25 在这里进行frameAvailableSoon
+                long spend = SystemClock.elapsedRealtime();
+                FinEngine.process(mEngine, mData,mFrameDegree, mFrameWidth, mFrameHeight);
+                spend = SystemClock.elapsedRealtime() - spend;
+                Log.d(TAG, "渲染一帧:" + spend);
             }
         }
 
@@ -124,17 +128,17 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
     }
 
     private void initGL() {
-        glContext = FinRender.createGLContext(mSurface, mImageFormat,mFilterType);
-        if (glContext == 0) {
-            Log.e(TAG, "渲染上下文创建失败！");
+        mEngine = FinEngine.startEngine(mImageFormat,mFilterType);
+        if (mEngine == 0) {
+            Log.e(TAG, "引擎启动失败！");
         } else {
-            Log.d(TAG, "渲染初始化成功");
+            Log.d(TAG, "引擎初始化成功");
         }
     }
 
     private void destroyGL() {
-        if (glContext != 0) {
-            FinRender.releaseGLContext(glContext);
+        if (mEngine != 0) {
+            FinEngine.stopEngine(mEngine);
         }
         Log.d(TAG, "渲染线程已退出");
     }
