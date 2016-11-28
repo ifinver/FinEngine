@@ -258,6 +258,7 @@ public class CameraHolder implements Camera.PreviewCallback {
         return result;
     }
 
+
     private boolean toggleCameraInternal() {
         if (mCamera != null) {
             try {
