@@ -1,6 +1,7 @@
 package com.ifinver.finengine.sdk;
 
 import android.content.res.AssetManager;
+import android.graphics.SurfaceTexture;
 
 import com.ifinver.finengine.MyApp;
 
@@ -45,8 +46,8 @@ public class FinEngine {
         mEngineThread = null;
     }
 
-    public void notifyProcess(){
-        mEngineThread.notifyProcess();
+    public void notifyProcess(SurfaceTexture surfaceTexture, int frameDegree){
+        mEngineThread.notifyProcess(surfaceTexture,frameDegree);
     }
 
     private class FinEngineThread extends Thread{
@@ -57,6 +58,8 @@ public class FinEngine {
         private final int mFrameHeight;
         private long mEngine;
         private boolean exit = false;
+        private SurfaceTexture mSurfaceTexture;
+        private int mFrameDegree;
 
         FinEngineThread(int imageFormat, int frameWidth,int frameHeight,int filterType){
             this.mImageFormat = imageFormat;
@@ -71,8 +74,7 @@ public class FinEngine {
             while (!exit){
                 synchronized (this) {
 
-// TODO: 2016/11/28 process here
-
+                    process(mEngine,mSurfaceTexture,mFrameDegree);
 
                     try {
                         wait();
@@ -89,7 +91,9 @@ public class FinEngine {
             interrupt();
         }
 
-        public void notifyProcess() {
+        public void notifyProcess(SurfaceTexture surfaceTexture, int frameDegree) {
+            this.mSurfaceTexture = surfaceTexture;
+            this.mFrameDegree = frameDegree;
             synchronized (this) {
                 notify();
             }
@@ -100,5 +104,5 @@ public class FinEngine {
 
     private native void _stopEngine(long engine);
 
-    private native void process(long glContext, byte[] mData, int mFrameDegree, int mFrameWidth, int mFrameHeight);
+    private native void process(long glContext, SurfaceTexture surfaceTexture, int mFrameDegree);
 }

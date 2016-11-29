@@ -1,5 +1,6 @@
 package com.ifinver.finengine.multiscreen;
 
+import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -76,7 +77,7 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.Ca
     }
 
     @Override
-    public void onFrameAvailable() {
+    public void onFrameAvailable(SurfaceTexture surfaceTexture, int frameDegree) {
 
     }
 

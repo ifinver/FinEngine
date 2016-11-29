@@ -261,6 +261,7 @@ public class CameraHolder implements Camera.PreviewCallback, SurfaceTexture.OnFr
 
                     Log.d(TAG, "开始预览");
                     mCamera.startPreview();
+                    mSurfaceTexture.detachFromGLContext();
                     setCameraDispOri();
                 } else
                     result = false;
@@ -368,7 +369,7 @@ public class CameraHolder implements Camera.PreviewCallback, SurfaceTexture.OnFr
     public void onFrameAvailable(SurfaceTexture surfaceTexture) {
         if (mCameraCallback != null && mCanNotifyFrame) {
 //            long spend = SystemClock.elapsedRealtime();
-            mCameraCallback.onFrameAvailable();
+            mCameraCallback.onFrameAvailable(surfaceTexture,mCameraOrientation);
 //            spend = SystemClock.elapsedRealtime() - spend;
 //            Log.d(TAG, "分派一帧数据耗时:" + spend);
         }
@@ -416,8 +417,10 @@ public class CameraHolder implements Camera.PreviewCallback, SurfaceTexture.OnFr
 
         /**
          * start方法传入的needData==false时，本方法才会回调
+         * @param surfaceTexture
+         * @param frameDegree
          */
-        void onFrameAvailable();
+        void onFrameAvailable(SurfaceTexture surfaceTexture, int frameDegree);
 
         /**
          * @param current one of Camera.CameraInfo.CAMERA_FACING_BACK 、Camera.CameraInfo.CAMERA_FACING_FRONT

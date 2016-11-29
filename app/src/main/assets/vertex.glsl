@@ -1,7 +1,7 @@
 attribute vec2 aPosition;
 attribute vec2 aTexCoord;
-varying vec2 vTexCoord;
 attribute vec4 aRotVector;
+varying vec2 vTexCoord;
 void main(){
    mat2 rotMat = mat2(aRotVector.x,aRotVector.y,aRotVector.z,aRotVector.w);
    vTexCoord = aTexCoord;

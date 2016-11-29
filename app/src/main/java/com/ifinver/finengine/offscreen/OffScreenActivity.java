@@ -1,5 +1,6 @@
 package com.ifinver.finengine.offscreen;
 
+import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -48,8 +49,8 @@ public class OffScreenActivity extends AppCompatActivity implements CameraHolder
     public void onVideoBuffer(byte[] frameBytes, int frameDegree, int frameWidth, int frameHeight) {}
 
     @Override
-    public void onFrameAvailable() {
-        FinEngine.getInstance().notifyProcess();
+    public void onFrameAvailable(SurfaceTexture surfaceTexture, int frameDegree) {
+        FinEngine.getInstance().notifyProcess(surfaceTexture,frameDegree);
     }
 
     @Override

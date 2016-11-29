@@ -10,10 +10,15 @@
 #include "FinEngineHolder.h"
 
 extern "C" {
-JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_sdk_FinEngine__1startEngine(JNIEnv *env, jclass type,int imageFormat,int frameWidth,int frameHeight,int filterType,jobject jAssetsManager);
+JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_sdk_FinEngine__1startEngine(JNIEnv *, jclass, int, int, int, int, jobject);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_sdk_FinEngine__1stopEngine(JNIEnv *env, jclass type, jlong engine);
-JNIEXPORT void JNICALL Java_com_ifinver_finengine_sdk_FinEngine_process(JNIEnv *env, jclass type, jlong glContext, jbyteArray mData_, jint mFrameDegree, jint mFrameWidth,
-                                                                        jint mFrameHeight);
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_sdk_FinEngine_process(JNIEnv *, jclass, jlong, jobject, jint mFrameDegree);
 };
-FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHeight, int filterType,jobject jAssetsManager);
+
+FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHeight, int filterType, jobject jAssetsManager);
+
+void releaseEngine(FinEngineHolder *pHolder);
+
+void renderFrame(FinEngineHolder *pHolder, jint degree);
+
 #endif //MYOPENGLES_FINEGINE_H
