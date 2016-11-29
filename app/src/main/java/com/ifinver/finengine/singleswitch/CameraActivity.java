@@ -83,6 +83,11 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Ca
     }
 
     @Override
+    public void onFrameAvailable() {
+
+    }
+
+    @Override
     public void onToggleCameraComplete(boolean success, int current) {
 
     }

@@ -76,6 +76,11 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.Ca
     }
 
     @Override
+    public void onFrameAvailable() {
+
+    }
+
+    @Override
     public void onToggleCameraComplete(boolean success, int current) {
         if (success) {
             Toast.makeText(OpenGLActivity.this, "success", Toast.LENGTH_SHORT).show();

@@ -25,8 +25,8 @@ public class FinEngine {
 
     private FinEngineThread mEngineThread;
 
-    public void startEngine(int imageFormat, int mFilterType){
-        mEngineThread = new FinEngineThread(imageFormat,mFilterType);
+    public void startEngine(int imageFormat, int frameWidth,int frameHeight,int mFilterType){
+        mEngineThread = new FinEngineThread(imageFormat,frameWidth,frameHeight,mFilterType);
     }
 
     public void stopEngine(){
@@ -42,17 +42,21 @@ public class FinEngine {
 
         private final int mImageFormat;
         private final int mFilterType;
+        private final int mFrameWidth;
+        private final int mFrameHeight;
         private long mEngine;
         private boolean exit = false;
 
-        FinEngineThread(int imageFormat, int filterType){
+        FinEngineThread(int imageFormat, int frameWidth,int frameHeight,int filterType){
             this.mImageFormat = imageFormat;
             this.mFilterType = filterType;
+            this.mFrameWidth = frameWidth;
+            this.mFrameHeight = frameHeight;
         }
 
         @Override
         public void run() {
-            mEngine = _startEngine(mImageFormat,mFilterType);
+            mEngine = _startEngine(mImageFormat,mFrameWidth,mFrameHeight,mFilterType);
             while (!exit){
                 synchronized (this) {
 
@@ -81,7 +85,7 @@ public class FinEngine {
         }
     }
 
-    private native long _startEngine(int imageFormat, int mFilterType);
+    private native long _startEngine(int imageFormat, int frameWidth,int frameHeight,int filterType);
 
     private native void _stopEngine(long engine);
 

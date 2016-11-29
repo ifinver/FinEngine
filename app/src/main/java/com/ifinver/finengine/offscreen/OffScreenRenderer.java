@@ -6,8 +6,6 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 
-import com.ifinver.finengine.sdk.FinEngine;
-
 /**
  * Created by iFinVer on 2016/11/21.
  * ilzq@foxmail.com
@@ -114,7 +112,7 @@ public class OffScreenRenderer implements TextureView.SurfaceTextureListener {
             if (mEngine != 0 && mData != null) {
                 // TODO: 2016/11/25 在这里进行frameAvailableSoon
                 long spend = SystemClock.elapsedRealtime();
-                FinEngine.process(mEngine, mData,mFrameDegree, mFrameWidth, mFrameHeight);
+//                FinEngine.process(mEngine, mData,mFrameDegree, mFrameWidth, mFrameHeight);
                 spend = SystemClock.elapsedRealtime() - spend;
                 Log.d(TAG, "渲染一帧:" + spend);
             }
@@ -128,7 +126,7 @@ public class OffScreenRenderer implements TextureView.SurfaceTextureListener {
     }
 
     private void initGL() {
-        mEngine = FinEngine.startEngine(mImageFormat,mFilterType);
+//        mEngine = FinEngine.startEngine(mImageFormat,mFilterType);
         if (mEngine == 0) {
             Log.e(TAG, "引擎启动失败！");
         } else {
@@ -138,7 +136,7 @@ public class OffScreenRenderer implements TextureView.SurfaceTextureListener {
 
     private void destroyGL() {
         if (mEngine != 0) {
-            FinEngine.stopEngine(mEngine);
+//            FinEngine.stopEngine(mEngine);
         }
         Log.d(TAG, "渲染线程已退出");
     }
