@@ -22,6 +22,13 @@ add_library(fin-engine-lib
             finengine/FinEngineHolder.cpp
             finengine/shader/ShaderHolder.cpp
             )
+target_link_libraries(fin-engine-lib
+                      EGL
+                      GLESv2
+                      log
+                      android
+                      )
+
 
 #加载fin render lib
 add_library(fin-render-lib
@@ -31,12 +38,9 @@ add_library(fin-render-lib
             finrender/shaders.cpp
             finrender/GLContextHolder.cpp
             )
-
-
 target_link_libraries(fin-render-lib
-                      fin-engine-lib
-                      android
-                      log
                       EGL
-#                      lib_opencv
-                      GLESv2)
+                      GLESv2
+                      log
+                      android
+                      )

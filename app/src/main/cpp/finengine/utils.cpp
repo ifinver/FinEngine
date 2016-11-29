@@ -2,6 +2,7 @@
 // Created by iFinVer on 2016/11/21.
 //
 #include "utils.h"
+#include "log.h"
 #include <stdlib.h>
 
 

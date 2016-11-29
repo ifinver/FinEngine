@@ -3,9 +3,8 @@
 //
 #include "finengine.h"
 #include "utils.h"
+#include "log.h"
 #include "shader/ShaderHolder.h"
-#include <GLES2/gl2.h>
-#include <android/log.h>
 #include <GLES2/gl2ext.h>
 
 JNIEXPORT jlong JNICALL
@@ -62,4 +61,5 @@ FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHei
         LOGE("引擎启动失败！ code=1");
         return NULL;
     }
+    return holder;
 }
