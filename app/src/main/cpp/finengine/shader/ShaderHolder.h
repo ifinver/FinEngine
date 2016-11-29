@@ -18,6 +18,12 @@ const GLfloat VERTICES_BASE[] =
                 1.0f, 0.0f    // TexCoord 3
         };
 
+const int FILTER_TYPE_NORMAL = 0;
+const int FILTER_TYPE_CYAN = 1;
+const int FILTER_TYPE_FISH_EYE = 2;
+const int FILTER_TYPE_GREY_SCALE = 3;
+const int FILTER_TYPE_NEGATIVE_COLOR = 4;
+
 class ShaderHolder {
 public:
     ShaderHolder(int filterType);

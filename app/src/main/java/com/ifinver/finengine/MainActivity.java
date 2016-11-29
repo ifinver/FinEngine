@@ -12,14 +12,16 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ImageView;
 
 import com.ifinver.finengine.multiscreen.OpenGLActivity;
+import com.ifinver.finengine.offscreen.OffScreenActivity;
 import com.ifinver.finengine.singleswitch.CameraActivity;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity {
 
     private final int REQUEST_CODE_REQUEST_PERMISSION = 101;
 
@@ -31,9 +33,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ImageView ivOri = (ImageView) findViewById(R.id.iv_show_ori);
         ImageView ivGrey = (ImageView) findViewById(R.id.iv_show_grey);
 
-        ivOri.setOnClickListener(this);
-        ivGrey.setOnClickListener(this);
-
         ivOri.setImageResource(R.drawable.t);
         ivGrey.setImageBitmap(generateGreyBmp(R.drawable.t));
 
@@ -44,15 +43,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.iv_show_ori:
-                startActivity(new Intent(this, CameraActivity.class));
-                break;
-            case R.id.iv_show_grey:
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_activity_multi:
                 startActivity(new Intent(this, OpenGLActivity.class));
-                break;
+                return true;
+            case R.id.menu_activity_switch:
+                startActivity(new Intent(this, CameraActivity.class));
+                return true;
+            case R.id.menu_activity_off:
+                startActivity(new Intent(this, OffScreenActivity.class));
+                return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -89,6 +92,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             resultImg.setPixels(resultInt, 0, w, 0, 0, w, h);
         }
         return resultImg;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.choose_enter, menu);
+        return true;
     }
 
 }

@@ -10,6 +10,12 @@ public class FinEngine {
         System.loadLibrary("fin-engine-lib");
     }
 
+    public static final int FILTER_TYPE_NORMAL = 0;
+    public static final int FILTER_TYPE_CYAN = 1;
+    public static final int FILTER_TYPE_FISH_EYE = 2;
+    public static final int FILTER_TYPE_GREY_SCALE = 3;
+    public static final int FILTER_TYPE_NEGATIVE_COLOR = 4;
+
     private FinEngine(){}
     private static FinEngine mInstance;
     public static FinEngine getInstance(){
