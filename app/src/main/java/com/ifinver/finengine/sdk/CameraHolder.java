@@ -190,7 +190,7 @@ public class CameraHolder implements Camera.PreviewCallback, SurfaceTexture.OnFr
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
                 int localCameraIndex = mCameraIndex;
                 if (mCameraIndex == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                    Log.d(TAG, "尝试打开后置摄像头");
+                    Log.d(TAG, "开始打开后置摄像头");
                     Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
                     for (int camIdx = 0; camIdx < Camera.getNumberOfCameras(); ++camIdx) {
                         Camera.getCameraInfo(camIdx, cameraInfo);
@@ -200,7 +200,7 @@ public class CameraHolder implements Camera.PreviewCallback, SurfaceTexture.OnFr
                         }
                     }
                 } else if (mCameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    Log.d(TAG, "尝试打开后置摄像头");
+                    Log.d(TAG, "开始打开后置摄像头");
                     Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
                     for (int camIdx = 0; camIdx < Camera.getNumberOfCameras(); ++camIdx) {
                         Camera.getCameraInfo(camIdx, cameraInfo);

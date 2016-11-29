@@ -72,6 +72,8 @@ GLuint createProgram(const char *pVertexSrc, const char *pFragmentSrc) {
             }
             glDeleteProgram(program);
             program = 0;
+        }else{
+            LOGI("program 链接完成！");
         }
     }
     return program;

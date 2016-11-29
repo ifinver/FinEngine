@@ -1,5 +1,9 @@
 package com.ifinver.finengine.sdk;
 
+import android.content.res.AssetManager;
+
+import com.ifinver.finengine.MyApp;
+
 /**
  * Created by iFinVer on 2016/11/27.
  * ilzq@foxmail.com
@@ -33,6 +37,7 @@ public class FinEngine {
 
     public void startEngine(int imageFormat, int frameWidth,int frameHeight,int mFilterType){
         mEngineThread = new FinEngineThread(imageFormat,frameWidth,frameHeight,mFilterType);
+        mEngineThread.start();
     }
 
     public void stopEngine(){
@@ -62,7 +67,7 @@ public class FinEngine {
 
         @Override
         public void run() {
-            mEngine = _startEngine(mImageFormat,mFrameWidth,mFrameHeight,mFilterType);
+            mEngine = _startEngine(mImageFormat,mFrameWidth,mFrameHeight,mFilterType, MyApp.getContext().getAssets());
             while (!exit){
                 synchronized (this) {
 
@@ -91,7 +96,7 @@ public class FinEngine {
         }
     }
 
-    private native long _startEngine(int imageFormat, int frameWidth,int frameHeight,int filterType);
+    private native long _startEngine(int imageFormat, int frameWidth, int frameHeight, int filterType, AssetManager assets);
 
     private native void _stopEngine(long engine);
 

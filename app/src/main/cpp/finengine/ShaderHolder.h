@@ -5,6 +5,7 @@
 #ifndef FINENGINE_SHADERHOLDER_H
 #define FINENGINE_SHADERHOLDER_H
 #include <GLES2/gl2.h>
+#include <jni.h>
 
 const GLfloat VERTICES_BASE[] =
         {
@@ -26,7 +27,7 @@ const int FILTER_TYPE_NEGATIVE_COLOR = 4;
 
 class ShaderHolder {
 public:
-    ShaderHolder(int filterType);
+    ShaderHolder(int filterType,JNIEnv* env,jobject jAssetsManager);
     const char* getVertexShader(); 
     const char* getFragmentShader(); 
 private:

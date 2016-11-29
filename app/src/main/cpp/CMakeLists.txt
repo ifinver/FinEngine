@@ -20,7 +20,7 @@ add_library(fin-engine-lib
             finengine/finengine.cpp
             finengine/utils.cpp
             finengine/FinEngineHolder.cpp
-            finengine/shader/ShaderHolder.cpp
+            finengine/ShaderHolder.cpp
             )
 target_link_libraries(fin-engine-lib
                       EGL
