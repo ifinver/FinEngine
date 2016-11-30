@@ -124,7 +124,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
     }
 
     private void initGL() {
-        glContext = FinRender.createGLContext(mSurface, mImageFormat,mFilterType);
+        glContext = FinRender.createGLContext(mSurface, mFilterType);
         if (glContext == 0) {
             Log.e(TAG, "渲染上下文创建失败！");
         } else {

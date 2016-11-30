@@ -5,16 +5,18 @@
 #include <android/native_window_jni.h>
 
 JNIEXPORT jlong JNICALL
-Java_com_ifinver_finengine_sdk_FinRender_createGLContext(JNIEnv *env, jclass, jobject jSurface, int imageFormat,int filterType) {
+Java_com_ifinver_finengine_sdk_FinRender_createGLContext(JNIEnv *env, jclass, jobject jSurface, int frameFormat) {
     GLContextHolder *pHolder = NULL;
-    switch (imageFormat) {
-        case 0x11://ImageFormat.NV21
-            pHolder = newGLContext(env, jSurface, filterType);
+
+    switch (frameFormat){
+        case FORMAT_RGBA:
+            pHolder = newGLContext(env, jSurface);
             break;
         default:
-            LOGE("不支持的视频编码格式！");
+            LOGE("暂不支持格式：%d",frameFormat);
             break;
     }
+
 
     if (pHolder == NULL) {
         return 0;
@@ -60,36 +62,24 @@ void renderFrame(GLContextHolder *holder, jbyte *data,int frameDegree ,jint widt
     glVertexAttribPointer(holder->positions[1], 2, GL_FLOAT, GL_FALSE, holder->texStride, (const void *) holder->offsetTex);
 
     /**
-     * Y texture
+     * rgb texture
      */
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, holder->textures[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    /**
-     * uv texture
-     */
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, holder->textures[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, width / 2, height / 2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, data + (width * height));
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glUniform1i(holder->positions[2], 0);
-    glUniform1i(holder->positions[3], 1);
 
     //rotation
     if (holder->frameDegree != frameDegree) {
         holder->rotationMatrix = new GLfloat[4]{cosf(d2r(frameDegree)), -sinf(d2r(frameDegree)), sinf(d2r(frameDegree)), cosf(d2r(frameDegree))};
         holder->frameDegree = frameDegree;
     }
-    glVertexAttrib4fv(holder->positions[4], holder->rotationMatrix);
+    glVertexAttrib4fv(holder->positions[3], holder->rotationMatrix);
 
 //    glClear(GL_COLOR_BUFFER_BIT);
 
@@ -114,7 +104,7 @@ void releaseGLContext(GLContextHolder *holder) {
 }
 
 //创建一个新的绘制上下文
-GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int filterType) {
+GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface) {
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
         checkGlError("eglGetDisplay");
@@ -170,26 +160,7 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int filterType) {
     }
 
     //context create success,now create program
-    ShaderBase shader;
-    switch (filterType){
-        default:
-        case FILTER_TYPE_NORMAL:
-            shader = ShaderYuv();
-            break;
-        case FILTER_TYPE_CYAN:
-            shader = ShaderCyan();
-            break;
-        case FILTER_TYPE_FISH_EYE:
-            shader = ShaderFishEye();
-            break;
-        case FILTER_TYPE_GREY_SCALE:
-            shader = ShaderGreyScale();
-            break;
-        case FILTER_TYPE_NEGATIVE_COLOR:
-            shader = ShaderNegativeColor();
-            break;
-    }
-
+    ShaderBase shader = ShaderRGBA();
     GLuint programYUV = createProgram(shader.vertexShader, shader.fragmentShader);
 //    delete shader;
     if (programYUV == 0) {
@@ -209,14 +180,12 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int filterType) {
     GLint posAttrVertices = glGetAttribLocation(programYUV, "aPosition");
     GLint posAttrTexCoords = glGetAttribLocation(programYUV, "aTexCoord");
     GLint posAttrRot = glGetAttribLocation(programYUV, "aRotVector");
-    GLint posUniYTexture = glGetUniformLocation(programYUV, "yTexture");
-    GLint posUniUvTexture = glGetUniformLocation(programYUV, "uvTexture");
-    GLuint *positions = new GLuint[5];
+    GLint posUniRgbTexture = glGetUniformLocation(programYUV, "rgbTexture");
+    GLuint *positions = new GLuint[4];
     positions[0] = (GLuint) posAttrVertices;
     positions[1] = (GLuint) posAttrTexCoords;
-    positions[2] = (GLuint) posUniYTexture;
-    positions[3] = (GLuint) posUniUvTexture;
-    positions[4] = (GLuint) posAttrRot;
+    positions[2] = (GLuint) posUniRgbTexture;
+    positions[3] = (GLuint) posAttrRot;
     gl_holder->positions = positions;
     gl_holder->frameDegree = -1;
 

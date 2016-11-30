@@ -10,6 +10,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
+    <TextView
+        android:id="@+id/tv_fps"
+        android:textColor="@android:color/holo_red_dark"
+        android:layout_width="wrap_content"
+        android:layout_gravity="end|top"
+        android:layout_height="wrap_content"/>
+
     <LinearLayout
         android:id="@+id/ll_filters"
         android:visibility="gone"

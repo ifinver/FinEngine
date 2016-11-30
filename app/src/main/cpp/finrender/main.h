@@ -16,20 +16,16 @@
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
-const int FILTER_TYPE_NORMAL = 0;
-const int FILTER_TYPE_CYAN = 1;
-const int FILTER_TYPE_FISH_EYE = 2;
-const int FILTER_TYPE_GREY_SCALE = 3;
-const int FILTER_TYPE_NEGATIVE_COLOR = 4;
+const int FORMAT_RGBA = 0x101;
 
 extern "C" {
-JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_sdk_FinRender_createGLContext(JNIEnv *env, jclass type, jobject jSurface,int ,int);
+JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_sdk_FinRender_createGLContext(JNIEnv *env, jclass type, jobject jSurface,int);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_sdk_FinRender_releaseGLContext(JNIEnv *env, jclass type, jlong nativeContext);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_sdk_FinRender_renderOnContext(JNIEnv *env, jclass type, jlong nativeGlContext,
                                                                             jbyteArray data_,int frameDegree, jint frameWidth, jint frameHeight);
 }
 
-GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, int);
+GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface);
 
 void releaseGLContext(GLContextHolder *pHolder);
 

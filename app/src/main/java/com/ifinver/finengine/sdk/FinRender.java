@@ -8,6 +8,7 @@ import android.view.Surface;
  */
 
 public class FinRender {
+    public static final int FORMAT_RGBA = 0x101;
     static {
         System.loadLibrary("fin-render-lib");
     }
@@ -15,7 +16,7 @@ public class FinRender {
     /**
      * @return 0 means failed
      */
-    public static native long createGLContext(Surface surface, int imageFormat, int mFilterType);
+    public static native long createGLContext(Surface surface, int frameFormat);
 
     public static native void releaseGLContext(long nativeContext);
 

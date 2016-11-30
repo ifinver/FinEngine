@@ -25,6 +25,7 @@ public:
     GLuint localRotateVec;
     jmethodID midAttachToGlContext;
     jmethodID midDetachFromGLContext;
+    jmethodID midUpdateTexImage;
     jint frameDegree;
     GLfloat *rotationMatrix;
     int frameWidth;

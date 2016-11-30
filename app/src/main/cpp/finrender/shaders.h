@@ -41,6 +41,20 @@ public:
 //        delete fragmentShader;
 //    }
 };
+class ShaderRGBA : public ShaderBase {
+public:
+    ShaderRGBA() {
+        fragmentShader =
+                        "#extension GL_OES_EGL_image_external : require     \n"
+                        "precision mediump float;                           \n"
+                        "varying vec2 vTexCoord;                            \n"
+                        "uniform sampler2D rgbTexture;                      \n"
+                        "void main(){                                       \n"
+                        "   gl_FragColor = texture2D(rgbTexture,vTexCoord); \n"
+                        "}                                                  \n";
+
+    }
+};
 class ShaderYuv : public ShaderBase {
 public:
     ShaderYuv() {

@@ -1,15 +1,16 @@
 package com.ifinver.finengine.sdk;
 
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.os.Process;
+import android.util.DisplayMetrics;
 import android.util.Log;
-
-import com.ifinver.finengine.MyApp;
 
 import java.nio.ByteBuffer;
 
@@ -30,6 +31,7 @@ public class FinEngine {
     public static final int FILTER_TYPE_FISH_EYE = 2;
     public static final int FILTER_TYPE_GREY_SCALE = 3;
     public static final int FILTER_TYPE_NEGATIVE_COLOR = 4;
+    private Context mAppCtx;
 
     private FinEngine(){}
     private static FinEngine mInstance;
@@ -46,13 +48,15 @@ public class FinEngine {
 
     private FinEngineThread mEngineThread;
 
-    public void startEngine(int expectedWidth,int expectedHeight,int mFilterType,OnVideoBufferListener listener){
-        mEngineThread = new FinEngineThread(expectedWidth,expectedHeight,mFilterType,listener);
+    public void startEngine(Context ctx, OnVideoBufferListener listener){
+        this.mAppCtx = ctx.getApplicationContext();
+        DisplayMetrics dm = mAppCtx.getResources().getDisplayMetrics();
+        mEngineThread = new FinEngineThread(dm.widthPixels,dm.heightPixels,listener);
         mEngineThread.start();
     }
 
     public void stopEngine(){
-        mEngineThread.quit();
+        mEngineThread.exit();
         mEngineThread = null;
     }
 
@@ -62,7 +66,6 @@ public class FinEngine {
         private final int MSG_PROCESS = 0x102;
         private final int MSG_STOP = 0x103;
 
-        private final int mFilterType;
         private final int mExpectedWidth;
         private final int mExpectedHeight;
         private ByteBuffer mVideoBuffer;
@@ -73,11 +76,11 @@ public class FinEngine {
         private int mFrameWidth;
         private int mFrameHeight;
         private Handler mHandler;
+        private boolean exited = false;
 
 
-        FinEngineThread( int expectedWidth,int expectedHeight,int filterType,OnVideoBufferListener listener){
-            super("FinEngineThread", Process.THREAD_PRIORITY_DISPLAY);
-            this.mFilterType = filterType;
+        FinEngineThread( int expectedWidth,int expectedHeight,OnVideoBufferListener listener){
+            super("FinEngineThread", Process.THREAD_PRIORITY_URGENT_DISPLAY);
             this.mExpectedWidth = expectedWidth;
             this.mExpectedHeight = expectedHeight;
             this.mListener = listener;
@@ -98,13 +101,13 @@ public class FinEngine {
             }
         }
 
-        @Override
-        public boolean quit() {
+        public void exit(){
+            exited = true;
             if(mHandler != null){
                 mHandler.sendEmptyMessage(MSG_STOP);
             }
-            return super.quit();
         }
+
 
         @Override
         public boolean handleMessage(Message msg) {
@@ -125,13 +128,18 @@ public class FinEngine {
         private void stopCameraAndEngine() {
             mCameraUtils.stop();
             _stopEngine();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                quitSafely();
+            } else {
+                quit();
+            }
         }
 
         private void processPerFrame() {
-            if(mSurfaceTexture != null) {
+            if(mSurfaceTexture != null && !exited) {
                 process( mSurfaceTexture, mCameraUtils.getFrameDegree(),mVideoBuffer.array());
                 if(mListener != null){
-                    mListener.onVideoBuffer(mVideoBuffer.array());
+                    mListener.onVideoBuffer(mVideoBuffer.array(),mFrameWidth,mFrameHeight);
                 }
             }
         }
@@ -143,26 +151,28 @@ public class FinEngine {
             }
             mFrameWidth = mCameraUtils.getFrameWidth();
             mFrameHeight = mCameraUtils.getFrameHeight();
-            mInputTex = _startEngine(mFrameWidth,mFrameHeight,mFilterType, MyApp.getContext().getAssets());
+            mInputTex = _startEngine(mFrameWidth,mFrameHeight, mAppCtx.getAssets());
             if(mInputTex == -1){
                 Log.e(TAG,"引擎初始化失败！");
                 return;
             }
             mVideoBuffer = ByteBuffer.allocateDirect(mFrameHeight*mFrameWidth*4);
+            mVideoBuffer.position(0);
 //            mVideoBuffer = ByteBuffer.allocate(mFrameHeight*mFrameWidth*4);
             mSurfaceTexture = new SurfaceTexture(mInputTex);
             mSurfaceTexture.setOnFrameAvailableListener(this);
-            mCameraUtils.startPreview(mSurfaceTexture);
+            mCameraUtils.startPreview(mAppCtx,mSurfaceTexture);
+//            mSurfaceTexture.detachFromGLContext();
         }
     }
 
-    private native int _startEngine(int frameWidth, int frameHeight, int filterType, AssetManager assets);
+    private native int _startEngine(int frameWidth, int frameHeight, AssetManager assets);
 
     private native void _stopEngine();
 
     private native void process(SurfaceTexture surfaceTexture, int mFrameDegree, byte[] array);
 
     public interface OnVideoBufferListener{
-        void onVideoBuffer(byte[] data);
+        void onVideoBuffer(byte[] data, int frameWidth, int frameHeight);
     }
 }

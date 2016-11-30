@@ -10,12 +10,12 @@
 #include "FinEngineHolder.h"
 
 extern "C" {
-JNIEXPORT int JNICALL Java_com_ifinver_finengine_sdk_FinEngine__1startEngine(JNIEnv *, jclass, int, int, int, jobject);
+JNIEXPORT int JNICALL Java_com_ifinver_finengine_sdk_FinEngine__1startEngine(JNIEnv *, jclass, int, int, jobject);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_sdk_FinEngine__1stopEngine(JNIEnv *env, jclass type);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_sdk_FinEngine_process(JNIEnv *, jclass, jobject, jint mFrameDegree, jbyteArray _data);
 };
 
-FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHeight, int filterType, jobject jAssetsManager);
+FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHeight, jobject jAssetsManager);
 
 void releaseEngine();
 

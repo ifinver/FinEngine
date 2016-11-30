@@ -1,10 +1,11 @@
 package com.ifinver.finengine.offscreen;
 
 import android.graphics.SurfaceTexture;
-import android.os.SystemClock;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
+
+import com.ifinver.finengine.sdk.FinRender;
 
 /**
  * Created by iFinVer on 2016/11/21.
@@ -14,26 +15,16 @@ import android.view.TextureView;
 public class OffScreenRenderer implements TextureView.SurfaceTextureListener {
     private static final String TAG = "TextureRenderer";
 
-    public static final int FILTER_TYPE_NORMAL = 0;
-    public static final int FILTER_TYPE_CYAN = 1;
-    public static final int FILTER_TYPE_FISH_EYE = 2;
-    public static final int FILTER_TYPE_GREY_SCALE = 3;
-    public static final int FILTER_TYPE_NEGATIVE_COLOR = 4;
 
     private RenderThread mRenderThread;
-    private int mImageFormat;
     private Surface mSurface;
-    private int mFilterType;
+    private int mFrameFormat;
 
-    public OffScreenRenderer(int imageFormat){
-        this(imageFormat,FILTER_TYPE_NORMAL);
-    }
 
-    public OffScreenRenderer(int imageFormat, int filterType) {
+    public OffScreenRenderer(int frameFormat) {
         this.mSurface = null;
         this.mRenderThread = null;
-        this.mFilterType = filterType;
-        this.mImageFormat = imageFormat;
+        this.mFrameFormat = frameFormat;
     }
 
     private void release() {
@@ -43,9 +34,9 @@ public class OffScreenRenderer implements TextureView.SurfaceTextureListener {
         }
     }
 
-    public void onVideoBuffer(byte[] data,int frameDegree, int frameWidth, int frameHeight) {
+    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight) {
         if (mRenderThread != null) {
-            mRenderThread.notifyWithBuffer(data,frameDegree, frameWidth, frameHeight);
+            mRenderThread.notifyWithBuffer(data, frameWidth, frameHeight);
         }
     }
 
@@ -55,7 +46,7 @@ public class OffScreenRenderer implements TextureView.SurfaceTextureListener {
         mSurface = new Surface(surface);
 
         if ( mRenderThread == null ) {
-            mRenderThread = new RenderThread(mSurface, mImageFormat,mFilterType);
+            mRenderThread = new RenderThread(mSurface, mFrameFormat);
             mRenderThread.start();
         }
     }
@@ -81,26 +72,22 @@ public class OffScreenRenderer implements TextureView.SurfaceTextureListener {
 
     private static class RenderThread extends Thread {
         private static final String TAG = "RenderThread";
-        private final int mImageFormat;
         boolean quit = false;
         Surface mSurface;
         private long mEngine;
         private int mFrameWidth;
         private int mFrameHeight;
         private byte[] mData;
-        private int mFilterType;
-        private int mFrameDegree;
+        private int mFrameFormat;
 
-        RenderThread(Surface surface,int mImageFormat, int mFilterType) {
+        RenderThread(Surface surface, int frameFormat) {
             this.mSurface = surface;
-            this.mImageFormat = mImageFormat;
-            this.mFilterType = mFilterType;
+            this.mFrameFormat = frameFormat;
         }
 
-        public void notifyWithBuffer(byte[] data,int frameDegree, int frameWidth, int frameHeight) {
+        public void notifyWithBuffer(byte[] data, int frameWidth, int frameHeight) {
             this.mFrameWidth = frameWidth;
             this.mFrameHeight = frameHeight;
-            this.mFrameDegree = frameDegree;
             this.mData = data;
             //wakeup
             synchronized (this) {
@@ -110,11 +97,10 @@ public class OffScreenRenderer implements TextureView.SurfaceTextureListener {
 
         private void onDrawFrame() {
             if (mEngine != 0 && mData != null) {
-                // TODO: 2016/11/25 在这里进行frameAvailableSoon
-                long spend = SystemClock.elapsedRealtime();
-//                FinEngine.process(mEngine, mData,mFrameDegree, mFrameWidth, mFrameHeight);
-                spend = SystemClock.elapsedRealtime() - spend;
-                Log.d(TAG, "渲染一帧:" + spend);
+//                long spend = SystemClock.elapsedRealtime();
+                FinRender.renderOnContext(mEngine,mData,0,mFrameWidth,mFrameHeight);
+//                spend = SystemClock.elapsedRealtime() - spend;
+//                Log.d(TAG, "渲染一帧:" + spend);
             }
         }
 
@@ -126,7 +112,7 @@ public class OffScreenRenderer implements TextureView.SurfaceTextureListener {
     }
 
     private void initGL() {
-//        mEngine = FinEngine.startEngine(mImageFormat,mFilterType);
+        mEngine = FinRender.createGLContext(mSurface, mFrameFormat);
         if (mEngine == 0) {
             Log.e(TAG, "引擎启动失败！");
         } else {
@@ -136,7 +122,7 @@ public class OffScreenRenderer implements TextureView.SurfaceTextureListener {
 
     private void destroyGL() {
         if (mEngine != 0) {
-//            FinEngine.stopEngine(mEngine);
+            FinRender.releaseGLContext(mEngine);
         }
         Log.d(TAG, "渲染线程已退出");
     }
