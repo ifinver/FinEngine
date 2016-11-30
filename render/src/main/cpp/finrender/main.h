@@ -19,9 +19,9 @@
 const int FORMAT_RGBA = 0x101;
 
 extern "C" {
-JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_FinRender_createGLContext(JNIEnv *env, jclass type, jobject jSurface,int);
-JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinRender_releaseGLContext(JNIEnv *env, jclass type, jlong nativeContext);
-JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinRender_renderOnContext(JNIEnv *env, jclass type, jlong nativeGlContext,
+JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_createGLContext(JNIEnv *env, jclass type, jobject jSurface,int);
+JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_releaseGLContext(JNIEnv *env, jclass type, jlong nativeContext);
+JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_renderOnContext(JNIEnv *env, jclass type, jlong nativeGlContext,
                                                                             jbyteArray data_,int frameDegree, jint frameWidth, jint frameHeight);
 }
 

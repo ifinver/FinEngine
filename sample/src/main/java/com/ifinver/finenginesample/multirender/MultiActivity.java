@@ -1,11 +1,9 @@
-package com.ifinver.finenginesample.singleswitch;
+package com.ifinver.finenginesample.multirender;
 
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,52 +21,68 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * Created by iFinVer on 2016/11/28.
+ * Created by iFinVer on 2016/11/30.
  * ilzq@foxmail.com
  */
 
-public class SingleActivity extends AppCompatActivity implements FinEngine.EngineListener, FilterAdapter.OnItemClickListener {
+public class MultiActivity extends AppCompatActivity implements FinEngine.EngineListener {
 
-    private static final String TAG = "SingleActivity";
+    private static final String TAG = "MultiActivity";
 
-    private TextView tvFps;
-    private Timer mFpsTimer;
-    private Handler mHandler;
-    private TextureRenderer mRenderer;
+    private TextureRenderer[] mRenderer;
+    //帧率
     private FrameMeter mFrameMeter;
+    private TextView tvFPS;
+    private Handler mHandler;
+    private Timer mFpsTimer;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_single);
-        tvFps = (TextView) findViewById(R.id.tv_fps);
+        setContentView(R.layout.activity_multi);
+
+        TextureView[] tvContent = new TextureView[4];
+        tvContent[0] = (TextureView) findViewById(R.id.av_0);
+        tvContent[1] = (TextureView) findViewById(R.id.av_1);
+        tvContent[2] = (TextureView) findViewById(R.id.av_2);
+        tvContent[3] = (TextureView) findViewById(R.id.av_3);
+
+        mRenderer = new TextureRenderer[4];
+        for(int i = 0;i < 4;i ++){
+            mRenderer[i] = new TextureRenderer(FinRender.FORMAT_RGBA);
+            tvContent[i].setSurfaceTextureListener(mRenderer[i]);
+        }
+
+        //帧率
         mHandler = new Handler();
         mFpsTimer = new Timer(true);
         mFrameMeter = new FrameMeter();
+        tvFPS = (TextView) findViewById(R.id.tv_fps);
         mFpsTimer.schedule(new TimerTask() {
             @Override
             public void run() {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        tvFps.setText(getString(R.string.tip_fps,mFrameMeter.getFPSString()));
+                        tvFPS.setText(getString(R.string.tip_fps,mFrameMeter.getFPSString()));
                     }
                 });
             }
         }, 1000, 300);
-        TextureView tvRender = (TextureView) findViewById(R.id.tex);
-        mRenderer = new TextureRenderer(FinRender.FORMAT_RGBA);
-        tvRender.setSurfaceTextureListener(mRenderer);
 
-        RecyclerView rvFilter = (RecyclerView) findViewById(R.id.rv_filter);
-        rvFilter.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        rvFilter.addItemDecoration(new SpaceItemDecoration(10));
-        rvFilter.setAdapter(new FilterAdapter(this,this));
     }
 
     @Override
-    public void onFilterItemClick(int filter) {
-        Log.d(TAG, "onFilterItemClick,filter=" + filter);
+    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight) {
+        for(TextureRenderer r : mRenderer){
+            r.onVideoBuffer(data,frameWidth,frameHeight);
+        }
+        mFrameMeter.meter();
+    }
+
+    @Override
+    public void onToggleCameraComplete(boolean success) {
+        Log.d(TAG, "onToggleCameraComplete,success= " + success);
     }
 
     @Override
@@ -85,7 +99,6 @@ public class SingleActivity extends AppCompatActivity implements FinEngine.Engin
         return super.onOptionsItemSelected(item);
     }
 
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -98,18 +111,6 @@ public class SingleActivity extends AppCompatActivity implements FinEngine.Engin
         FinEngine.getInstance().stopEngine();
     }
 
-    @Override
-    public void onToggleCameraComplete(boolean success) {
-        Log.d(TAG, "onToggleCameraComplete,success= " + success);
-    }
-
-    @Override
-    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight) {
-        mRenderer.onVideoBuffer(data, frameWidth, frameHeight);
-
-        //计算帧率
-        mFrameMeter.meter();
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

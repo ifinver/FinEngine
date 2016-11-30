@@ -14,15 +14,15 @@ cmake_minimum_required(VERSION 3.4.1)
 #                      PROPERTIES IMPORTED_LOCATION
 #                      E:/WorkSpace/OpenGLES_CV/MyOpenGLES/app/src/main/jniLibs/${ANDROID_ABI}/libopencv_java3.so)
 
-#加载fin engine lib
-add_library(fin-engine-lib
+#加载fin render lib
+add_library(fin-render-lib
             SHARED
-            finengine/finengine.cpp
-            finengine/utils.cpp
-            finengine/FinEngineHolder.cpp
-            finengine/ShaderHolder.cpp
+            finrender/main.cpp
+            finrender/utils.cpp
+            finrender/shaders.cpp
+            finrender/GLContextHolder.cpp
             )
-target_link_libraries(fin-engine-lib
+target_link_libraries(fin-render-lib
                       EGL
                       GLESv2
                       log

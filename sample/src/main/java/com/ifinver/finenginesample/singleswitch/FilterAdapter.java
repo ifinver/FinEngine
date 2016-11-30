@@ -1,5 +1,6 @@
 package com.ifinver.finenginesample.singleswitch;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.ifinver.finengine.FinEngine;
-import com.ifinver.finenginesample.MyApp;
 import com.ifinver.finenginesample.R;
 
 import java.util.ArrayList;
@@ -21,13 +21,15 @@ import java.util.List;
  * ilzq@foxmail.com
  */
 
-class FilterAdapter extends RecyclerView.Adapter<FilterViewHolder>{
+class FilterAdapter extends RecyclerView.Adapter<FilterViewHolder> {
 
+    private final Context mCtx;
     private List<FilterDataModel> mDataList;
     private OnItemClickListener mOnItemClickListener;
 
-    public FilterAdapter(OnItemClickListener listener){
+    public FilterAdapter(Context ctx, OnItemClickListener listener) {
         mOnItemClickListener = listener;
+        mCtx = ctx;
         mDataList = new ArrayList<>();
         FilterDataModel model;
 
@@ -61,7 +63,7 @@ class FilterAdapter extends RecyclerView.Adapter<FilterViewHolder>{
         model.filterType = FinEngine.FILTER_TYPE_NEGATIVE_COLOR;
         mDataList.add(model);
 
-        for(int i = 0;i < 25;i ++){
+        for (int i = 0; i < 25; i++) {
             model = new FilterDataModel();
             model.filterName = "Coming soon";
             model.filterImageResId = R.mipmap.coming_soon;
@@ -72,14 +74,14 @@ class FilterAdapter extends RecyclerView.Adapter<FilterViewHolder>{
 
     @Override
     public FilterViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View filterView = View.inflate(MyApp.getContext(), R.layout.list_item_filter, null);
+        View filterView = View.inflate(mCtx, R.layout.list_item_filter, null);
         return new FilterViewHolder(filterView);
     }
 
     @Override
     public void onBindViewHolder(final FilterViewHolder holder, int position) {
         final FilterDataModel filterDataModel = mDataList.get(position);
-        Resources resources = MyApp.getContext().getResources();
+        Resources resources = mCtx.getResources();
         Bitmap bitmap = BitmapFactory.decodeResource(resources, filterDataModel.filterImageResId);
         RoundedBitmapDrawable drawable = RoundedBitmapDrawableFactory.create(resources, bitmap);
         drawable.setCircular(true);
@@ -88,7 +90,7 @@ class FilterAdapter extends RecyclerView.Adapter<FilterViewHolder>{
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mOnItemClickListener != null){
+                if (mOnItemClickListener != null) {
                     mOnItemClickListener.onFilterItemClick(filterDataModel.filterType);
                 }
             }
@@ -100,7 +102,7 @@ class FilterAdapter extends RecyclerView.Adapter<FilterViewHolder>{
         return mDataList.size();
     }
 
-    interface OnItemClickListener{
+    interface OnItemClickListener {
         void onFilterItemClick(int filter);
     }
 }

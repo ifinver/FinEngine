@@ -8,7 +8,6 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:name=".MyApp"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
@@ -19,6 +18,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".singleswitch.SingleActivity"/>
+        <activity android:name=".multirender.MultiActivity"/>
     </application>
 
 </manifest>

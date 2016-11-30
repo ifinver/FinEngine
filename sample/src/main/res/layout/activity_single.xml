@@ -19,7 +19,6 @@
 
     <LinearLayout
         android:id="@+id/ll_filters"
-        android:visibility="gone"
         android:layout_gravity="bottom"
         android:orientation="vertical"
         android:layout_width="match_parent"

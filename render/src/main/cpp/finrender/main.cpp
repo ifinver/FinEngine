@@ -5,7 +5,7 @@
 #include <android/native_window_jni.h>
 
 JNIEXPORT jlong JNICALL
-Java_com_ifinver_finengine_FinRender_createGLContext(JNIEnv *env, jclass, jobject jSurface, int frameFormat) {
+Java_com_ifinver_finrender_FinRender_createGLContext(JNIEnv *env, jclass, jobject jSurface, int frameFormat) {
     GLContextHolder *pHolder = NULL;
 
     switch (frameFormat){
@@ -25,12 +25,12 @@ Java_com_ifinver_finengine_FinRender_createGLContext(JNIEnv *env, jclass, jobjec
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_finengine_FinRender_releaseGLContext(JNIEnv *, jclass, jlong nativeContext) {
+Java_com_ifinver_finrender_FinRender_releaseGLContext(JNIEnv *, jclass, jlong nativeContext) {
     releaseGLContext((GLContextHolder *) nativeContext);
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_finengine_FinRender_renderOnContext(JNIEnv *env, jclass, jlong nativeGlContext, jbyteArray data_,int frameDegree, jint frameWidth,
+Java_com_ifinver_finrender_FinRender_renderOnContext(JNIEnv *env, jclass, jlong nativeGlContext, jbyteArray data_,int frameDegree, jint frameWidth,
                                                      jint frameHeight) {
 //    jboolean isCopy;
     jbyte *data = env->GetByteArrayElements(data_, 0);

@@ -16,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 
+import com.ifinver.finenginesample.multirender.MultiActivity;
 import com.ifinver.finenginesample.singleswitch.SingleActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         ivGrey.setImageBitmap(generateGreyBmp(R.drawable.t));
 
         //permission
-        if (ContextCompat.checkSelfPermission(MyApp.getContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_CODE_REQUEST_PERMISSION);
         }
     }
@@ -43,13 +44,10 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_activity_multi:
-//                startActivity(new Intent(this, OpenGLActivity.class));
+                startActivity(new Intent(this, MultiActivity.class));
                 return true;
             case R.id.menu_activity_switch:
                 startActivity(new Intent(this, SingleActivity.class));
-                return true;
-            case R.id.menu_activity_off:
-//                startActivity(new Intent(this, SingleActivity.class));
                 return true;
         }
         return super.onOptionsItemSelected(item);
