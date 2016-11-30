@@ -16,7 +16,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.ifinver.finengine.R;
-import com.ifinver.finengine.sdk.CameraHolder;
+import com.ifinver.finengine.CameraHolder;
 import com.ifinver.finengine.sdk.TextureRenderer;
 
 
@@ -78,7 +78,7 @@ public class CameraActivity extends AppCompatActivity implements CameraHolder.Ca
     }
 
     @Override
-    public void onVideoBuffer(byte[] frameBytes,int frameDegree, int frameWidth, int frameHeight) {
+    public void onCameraBuffer(byte[] frameBytes, int frameDegree, int frameWidth, int frameHeight) {
         mRenderer.onVideoBuffer(frameBytes,frameDegree,frameWidth,frameHeight);
 
     }

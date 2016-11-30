@@ -1,4 +1,4 @@
-package com.ifinver.finengine.sdk;
+package com.ifinver.finengine;
 
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
@@ -23,7 +23,7 @@ import java.util.List;
 @SuppressWarnings("deprecation")
 public class CameraHolder implements Camera.PreviewCallback, SurfaceTexture.OnFrameAvailableListener {
 
-    private static final String TAG = "CameraHolder";
+    private static final String TAG = "CameraUtils";
     private static final int MAGIC_TEXTURE_ID = 28;
     private static final int MAX_UNSPECIFIED = -1;
     private static int IMAGE_FORMAT = ImageFormat.NV21;
@@ -381,7 +381,7 @@ public class CameraHolder implements Camera.PreviewCallback, SurfaceTexture.OnFr
     public void onPreviewFrame(byte[] data, Camera camera) {
         if (mCameraCallback != null && mCanNotifyFrame) {
 //            long spend = SystemClock.elapsedRealtime();
-            mCameraCallback.onVideoBuffer(mFrameByteBuffer.array(), mCameraOrientation, mFrameWidth, mFrameHeight);
+            mCameraCallback.onCameraBuffer(mFrameByteBuffer.array(), mCameraOrientation, mFrameWidth, mFrameHeight);
 //            spend = SystemClock.elapsedRealtime() - spend;
 //            Log.d(TAG, "分派一帧数据耗时:" + spend);
         }
@@ -413,7 +413,7 @@ public class CameraHolder implements Camera.PreviewCallback, SurfaceTexture.OnFr
          *
          * @param frameBytes NV21类型
          */
-        void onVideoBuffer(byte[] frameBytes, int frameDegree, int frameWidth, int frameHeight);
+        void onCameraBuffer(byte[] frameBytes, int frameDegree, int frameWidth, int frameHeight);
 
         /**
          * start方法传入的needData==false时，本方法才会回调

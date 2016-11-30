@@ -10,105 +10,73 @@
 #include <EGL/eglext.h>
 #include <math.h>
 
-JNIEXPORT jlong JNICALL
-Java_com_ifinver_finengine_sdk_FinEngine__1startEngine(JNIEnv *env, jclass type, int imageFormat, int frameWidth, int frameHeight, int filterType,jobject jAssetsManager) {
-    FinEngineHolder *pHolder = NULL;
-    switch (imageFormat) {
-        case 0x11://ImageFormat.NV21
-            pHolder = newOffScreenGLContext(env, frameWidth, frameHeight, filterType,jAssetsManager);
-            break;
-        default:
-            LOGE("不支持的视频编码格式！");
-            break;
-    }
+FinEngineHolder *pHolder;
+
+JNIEXPORT int JNICALL
+Java_com_ifinver_finengine_sdk_FinEngine__1startEngine(JNIEnv *env, jclass type, int frameWidth, int frameHeight, int filterType,
+                                                       jobject jAssetsManager) {
+    pHolder = newOffScreenGLContext(env, frameWidth, frameHeight, filterType, jAssetsManager);
 
     if (pHolder == NULL) {
-        return 0;
+        return -1;
     }
-    return (jlong) pHolder;
+    return pHolder->inputTexture;
 }
 
- void JNICALL Java_com_ifinver_finengine_sdk_FinEngine__1stopEngine(JNIEnv *env, jclass type, jlong engine) {
-    releaseEngine((FinEngineHolder *) engine);
+void JNICALL Java_com_ifinver_finengine_sdk_FinEngine__1stopEngine(JNIEnv *env, jclass type) {
+    releaseEngine();
 }
 
- void JNICALL Java_com_ifinver_finengine_sdk_FinEngine_process(JNIEnv *env, jclass, jlong engine,  jobject surfaceTexture,jint mFrameDegree) {
-    FinEngineHolder *holder = (FinEngineHolder *) engine;
-    env->CallVoidMethod(surfaceTexture,holder->midAttachToGlContext,holder->inputTexture);
-    renderFrame(holder,mFrameDegree);
-    env->CallVoidMethod(surfaceTexture,holder->midAttachToGlContext);
+void JNICALL Java_com_ifinver_finengine_sdk_FinEngine_process(JNIEnv *env, jclass, jobject surfaceTexture, jint mFrameDegree,
+                                                              jbyteArray _data) {
+    jboolean isCopy;
+    jbyte *data = env->GetByteArrayElements(_data, &isCopy);
+    if (isCopy) {
+        LOGE("传递数组时发生了Copy！");
+    }
+    env->CallVoidMethod(surfaceTexture, pHolder->midAttachToGlContext, pHolder->inputTexture);
+    renderFrame(mFrameDegree, data);
+    env->CallVoidMethod(surfaceTexture, pHolder->midAttachToGlContext);
+    env->ReleaseByteArrayElements(_data, data, 0);
 }
 
-void renderFrame(FinEngineHolder *holder, jint degree) {
-    glEnableVertexAttribArray(holder->localVertexPos);
-    glVertexAttribPointer(holder->localVertexPos, 2, GL_FLOAT, GL_FALSE, holder->texStride, (const void *) holder->offsetVertex);
+void renderFrame(jint degree, jbyte *buff) {
+    glEnableVertexAttribArray(pHolder->localVertexPos);
+    glVertexAttribPointer(pHolder->localVertexPos, 2, GL_FLOAT, GL_FALSE, pHolder->texStride, (const void *) pHolder->offsetVertex);
 
-    glEnableVertexAttribArray(holder->localTexturePos);
-    glVertexAttribPointer(holder->localTexturePos, 2, GL_FLOAT, GL_FALSE, holder->texStride, (const void *) holder->offsetTex);
+    glEnableVertexAttribArray(pHolder->localTexturePos);
+    glVertexAttribPointer(pHolder->localTexturePos, 2, GL_FLOAT, GL_FALSE, pHolder->texStride, (const void *) pHolder->offsetTex);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES,holder->inputTexture);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, pHolder->inputTexture);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glUniform1i(holder->localInputTexture,0);
-
+    glUniform1i(pHolder->localInputTexture, 0);
     //rotation
-    if (holder->frameDegree != degree) {
+    if (pHolder->frameDegree != degree) {
         float r = d2r(degree);
         float cosR = cosf(r);
         float sinR = sinf(r);
-        holder->rotationMatrix = new GLfloat[4]{cosR, -sinR, sinR, cosR};
-        holder->frameDegree = degree;
+        pHolder->rotationMatrix = new GLfloat[4]{cosR, -sinR, sinR, cosR};
+        pHolder->frameDegree = degree;
     }
-    glVertexAttrib4fv(holder->localRotateVec, holder->rotationMatrix);
+    glVertexAttrib4fv(pHolder->localRotateVec, pHolder->rotationMatrix);
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+    checkGlError("glDrawArrays");
 
-    glDisableVertexAttribArray(holder->localVertexPos);
-    glDisableVertexAttribArray(holder->localTexturePos);
-
-    GLint readType, readFormat;
-    glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &readType);
-    glGetIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &readFormat);
-    unsigned int bytesPerPixel = 0;
-    switch(readType)
-    {
-        case GL_UNSIGNED_BYTE:
-            switch(readFormat)
-            {
-                case GL_RGBA:
-                case GL_RGBA8_OES:
-                    LOGE("读取格式为 ： GL_RGBA8_OES");
-                    bytesPerPixel = 4;
-                    break;
-                case GL_RGB:
-                    bytesPerPixel = 3;
-                    break;
-                case GL_LUMINANCE_ALPHA:
-                    bytesPerPixel = 2;
-                    break;
-                case GL_ALPHA:
-                case GL_LUMINANCE:
-                    bytesPerPixel = 1;
-                    break;
-            }
-            break;
-        case GL_UNSIGNED_INT_24_8_OES: // GL_RGBA format
-            LOGE("读取格式为 ： GL_UNSIGNED_INT_24_8_OES");
-        case GL_UNSIGNED_SHORT_5_6_5: // GL_RGB format
-            bytesPerPixel = 2;
-            break;
-    }
-    unsigned int size = holder->frameWidth * holder->frameHeight * bytesPerPixel;
-    LOGE("读取格式为 ：bytes size = %d",size);
+    glDisableVertexAttribArray(pHolder->localVertexPos);
+    glDisableVertexAttribArray(pHolder->localTexturePos);
+    checkGlError("glDisableVertexAttribArray");
 
     //done.
-//    glReadPixels(0,0,holder->frameWidth,holder->frameHeight,readFormat,0.0);
+    glReadPixels(0,0,pHolder->frameWidth,pHolder->frameHeight,GL_RGBA8_OES,GL_UNSIGNED_BYTE,buff);
+    checkGlError("glReadPixels");
 }
 
-FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHeight, int filterType,jobject jAssetsManager) {
+FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHeight, int filterType, jobject jAssetsManager) {
     /**
      * 初始化Context
      */
@@ -146,8 +114,8 @@ FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHei
         return NULL;
     }
     const EGLint surfaceAttr[] = {
-            EGL_WIDTH,512,
-            EGL_HEIGHT,512,
+            EGL_WIDTH, 512,
+            EGL_HEIGHT, 512,
             EGL_NONE
     };
     EGLSurface eglSurface = eglCreatePbufferSurface(display, config, surfaceAttr);
@@ -160,16 +128,16 @@ FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHei
      * 初始化FrameBuffer
      */
     FinEngineHolder *holder = new FinEngineHolder();
-    glGenFramebuffers(1,&holder->objFrameBuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER,holder->objFrameBuffer);
+    glGenFramebuffers(1, &holder->objFrameBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, holder->objFrameBuffer);
 
     /**
      * 以RenderBuffer作为依附
      */
-    glGenRenderbuffers(1,&holder->objRenderBuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER,holder->objRenderBuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER,GL_RGBA8_OES,frameWidth,frameHeight);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_RENDERBUFFER,holder->objRenderBuffer);
+    glGenRenderbuffers(1, &holder->objRenderBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, holder->objRenderBuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8_OES, frameWidth, frameHeight);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, holder->objRenderBuffer);
     holder->frameWidth = frameWidth;
     holder->frameHeight = frameHeight;
     /**
@@ -193,26 +161,26 @@ FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHei
 
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
     bool success = false;
-    switch (status){
+    switch (status) {
         case GL_FRAMEBUFFER_COMPLETE:
             success = true;
             break;
         case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-            LOGE("引擎启动失败！msg = [%s]","GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+            LOGE("引擎启动失败！msg = [%s]", "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
             break;
         case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-            LOGE("引擎启动失败！msg = [%s]","GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS");
+            LOGE("引擎启动失败！msg = [%s]", "GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS");
             break;
         case GL_FRAMEBUFFER_UNSUPPORTED:
-            LOGE("引擎启动失败！msg = [%s]","GL_FRAMEBUFFER_UNSUPPORTED");
+            LOGE("引擎启动失败！msg = [%s]", "GL_FRAMEBUFFER_UNSUPPORTED");
             break;
         default:
-            LOGE("引擎启动失败！msg = [%s],code=[%d]","un know",status);
+            LOGE("引擎启动失败！msg = [%s],code=[%d]", "un know", status);
             break;
     }
 
-    if(success){
-        ShaderHolder shaderHolder(filterType,env,jAssetsManager);
+    if (success) {
+        ShaderHolder shaderHolder(filterType, env, jAssetsManager);
         GLuint program = createProgram(shaderHolder.getVertexShader(), shaderHolder.getFragmentShader());
         holder->program = program;
         holder->localVertexPos = (GLuint) glGetAttribLocation(program, "aPosition");
@@ -221,9 +189,9 @@ FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHei
         holder->localInputTexture = (GLuint) glGetUniformLocation(program, "sTexture");
 
         GLuint vertexBuff;
-        glGenBuffers(1,&vertexBuff);
-        glBindBuffer(GL_ARRAY_BUFFER,vertexBuff);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES_BASE),VERTICES_BASE,GL_STATIC_DRAW);
+        glGenBuffers(1, &vertexBuff);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuff);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES_BASE), VERTICES_BASE, GL_STATIC_DRAW);
         holder->vertexBuff = vertexBuff;
         holder->vertexStride = 4 * sizeof(GLfloat);
         holder->texStride = 4 * sizeof(GLfloat);
@@ -237,19 +205,19 @@ FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHei
         jclass jcSurfaceTexture = env->FindClass("android/graphics/SurfaceTexture");
         holder->midAttachToGlContext = env->GetMethodID(jcSurfaceTexture, "attachToGLContext", "(I)V");
         holder->midDetachFromGLContext = env->GetMethodID(jcSurfaceTexture, "detachFromGLContext", "()V");
-
-    }else{
+    } else {
         return NULL;
     }
+
     return holder;
 }
 
-void releaseEngine(FinEngineHolder *pHolder) {
-    glDeleteBuffers(1,&pHolder->vertexBuff);
-    glDeleteTextures(1,&pHolder->inputTexture);
+void releaseEngine() {
+    glDeleteBuffers(1, &pHolder->vertexBuff);
+    glDeleteTextures(1, &pHolder->inputTexture);
     glDeleteProgram(pHolder->program);
-    glDeleteRenderbuffers(1,&pHolder->objRenderBuffer);
-    glDeleteFramebuffers(1,&pHolder->objFrameBuffer);
+    glDeleteRenderbuffers(1, &pHolder->objRenderBuffer);
+    glDeleteFramebuffers(1, &pHolder->objFrameBuffer);
 //    delete[](pHolder->positions);
     delete (pHolder);
 }

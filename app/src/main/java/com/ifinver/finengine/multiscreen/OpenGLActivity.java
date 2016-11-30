@@ -12,7 +12,7 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.ifinver.finengine.R;
-import com.ifinver.finengine.sdk.CameraHolder;
+import com.ifinver.finengine.CameraHolder;
 import com.ifinver.finengine.sdk.TextureRenderView;
 import com.ifinver.finengine.sdk.TextureRenderer;
 
@@ -69,8 +69,8 @@ public class OpenGLActivity extends AppCompatActivity implements CameraHolder.Ca
     }
 
     @Override
-    public void onVideoBuffer(byte[] data, int frameDegree, int frameWidth, int frameHeight) {
-//        Log.d("onVideoBuffer","onVideoBuffer");
+    public void onCameraBuffer(byte[] data, int frameDegree, int frameWidth, int frameHeight) {
+//        Log.d("onCameraBuffer","onCameraBuffer");
         for (TextureRenderView renderView : textures) {
             renderView.onVideoBuffer(data, frameDegree, frameWidth, frameHeight);
         }
