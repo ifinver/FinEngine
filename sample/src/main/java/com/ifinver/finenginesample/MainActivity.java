@@ -14,12 +14,13 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.ifinver.finenginesample.multirender.MultiActivity;
 import com.ifinver.finenginesample.singleswitch.SingleActivity;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private final int REQUEST_CODE_REQUEST_PERMISSION = 101;
 
@@ -34,9 +35,24 @@ public class MainActivity extends AppCompatActivity {
         ivOri.setImageResource(R.drawable.t);
         ivGrey.setImageBitmap(generateGreyBmp(R.drawable.t));
 
+        ivOri.setOnClickListener(this);
+        ivGrey.setOnClickListener(this);
+
         //permission
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_CODE_REQUEST_PERMISSION);
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()){
+            case R.id.iv_show_ori:
+                startActivity(new Intent(this, SingleActivity.class));
+                break;
+            case R.id.iv_show_grey:
+                startActivity(new Intent(this, MultiActivity.class));
+                break;
         }
     }
 
