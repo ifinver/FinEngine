@@ -26,7 +26,6 @@ public final class CameraUtils {
     public int mCameraIndex;
     public int mFrameWidth;
     public int mFrameHeight;
-    private int mWindowDegree = 0;
     private boolean mInitialized = false;
     private int mCameraOrientation = 0;
 
@@ -35,6 +34,7 @@ public final class CameraUtils {
     }
 
     public void setCameraDegreeByWindowRotation(int windowRotation) {
+        int mWindowDegree = 0;
         switch (windowRotation) {
             case Surface.ROTATION_0:
                 mWindowDegree = 0;
@@ -49,17 +49,6 @@ public final class CameraUtils {
                 mWindowDegree = 270;
                 break;
         }
-        if (mInitialized) {
-            setCameraDispOri();
-        }
-
-    }
-
-    public int getCameraOrientation() {
-        return mCameraOrientation;
-    }
-
-    private void setCameraDispOri() {
         if (mCamera != null) {
             Camera.CameraInfo info = new Camera.CameraInfo();
             Camera.getCameraInfo(mCameraIndex, info);
@@ -71,8 +60,9 @@ public final class CameraUtils {
             }
             mCameraOrientation = (360 - mCameraOrientation) % 360; // compensate the mirror
             mCamera.setDisplayOrientation(mCameraOrientation);
-//            Log.d(TAG, "setCameraDispOri = " + mCameraOrientation);
+            Log.d(TAG, "setCameraDispOri = " + mCameraOrientation);
         }
+
     }
 
     /**
@@ -113,14 +103,14 @@ public final class CameraUtils {
                     params.setPreviewSize(frameSize.width, frameSize.height);
                     //帧率
                     List<int[]> support = params.getSupportedPreviewFpsRange();
-                    if(support.size() > 0){
+                    if (support.size() > 0) {
                         int[] ints = support.get(0);
                         int min = ints[1];
                         int max = ints[1];
-                        params.setPreviewFpsRange(min,max);
-                        Log.d(TAG,"帧率设置为:["+min+","+max+"]");
-                    }else {
-                        Log.e(TAG,"WTF,不能设置帧率");
+                        params.setPreviewFpsRange(min, max);
+                        Log.d(TAG, "帧率设置为:[" + min + "," + max + "]");
+                    } else {
+                        Log.e(TAG, "WTF,不能设置帧率");
                     }
                     //优化
                     //三星的机型也有问题，未知的问题机型较多，所以不使用
@@ -149,21 +139,18 @@ public final class CameraUtils {
         return result;
     }
 
-    /**
-     * 如果业务侧允许屏幕旋转，一定要在旋转发生时调用本方法。
-     */
-    public void updateCameraDegree(Context appCtx){
+    private void updateCameraDegree(Context appCtx) {
         WindowManager wm = (WindowManager) appCtx.getSystemService(Context.WINDOW_SERVICE);
         setCameraDegreeByWindowRotation(wm.getDefaultDisplay().getRotation());
-        Log.d(TAG,"开始Camera预览");
     }
 
 
-    public boolean startPreview(Context appCtx,SurfaceTexture st) {
+    public boolean startPreview(Context appCtx, SurfaceTexture st) {
         try {
             mCamera.setPreviewTexture(st);
             mCamera.startPreview();
             updateCameraDegree(appCtx);
+            Log.d(TAG, "开始Camera预览");
         } catch (IOException e) {
             e.printStackTrace();
             return false;

@@ -65,11 +65,10 @@ void renderFrame(jint degree, jbyte *buff) {
         float cosR = cosf(r);
         float sinR = sinf(r);
 //        pHolder->rotationMatrix = new GLfloat[4]{cosf(r), -sinf(r), sinf(r), cosf(r)};
-//        pHolder->rotationMatrix = new GLfloat[4]{cosR, -sinR, sinR, cosR};
-        pHolder->rotationMatrix = new GLfloat[4]{1, 0, 0, 1};
+        pHolder->rotationMatrix = new GLfloat[4]{cosR, -sinR, sinR, cosR};
+//        pHolder->rotationMatrix = new GLfloat[4]{1, 0, 0, 1};
         pHolder->frameDegree = degree;
     }
-    LOGE("frame degree : %d",degree);
     glVertexAttrib4fv(pHolder->localRotateVec, pHolder->rotationMatrix);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 

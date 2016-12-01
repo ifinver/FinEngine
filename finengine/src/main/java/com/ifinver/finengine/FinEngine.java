@@ -155,6 +155,7 @@ public class FinEngine {
         }
 
         private void toggleCameraInternal() {
+            Log.d(TAG,"toggleCamera");
             boolean success = mCameraUtils.toggleCameraWithoutStart();
             if (success) {
                 success = mCameraUtils.startPreview(mAppCtx, mSurfaceTexture);
