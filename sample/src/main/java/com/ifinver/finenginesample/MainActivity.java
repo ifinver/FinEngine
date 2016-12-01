@@ -72,21 +72,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private Bitmap generateGreyBmp(int res) {
-        Bitmap resultImg = null;
-        Bitmap bmp = BitmapFactory.decodeResource(getResources(), res);
-        int w = bmp.getWidth();
-        int h = bmp.getHeight();
-        int[] pixels = new int[w * h];
-        bmp.getPixels(pixels, 0, w, 0, 0, w, h);
-        //recall JNI
-//        int[] resultInt = GLNative.getGrayImage(pixels, w, h);
-        int[] resultInt = null;
-        bmp.recycle();
-        if (resultInt != null) {
+        try {
+            Bitmap resultImg;
+            Bitmap bmp = BitmapFactory.decodeResource(getResources(), res);
+            int w = bmp.getWidth();
+            int h = bmp.getHeight();
+            int[] pixels = new int[w * h];
+            bmp.getPixels(pixels, 0, w, 0, 0, w, h);
+            int[] resultInt = new int[pixels.length];
+            for (int i = 0; i < h; i++) {
+                for (int j = 0; j < w; j++) {
+                    int col = pixels[i * w + j];
+                    int alpha = col & 0xFF000000;
+                    int red = (col & 0x00FF0000) >> 16;
+                    int green = (col & 0x0000FF00) >> 8;
+                    int blue = (col & 0x000000FF);
+                    int gray = (int) ((float) red * 0.299 + (float) green * 0.587 + (float) blue * 0.114);
+                    resultInt[i * w + j] = alpha | (gray << 16) | (gray << 8) | gray;
+                }
+            }
+            bmp.recycle();
             resultImg = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
             resultImg.setPixels(resultInt, 0, w, 0, 0, w, h);
+            return resultImg;
+        }catch (Throwable ignored){
+            return null;
         }
-        return resultImg;
     }
 
     @Override
