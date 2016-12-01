@@ -5,12 +5,12 @@
 #include <android/native_window_jni.h>
 
 JNIEXPORT jlong JNICALL
-Java_com_ifinver_finrender_FinRender_createGLContext(JNIEnv *env, jclass, jobject jSurface, int frameFormat) {
+Java_com_ifinver_finrender_FinRender_createGLContext(JNIEnv *env, jclass, jobject jSurface, jboolean isSurfaceThreadExclusive,int frameFormat) {
     GLContextHolder *pHolder = NULL;
 
     switch (frameFormat){
         case FORMAT_RGBA:
-            pHolder = newGLContext(env, jSurface);
+            pHolder = newGLContext(env, jSurface, isSurfaceThreadExclusive);
             break;
         default:
             LOGE("暂不支持格式：%d",frameFormat);
@@ -49,6 +49,13 @@ Java_com_ifinver_finrender_FinRender_renderOnContext(JNIEnv *env, jclass, jlong 
 //.........................................................................................................................
 
 void renderFrame(GLContextHolder *holder, jbyte *data,int frameDegree ,jint width, jint height) {
+    if(!holder->isSurfaceThreadExclusive) {
+        if (!eglMakeCurrent(holder->eglDisplay, holder->eglSurface, holder->eglSurface, holder->eglContext)) {
+            LOGE("make current failed!!! [当前surface是多个线程共享的]");
+            checkGlError("eglMakeCurrent");
+            return ;
+        }
+    }
     /**
      * 输入定点坐标
      */
@@ -104,7 +111,7 @@ void releaseGLContext(GLContextHolder *holder) {
 }
 
 //创建一个新的绘制上下文
-GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface) {
+GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, jboolean isSurfaceThreadExclusive) {
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
         checkGlError("eglGetDisplay");
@@ -153,10 +160,17 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface) {
         checkGlError("eglCreateContext");
         return NULL;
     }
+    GLContextHolder *gl_holder = new GLContextHolder();
+    gl_holder->isSurfaceThreadExclusive = isSurfaceThreadExclusive;
+
 
     if (!eglMakeCurrent(display, eglSurface, eglSurface, eglContext)) {
         checkGlError("eglMakeCurrent");
         return NULL;
+    }
+    //如果是线程独享的，不会被占用makeCurrent
+    if(!gl_holder->isSurfaceThreadExclusive){
+        LOGI("当前surface是多个线程共享的");
     }
 
     //context create success,now create program
@@ -171,7 +185,6 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     //success
-    GLContextHolder *gl_holder = new GLContextHolder();
     gl_holder->eglDisplay = display;
     gl_holder->eglContext = eglContext;
     gl_holder->eglSurface = eglSurface;

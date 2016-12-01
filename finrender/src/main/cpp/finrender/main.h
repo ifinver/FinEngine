@@ -19,13 +19,13 @@
 const int FORMAT_RGBA = 0x101;
 
 extern "C" {
-JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_createGLContext(JNIEnv *env, jclass type, jobject jSurface,int);
+JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_createGLContext(JNIEnv *env, jclass type, jobject jSurface,jboolean isSurfaceThreadExclusive,int);
 JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_releaseGLContext(JNIEnv *env, jclass type, jlong nativeContext);
 JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_renderOnContext(JNIEnv *env, jclass type, jlong nativeGlContext,
                                                                             jbyteArray data_,int frameDegree, jint frameWidth, jint frameHeight);
 }
 
-GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface);
+GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, jboolean isSurfaceThreadExclusive);
 
 void releaseGLContext(GLContextHolder *pHolder);
 

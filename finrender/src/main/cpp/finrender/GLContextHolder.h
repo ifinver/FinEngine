@@ -7,6 +7,7 @@
 
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
+#include <jni.h>
 #include "shaders.h"
 
 class GLContextHolder{
@@ -38,6 +39,8 @@ public:
     GLuint offsetTex;
 
     int frameDegree;
+
+    jboolean isSurfaceThreadExclusive;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

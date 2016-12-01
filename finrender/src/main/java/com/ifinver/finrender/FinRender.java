@@ -16,7 +16,11 @@ public class FinRender {
     /**
      * @return 0 means failed
      */
-    public static native long createGLContext(Surface surface, int frameFormat);
+    public static long createGLContext(Surface surface,int frameFormat){
+        return createGLContext(surface,true,frameFormat);
+    }
+
+    public static native long createGLContext(Surface surface,boolean isSurfaceThreadExclusive, int frameFormat);
 
     public static native void releaseGLContext(long nativeContext);
 

@@ -8,6 +8,7 @@
 #include <GLES2/gl2ext.h>
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
+#include <getopt.h>
 #include <math.h>
 
 FinEngineHolder *pHolder;
@@ -119,6 +120,8 @@ FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHei
         checkGlError("eglMakeCurrent");
         return NULL;
     }
+
+
 
     /**
      * 初始化FrameBuffer
