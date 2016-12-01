@@ -22,13 +22,13 @@ extern "C" {
 JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_createGLContext(JNIEnv *env, jclass type, jobject jSurface,jboolean isSurfaceThreadExclusive,int);
 JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_releaseGLContext(JNIEnv *env, jclass type, jlong nativeContext);
 JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_renderOnContext(JNIEnv *env, jclass type, jlong nativeGlContext,
-                                                                            jbyteArray data_,int frameDegree, jint frameWidth, jint frameHeight);
+                                                                            jbyteArray data_,jint frameWidth, jint frameHeight);
 }
 
 GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, jboolean isSurfaceThreadExclusive);
 
 void releaseGLContext(GLContextHolder *pHolder);
 
-void renderFrame(GLContextHolder *holder, jbyte *data, int frameDegree ,jint width, jint height);
+void renderFrame(GLContextHolder *holder, jbyte *data, jint width, jint height);
 
 #endif //MYOPENGLES_GL_NATIVE_LIB_H

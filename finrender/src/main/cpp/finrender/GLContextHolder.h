@@ -26,8 +26,6 @@ public:
 
     GLuint *textures;
 
-    GLfloat *rotationMatrix;
-
     GLuint vertexBuff;
 
     GLsizei vertexStride;
@@ -37,8 +35,6 @@ public:
     GLuint offsetVertex;
 
     GLuint offsetTex;
-
-    int frameDegree;
 
     jboolean isSurfaceThreadExclusive;
 };

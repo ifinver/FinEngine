@@ -24,5 +24,5 @@ public class FinRender {
 
     public static native void releaseGLContext(long nativeContext);
 
-    public static native void renderOnContext(long nativeGlContext, byte[] data,int frameDegree, int frameWidth, int frameHeight);
+    public static native void renderOnContext(long nativeGlContext, byte[] data,int frameWidth, int frameHeight);
 }

@@ -96,7 +96,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         private void onDrawFrame() {
             if (mEngine != 0 && mData != null) {
 //                long spend = SystemClock.elapsedRealtime();
-                FinRender.renderOnContext(mEngine,mData,0,mFrameWidth,mFrameHeight);
+                FinRender.renderOnContext(mEngine,mData,mFrameWidth,mFrameHeight);
 //                spend = SystemClock.elapsedRealtime() - spend;
 //                Log.d(TAG, "渲染一帧:" + spend);
             }

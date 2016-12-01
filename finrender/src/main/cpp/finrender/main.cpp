@@ -30,8 +30,7 @@ Java_com_ifinver_finrender_FinRender_releaseGLContext(JNIEnv *, jclass, jlong na
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_finrender_FinRender_renderOnContext(JNIEnv *env, jclass, jlong nativeGlContext, jbyteArray data_,int frameDegree, jint frameWidth,
-                                                     jint frameHeight) {
+Java_com_ifinver_finrender_FinRender_renderOnContext(JNIEnv *env, jclass, jlong nativeGlContext, jbyteArray data_,jint frameWidth,jint frameHeight) {
 //    jboolean isCopy;
     jbyte *data = env->GetByteArrayElements(data_, 0);
 //    if (isCopy) {
@@ -40,7 +39,7 @@ Java_com_ifinver_finrender_FinRender_renderOnContext(JNIEnv *env, jclass, jlong 
 //        LOGI("isCopy=false");
 //    }
 
-    renderFrame((GLContextHolder *) nativeGlContext, data,frameDegree, frameWidth, frameHeight);
+    renderFrame((GLContextHolder *) nativeGlContext, data,frameWidth, frameHeight);
 
 //    if (isCopy) {
         env->ReleaseByteArrayElements(data_, data, JNI_ABORT);
@@ -48,7 +47,7 @@ Java_com_ifinver_finrender_FinRender_renderOnContext(JNIEnv *env, jclass, jlong 
 }
 //.........................................................................................................................
 
-void renderFrame(GLContextHolder *holder, jbyte *data,int frameDegree ,jint width, jint height) {
+void renderFrame(GLContextHolder *holder, jbyte *data ,jint width, jint height) {
     if(!holder->isSurfaceThreadExclusive) {
         if (!eglMakeCurrent(holder->eglDisplay, holder->eglSurface, holder->eglSurface, holder->eglContext)) {
             LOGE("make current failed!!! [当前surface是多个线程共享的]");
@@ -81,12 +80,13 @@ void renderFrame(GLContextHolder *holder, jbyte *data,int frameDegree ,jint widt
 
     glUniform1i(holder->positions[2], 0);
 
+    //no need concern this.
     //rotation
-    if (holder->frameDegree != frameDegree) {
-        holder->rotationMatrix = new GLfloat[4]{cosf(d2r(frameDegree)), -sinf(d2r(frameDegree)), sinf(d2r(frameDegree)), cosf(d2r(frameDegree))};
-        holder->frameDegree = frameDegree;
-    }
-    glVertexAttrib4fv(holder->positions[3], holder->rotationMatrix);
+//    if (holder->frameDegree != frameDegree) {
+//        holder->rotationMatrix = new GLfloat[4]{cosf(d2r(frameDegree)), -sinf(d2r(frameDegree)), sinf(d2r(frameDegree)), cosf(d2r(frameDegree))};
+//        holder->frameDegree = frameDegree;
+//    }
+//    glVertexAttrib4fv(holder->positions[3], holder->rotationMatrix);
 
 //    glClear(GL_COLOR_BUFFER_BIT);
 
@@ -192,15 +192,13 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, jboolean isSurfaceT
 
     GLint posAttrVertices = glGetAttribLocation(programYUV, "aPosition");
     GLint posAttrTexCoords = glGetAttribLocation(programYUV, "aTexCoord");
-    GLint posAttrRot = glGetAttribLocation(programYUV, "aRotVector");
     GLint posUniRgbTexture = glGetUniformLocation(programYUV, "rgbTexture");
-    GLuint *positions = new GLuint[4];
+    GLuint *positions = new GLuint[3];
     positions[0] = (GLuint) posAttrVertices;
     positions[1] = (GLuint) posAttrTexCoords;
     positions[2] = (GLuint) posUniRgbTexture;
-    positions[3] = (GLuint) posAttrRot;
     gl_holder->positions = positions;
-    gl_holder->frameDegree = -1;
+//    gl_holder->frameDegree = -1;
 
     //tex
     GLuint *textures = new GLuint[2];
