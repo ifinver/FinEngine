@@ -149,15 +149,21 @@ public final class CameraUtils {
         return result;
     }
 
+    /**
+     * 如果业务侧允许屏幕旋转，一定要在旋转发生时调用本方法。
+     */
+    public void updateCameraDegree(Context appCtx){
+        WindowManager wm = (WindowManager) appCtx.getSystemService(Context.WINDOW_SERVICE);
+        setCameraDegreeByWindowRotation(wm.getDefaultDisplay().getRotation());
+        Log.d(TAG,"开始Camera预览");
+    }
+
 
     public boolean startPreview(Context appCtx,SurfaceTexture st) {
         try {
-            WindowManager wm = (WindowManager) appCtx.getSystemService(Context.WINDOW_SERVICE);
-            setCameraDegreeByWindowRotation(wm.getDefaultDisplay().getRotation());
             mCamera.setPreviewTexture(st);
             mCamera.startPreview();
-            setCameraDispOri();
-            Log.d(TAG,"开始Camera预览");
+            updateCameraDegree(appCtx);
         } catch (IOException e) {
             e.printStackTrace();
             return false;
