@@ -6,7 +6,6 @@ import android.graphics.SurfaceTexture;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.util.DisplayMetrics;
@@ -33,8 +32,7 @@ public class FinEngine {
     public static final int FILTER_TYPE_NEGATIVE_COLOR = 4;
     private Context mAppCtx;
 
-    private FinEngine() {
-    }
+    private FinEngine() {}
 
     private static FinEngine mInstance;
 
@@ -86,7 +84,8 @@ public class FinEngine {
         private CameraUtils mCameraUtils;
         private int mFrameWidth;
         private int mFrameHeight;
-        private Handler mHandler;
+        private Handler mSelfHandler;
+        private Handler mMainHandler;
         private boolean exited = false;
 
 
@@ -96,26 +95,30 @@ public class FinEngine {
             this.mExpectedHeight = expectedHeight;
             this.mListener = listener;
             this.mCameraUtils = new CameraUtils();
-//            this.mVideoBuffer = ByteBuffer.allocate(frameWidth*frameHeight*4);
+            try {
+                mMainHandler = new Handler();
+            }catch (RuntimeException ignored){
+                throw new IllegalStateException("必须在有looper的线程中初始化引擎，主线程或者HandlerThread");
+            }
         }
 
         @Override
         protected void onLooperPrepared() {
-            mHandler = new Handler(getLooper(), this);
-            mHandler.sendEmptyMessage(MSG_INIT);
+            mSelfHandler = new Handler(getLooper(), this);
+            mSelfHandler.sendEmptyMessage(MSG_INIT);
         }
 
         @Override
         public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-            if (mHandler != null) {
-                mHandler.sendEmptyMessage(MSG_PROCESS);
+            if (mSelfHandler != null) {
+                mSelfHandler.sendEmptyMessage(MSG_PROCESS);
             }
         }
 
         public boolean toggleCamera() {
-            if (mHandler != null) {
+            if (mSelfHandler != null) {
                 try {
-                    mHandler.sendEmptyMessage(MSG_TOGGLE);
+                    mSelfHandler.sendEmptyMessage(MSG_TOGGLE);
                     return true;
                 }catch (Throwable ignored){
                     return false;
@@ -126,8 +129,8 @@ public class FinEngine {
 
         public void exit() {
             exited = true;
-            if (mHandler != null) {
-                mHandler.sendEmptyMessage(MSG_STOP);
+            if (mSelfHandler != null) {
+                mSelfHandler.sendEmptyMessage(MSG_STOP);
             }
         }
 
@@ -158,7 +161,7 @@ public class FinEngine {
             }
             final boolean finalSuccess = success;
             if (mListener != null) {
-                new Handler(Looper.getMainLooper()).post(new Runnable() {
+                mMainHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         mListener.onToggleCameraComplete(finalSuccess);
@@ -197,14 +200,28 @@ public class FinEngine {
             mInputTex = _startEngine(mFrameWidth, mFrameHeight, mAppCtx.getAssets());
             if (mInputTex == -1) {
                 Log.e(TAG, "引擎初始化失败！");
-                return;
+                init = false;
+            }else {
+                try {
+                    mVideoBuffer = ByteBuffer.allocateDirect(mFrameHeight * mFrameWidth * 4);
+                    mVideoBuffer.position(0);
+                    mSurfaceTexture = new SurfaceTexture(mInputTex);
+                    mSurfaceTexture.setOnFrameAvailableListener(this);
+                    mCameraUtils.startPreview(mAppCtx, mSurfaceTexture);
+                }catch (Throwable err){
+                    err.printStackTrace();
+                    init = false;
+                }
             }
-            mVideoBuffer = ByteBuffer.allocateDirect(mFrameHeight * mFrameWidth * 4);
-            mVideoBuffer.position(0);
-            mSurfaceTexture = new SurfaceTexture(mInputTex);
-            mSurfaceTexture.setOnFrameAvailableListener(this);
-            mCameraUtils.startPreview(mAppCtx, mSurfaceTexture);
-
+            if(mListener != null){
+                final boolean finalInit = init;
+                mMainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mListener.onEngineStart(finalInit,mFrameWidth,mFrameHeight);
+                    }
+                });
+            }
         }
 
     }
@@ -216,6 +233,12 @@ public class FinEngine {
     private native void process(SurfaceTexture surfaceTexture, int mFrameDegree, byte[] array);
 
     public interface EngineListener {
+
+        void onEngineStart(boolean success,int frameWidth,int frameHeight);
+
+        /**
+         * notice that this method may be invoked before onEngineStart.
+         */
         void onVideoBuffer(byte[] data, int frameWidth, int frameHeight);
 
         void onToggleCameraComplete(boolean success);

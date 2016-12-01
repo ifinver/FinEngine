@@ -104,6 +104,11 @@ public class SingleActivity extends AppCompatActivity implements FinEngine.Engin
     }
 
     @Override
+    public void onEngineStart(boolean success, int frameWidth, int frameHeight) {
+
+    }
+
+    @Override
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight) {
         mRenderer.onVideoBuffer(data, frameWidth, frameHeight);
 

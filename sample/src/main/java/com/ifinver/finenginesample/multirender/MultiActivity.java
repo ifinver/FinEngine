@@ -73,6 +73,11 @@ public class MultiActivity extends AppCompatActivity implements FinEngine.Engine
     }
 
     @Override
+    public void onEngineStart(boolean success, int frameWidth, int frameHeight) {
+
+    }
+
+    @Override
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight) {
         for(TextureRenderer r : mRenderer){
             r.onVideoBuffer(data,frameWidth,frameHeight);
