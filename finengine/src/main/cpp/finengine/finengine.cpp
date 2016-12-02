@@ -14,7 +14,7 @@
 FinEngineHolder *pHolder;
 
 JNIEXPORT int JNICALL
-Java_com_ifinver_finengine_FinEngine__1startEngine(JNIEnv *env, jclass type, int frameWidth, int frameHeight,jobject jAssetsManager) {
+Java_com_ifinver_finengine_FinEngine__1startEngine(JNIEnv *env, jclass type, int frameWidth, int frameHeight, jobject jAssetsManager) {
     pHolder = newOffScreenGLContext(env, frameWidth, frameHeight, jAssetsManager);
 
     if (pHolder == NULL) {
@@ -27,8 +27,8 @@ void JNICALL Java_com_ifinver_finengine_FinEngine__1stopEngine(JNIEnv *env, jcla
     releaseEngine();
 }
 
-void JNICALL Java_com_ifinver_finengine_FinEngine_process(JNIEnv *env, jclass, jobject surfaceTexture, jint mFrameDegree,
-                                                              jbyteArray _data) {
+void JNICALL Java_com_ifinver_finengine_FinEngine_process(JNIEnv *env, jclass, jobject surfaceTexture, jint mFrameDegree, jboolean mirror,
+                                                          jbyteArray _data) {
     jboolean isCopy;
     jbyte *data = env->GetByteArrayElements(_data, &isCopy);
     if (isCopy) {
@@ -36,17 +36,31 @@ void JNICALL Java_com_ifinver_finengine_FinEngine_process(JNIEnv *env, jclass, j
     }
 //    env->CallVoidMethod(surfaceTexture, pHolder->midAttachToGlContext, pHolder->inputTexture);
     env->CallVoidMethod(surfaceTexture, pHolder->midUpdateTexImage);
-    renderFrame(mFrameDegree, data);
+    renderFrame(mFrameDegree, mirror, data);
 //    env->CallVoidMethod(surfaceTexture, pHolder->midDetachFromGLContext);
     env->ReleaseByteArrayElements(_data, data, 0);
 }
 
-void renderFrame(jint degree, jbyte *buff) {
+void renderFrame(jint degree, jboolean mirror, jbyte *buff) {
+    //输入顶点
     glEnableVertexAttribArray(pHolder->localVertexPos);
-    glVertexAttribPointer(pHolder->localVertexPos, 2, GL_FLOAT, GL_FALSE, pHolder->vertexStride, (const void *) pHolder->offsetVertex);
+    glVertexAttribPointer(pHolder->localVertexPos, 2, GL_FLOAT, GL_FALSE, 0, VERTICES_COORD);
 
+    //输入纹理坐标，处理旋转和镜像
     glEnableVertexAttribArray(pHolder->localTexturePos);
-    glVertexAttribPointer(pHolder->localTexturePos, 2, GL_FLOAT, GL_FALSE, pHolder->texStride, (const void *) pHolder->offsetTex);
+    {
+        degree %= 360;
+        if (degree < 0) degree += 360;
+        int idx;
+        if (mirror) {
+            degree = 360 - degree;
+            idx = degree / 90 * 2;
+            glVertexAttribPointer(pHolder->localTexturePos, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD_MIRROR + idx);
+        } else {
+            idx = degree / 90 * 2;
+            glVertexAttribPointer(pHolder->localTexturePos, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD_NOR + idx);
+        }
+    }
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, pHolder->inputTexture);
@@ -56,26 +70,12 @@ void renderFrame(jint degree, jbyte *buff) {
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glUniform1i(pHolder->localInputTexture, 0);
 
-    //rotation
-    if (pHolder->frameDegree != degree) {
-        if(pHolder->rotationMatrix){
-            delete pHolder->rotationMatrix;
-        }
-        float r = d2r(degree);
-        float cosR = cosf(r);
-        float sinR = sinf(r);
-//        pHolder->rotationMatrix = new GLfloat[4]{cosf(r), -sinf(r), sinf(r), cosf(r)};
-        pHolder->rotationMatrix = new GLfloat[4]{cosR, -sinR, sinR, cosR};
-//        pHolder->rotationMatrix = new GLfloat[4]{1, 0, 0, 1};
-        pHolder->frameDegree = degree;
-    }
-    glVertexAttrib4fv(pHolder->localRotateVec, pHolder->rotationMatrix);
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     glDisableVertexAttribArray(pHolder->localVertexPos);
     glDisableVertexAttribArray(pHolder->localTexturePos);
     //done.
-    glReadPixels(0,0,pHolder->frameWidth,pHolder->frameHeight,GL_RGBA,GL_UNSIGNED_BYTE,buff);
+    glReadPixels(0, 0, pHolder->frameWidth, pHolder->frameHeight, GL_RGBA, GL_UNSIGNED_BYTE, buff);
 }
 
 FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHeight, jobject jAssetsManager) {
@@ -146,9 +146,9 @@ FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHei
     /**
      * 以Texture作为依附
      */
-    glGenTextures(1,&holder->objRenderBuffer);
-    glBindTexture(GL_TEXTURE_2D,holder->objRenderBuffer);
-    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,frameWidth,frameHeight,0,GL_RGBA,GL_UNSIGNED_BYTE,NULL);
+    glGenTextures(1, &holder->objRenderBuffer);
+    glBindTexture(GL_TEXTURE_2D, holder->objRenderBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, frameWidth, frameHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -196,18 +196,14 @@ FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHei
         holder->program = program;
         holder->localVertexPos = (GLuint) glGetAttribLocation(program, "aPosition");
         holder->localTexturePos = (GLuint) glGetAttribLocation(program, "aTexCoord");
-        holder->localRotateVec = (GLuint) glGetAttribLocation(program, "aRotVector");
         holder->localInputTexture = (GLuint) glGetUniformLocation(program, "sTexture");
 
-        GLuint vertexBuff;
-        glGenBuffers(1, &vertexBuff);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuff);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES_BASE), VERTICES_BASE, GL_STATIC_DRAW);
-        holder->vertexBuff = vertexBuff;
-        holder->vertexStride = 4 * sizeof(GLfloat);
-        holder->texStride = 4 * sizeof(GLfloat);
-        holder->offsetVertex = 0;
-        holder->offsetTex = 2 * sizeof(GLfloat);
+        //硬件缓存 concern not use it.
+//        GLuint vertexBuff;
+//        glGenBuffers(1, &vertexBuff);
+//        glBindBuffer(GL_ARRAY_BUFFER, vertexBuff);
+//        glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES_COORD), VERTICES_COORD, GL_STATIC_DRAW);
+//        holder->vertexBuff = vertexBuff;
 
         //tex
         glGenTextures(1, &holder->inputTexture);
@@ -225,8 +221,7 @@ FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHei
 }
 
 void releaseEngine() {
-    if(pHolder != NULL){
-        glDeleteBuffers(1, &pHolder->vertexBuff);
+    if (pHolder != NULL) {
         glDeleteTextures(1, &pHolder->inputTexture);
         glDeleteProgram(pHolder->program);
         glDeleteRenderbuffers(1, &pHolder->objRenderBuffer);

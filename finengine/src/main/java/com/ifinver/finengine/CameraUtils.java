@@ -225,6 +225,10 @@ public final class CameraUtils {
         return mCameraOrientation;
     }
 
+    public boolean isFrontCurrent() {
+        return mCameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT;
+    }
+
     private class CameraSize {
         int width;
         int height;

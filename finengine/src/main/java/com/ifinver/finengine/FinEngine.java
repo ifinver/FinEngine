@@ -1,5 +1,6 @@
 package com.ifinver.finengine;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.SurfaceTexture;
@@ -34,6 +35,7 @@ public class FinEngine {
 
     private FinEngine() {}
 
+    @SuppressLint("StaticFieldLeak")
     private static FinEngine mInstance;
 
     public static FinEngine getInstance() {
@@ -64,6 +66,7 @@ public class FinEngine {
     }
 
     public void stopEngine() {
+        mAppCtx = null;
         mEngineThread.exit();
         mEngineThread = null;
     }
@@ -87,6 +90,7 @@ public class FinEngine {
         private Handler mSelfHandler;
         private Handler mMainHandler;
         private boolean exited = false;
+        private boolean mirror = false;
 
 
         FinEngineThread(int expectedWidth, int expectedHeight, EngineListener listener) {
@@ -160,6 +164,10 @@ public class FinEngine {
             if (success) {
                 success = mCameraUtils.startPreview(mAppCtx, mSurfaceTexture);
             }
+            if(success){
+                //后置需要镜像
+                mirror = !mCameraUtils.isFrontCurrent();
+            }
             final boolean finalSuccess = success;
             if (mListener != null) {
                 mMainHandler.post(new Runnable() {
@@ -183,7 +191,7 @@ public class FinEngine {
 
         private void processPerFrame() {
             if (mSurfaceTexture != null && !exited) {
-                process(mSurfaceTexture, mCameraUtils.getFrameDegree(), mVideoBuffer.array());
+                process(mSurfaceTexture, mCameraUtils.getFrameDegree(), mirror,mVideoBuffer.array());
                 if (mListener != null) {
                     mListener.onVideoBuffer(mVideoBuffer.array(), mFrameWidth, mFrameHeight);
                 }
@@ -231,7 +239,7 @@ public class FinEngine {
 
     private native void _stopEngine();
 
-    private native void process(SurfaceTexture surfaceTexture, int mFrameDegree, byte[] array);
+    private native void process(SurfaceTexture surfaceTexture, int mFrameDegree, boolean mirror,byte[] array);
 
     public interface EngineListener {
 

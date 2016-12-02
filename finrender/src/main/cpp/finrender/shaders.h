@@ -7,7 +7,7 @@
 
 #include <GLES2/gl2.h>
 
-const GLfloat VERTICES_BASE[] =
+const GLfloat VERTICES_COORD[] =
         {
                 -1.0f, 1.0f,   // Position 0
                 0.0f, 0.0f,   // TexCoord 0

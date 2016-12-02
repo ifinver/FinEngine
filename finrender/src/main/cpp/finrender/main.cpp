@@ -211,7 +211,7 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, jboolean isSurfaceT
     GLuint vertexBuff;
     glGenBuffers(1,&vertexBuff);
     glBindBuffer(GL_ARRAY_BUFFER,vertexBuff);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES_BASE),VERTICES_BASE,GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES_COORD),VERTICES_COORD,GL_STATIC_DRAW);
     gl_holder->vertexBuff = vertexBuff;
     gl_holder->vertexStride = 4 * sizeof(GLfloat);
     gl_holder->texStride = 4 * sizeof(GLfloat);
