@@ -52,10 +52,12 @@ public class FinEngine {
     private FinEngineThread mEngineThread;
 
     public void startEngine(Context ctx, EngineListener listener) {
-        this.mAppCtx = ctx.getApplicationContext();
-        DisplayMetrics dm = mAppCtx.getResources().getDisplayMetrics();
-        mEngineThread = new FinEngineThread(dm.widthPixels, dm.heightPixels, listener);
-        mEngineThread.start();
+        if(mEngineThread == null) {
+            this.mAppCtx = ctx.getApplicationContext();
+            DisplayMetrics dm = mAppCtx.getResources().getDisplayMetrics();
+            mEngineThread = new FinEngineThread(dm.widthPixels, dm.heightPixels, listener);
+            mEngineThread.start();
+        }
     }
 
     public boolean toggleCamera() {
@@ -66,9 +68,11 @@ public class FinEngine {
     }
 
     public void stopEngine() {
-        mAppCtx = null;
-        mEngineThread.exit();
-        mEngineThread = null;
+        if(mEngineThread != null) {
+            mAppCtx = null;
+            mEngineThread.exit();
+            mEngineThread = null;
+        }
     }
 
     private class FinEngineThread extends HandlerThread implements SurfaceTexture.OnFrameAvailableListener, Handler.Callback {
