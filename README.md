@@ -16,7 +16,6 @@
 Only download from GPU to CPU and upload back 比较耗时。
 
 ##Next
-1. 只能初始化一次的问题
 1. 渲染过程中旋转手机屏幕的问题
 1. 使用GraphicBuffer加速顶点上传
 1. 使用oes扩展加速每一帧图像数据的下载和上传
