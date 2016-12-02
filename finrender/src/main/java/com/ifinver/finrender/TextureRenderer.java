@@ -40,7 +40,6 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        Log.d(TAG, "onSurfaceTextureAvailable");
         mSurface = new Surface(surface);
 
         if ( mRenderThread == null ) {
