@@ -57,7 +57,6 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        Log.d(TAG, "onSurfaceTextureDestroyed");
         mSurface = null;
         release();
         return false;
