@@ -24,7 +24,7 @@ public class FinEngine {
         System.loadLibrary("fin-engine-lib");
     }
 
-    private static final String TAG = "Fin Engine";
+    private static final String TAG = "FinEngine";
 
     public static final int FILTER_TYPE_NORMAL = 0;
     public static final int FILTER_TYPE_CYAN = 1;

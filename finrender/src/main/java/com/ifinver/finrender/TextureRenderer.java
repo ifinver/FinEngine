@@ -11,7 +11,7 @@ import android.view.TextureView;
  */
 
 public class TextureRenderer implements TextureView.SurfaceTextureListener {
-    private static final String TAG = "TextureRenderer";
+    private static final String TAG = "FinRender";
 
 
     private RenderThread mRenderThread;
@@ -69,7 +69,6 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
     }
 
     private static class RenderThread extends Thread {
-        private static final String TAG = "RenderThread";
         boolean quit = false;
         Surface mSurface;
         private long mEngine;

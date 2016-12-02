@@ -20,7 +20,7 @@ import java.util.List;
 @SuppressWarnings("deprecation")
 public final class CameraUtils {
 
-    private static final String TAG = "CameraUtils";
+    private static final String TAG = "FinEngine";
 
     private Camera mCamera;
     public int mCameraIndex;

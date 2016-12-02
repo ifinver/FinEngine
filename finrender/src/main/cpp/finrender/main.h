@@ -6,7 +6,7 @@
 #define MYOPENGLES_GL_NATIVE_LIB_H
 
 
-#define  LOG_TAG    "gl-native-lib"
+#define  LOG_TAG    "FinRender"
 
 #include <jni.h>
 #include <android/log.h>
