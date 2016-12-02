@@ -1,4 +1,5 @@
 #Fine Engine & Fin Render
+[![License](http://img.shields.io/:license-apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
 ##FinEngine
 引擎接管了摄像头，摄像机每一帧数据生成时，引擎在GPU上直接获取摄像机纹理做处理，经过滤镜+旋转+格式转换处理之后，把每一帧RGBA格式的视频数据从GPU下载到CPU，回调给业务端。
@@ -11,7 +12,8 @@
 独立的渲染组件，可以在一个完全的独立的线程中使用open gl进行高效的渲染。
 
 ##Work Flow
-
+![Work Flow](https://github.com/ifinver/FinEngine/blob/master/workflow.png)
+Only download from GPU to CPU and upload back 比较耗时。
 
 ##Next
 1. 只能初始化一次的问题
