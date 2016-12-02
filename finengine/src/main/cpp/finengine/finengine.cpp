@@ -87,6 +87,11 @@ FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHei
         checkGlError("eglGetDisplay");
         return NULL;
     }
+    EGLint majorVer, minVer;
+    if (!eglInitialize(display, &majorVer, &minVer)) {
+        checkGlError("eglInitialize");
+        return NULL;
+    }
     const EGLint confAttr[] =
             {
                     EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,// very important!
