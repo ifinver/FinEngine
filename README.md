@@ -28,4 +28,3 @@ Only download from GPU to CPU and upload back 比较耗时。
 1. 视频裁剪问题
 1. 使用GraphicBuffer加速顶点上传
 1. 使用oes扩展加速每一帧图像数据的下载和上传
-1. 裁剪问题，当前是拉伸的，这里可以暂时让上层对渲染组件处理的(重写TextureView的onMeasure方法).
