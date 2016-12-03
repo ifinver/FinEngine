@@ -128,7 +128,6 @@ public class FinEngine {
 
         @Override
         public void onFrameAvailable(SurfaceTexture surfaceTexture) {
-            Log.d(TAG, "onFrameAvailable");
             if (mSelfHandler != null) {
                 mSelfHandler.sendEmptyMessage(MSG_PROCESS);
             }
@@ -232,7 +231,7 @@ public class FinEngine {
                     init = false;
                 }
             }
-            exited = true;
+            exited = false;
             Log.d(TAG, "引擎初始化成功！");
             if (mListener != null) {
                 final boolean finalInit = init;
