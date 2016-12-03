@@ -26,8 +26,9 @@ public final class CameraUtils {
     public int mCameraIndex;
     public int mFrameWidth;
     public int mFrameHeight;
-    private boolean mInitialized = false;
     private int mCameraOrientation = 0;
+    private int mExpectedWidth;
+    private int mExpectedHeight;
 
     /*Package*/ CameraUtils() {
         mCameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
@@ -74,6 +75,8 @@ public final class CameraUtils {
         boolean result = true;
         synchronized (this) {
             mCamera = null;
+            this.mExpectedWidth = width;
+            this.mExpectedHeight = height;
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
                 try {
@@ -135,7 +138,6 @@ public final class CameraUtils {
                 e.printStackTrace();
             }
         }
-        mInitialized = result;
         return result;
     }
 
@@ -172,14 +174,13 @@ public final class CameraUtils {
             } else {
                 mCameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
             }
-            return init(mFrameWidth, mFrameHeight);
+            return init(mExpectedWidth, mExpectedHeight);
         }
         return false;
     }
 
     public void stop() {
         synchronized (this) {
-            mInitialized = false;
             if (mCamera != null) {
                 mCamera.stopPreview();
                 mCamera.setPreviewCallback(null);

@@ -109,9 +109,9 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
     private void initGL() {
         mEngine = FinRender.createGLContext(mSurface, mFrameFormat);
         if (mEngine == 0) {
-            Log.e(TAG, "引擎启动失败！");
+            Log.e(TAG, "渲染引擎启动失败！");
         } else {
-            Log.d(TAG, "引擎初始化成功");
+            Log.d(TAG, "渲染引擎初始化成功");
         }
     }
 
@@ -119,7 +119,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         if (mEngine != 0) {
             FinRender.releaseGLContext(mEngine);
         }
-        Log.d(TAG, "渲染线程已退出");
+        Log.d(TAG, "渲染引擎已退出");
     }
 
     @Override
