@@ -48,7 +48,7 @@ public class MultiActivity extends AppCompatActivity  {
 
         mRenderer = new TextureRenderer[4];
         for(int i = 0;i < 4;i ++){
-            mRenderer[i] = new TextureRenderer(FinRender.FORMAT_RGBA);
+            mRenderer[i] = new TextureRenderer(FinRender.FORMAT_NV21);
             tvContent[i].setSurfaceTextureListener(mRenderer[i]);
         }
 

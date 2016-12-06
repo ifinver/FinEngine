@@ -32,9 +32,9 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         }
     }
 
-    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight) {
+    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight,int degree,boolean isFrontCamera) {
         if (mRenderThread != null) {
-            mRenderThread.notifyWithBuffer(data, frameWidth, frameHeight);
+            mRenderThread.notifyWithBuffer(data, frameWidth, frameHeight,degree,isFrontCamera);
         }
     }
 
@@ -74,16 +74,20 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         private int mFrameHeight;
         private byte[] mData;
         private int mFrameFormat;
+        private int mDegree;
+        private boolean isFrontCamera;
 
         RenderThread(Surface surface, int frameFormat) {
             this.mSurface = surface;
             this.mFrameFormat = frameFormat;
         }
 
-        public void notifyWithBuffer(byte[] data, int frameWidth, int frameHeight,int degree) {
+        public void notifyWithBuffer(byte[] data, int frameWidth, int frameHeight,int degree,boolean isFrontCamera) {
             this.mFrameWidth = frameWidth;
             this.mFrameHeight = frameHeight;
             this.mData = data;
+            this.mDegree = degree;
+            this.isFrontCamera = isFrontCamera;
             //wakeup
             synchronized (this) {
                 notify();
@@ -93,7 +97,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         private void onDrawFrame() {
             if (mEngine != 0 && mData != null) {
 //                long spend = SystemClock.elapsedRealtime();
-                FinRender.renderOnContext(mEngine,mData,mFrameWidth,mFrameHeight);
+                FinRender.renderOnContext(mEngine,mData,mFrameWidth,mFrameHeight,mDegree,isFrontCamera);
 //                spend = SystemClock.elapsedRealtime() - spend;
 //                Log.d(TAG, "渲染一帧:" + spend);
             }

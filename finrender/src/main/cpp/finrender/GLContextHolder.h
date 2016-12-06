@@ -20,23 +20,31 @@ public:
 
     GLuint program;
 
-    GLuint *positions;
+//    GLuint *positions;
 
     int textureNums;
 
     GLuint *textures;
 
-    GLuint vertexBuff;
+//    GLuint vertexBuff;
 
-    GLsizei vertexStride;
+//    GLsizei vertexStride;
 
-    GLsizei texStride;
+//    GLsizei texStride;
 
-    GLuint offsetVertex;
+//    GLuint offsetVertex;
 
-    GLuint offsetTex;
+//    GLuint offsetTex;
 
     jboolean isSurfaceThreadExclusive;
+
+    GLuint posAttrVertices;
+
+    GLuint posAttrTexCoords;
+
+    GLuint posUniTextureY;
+
+    GLuint posUniTextureUV;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

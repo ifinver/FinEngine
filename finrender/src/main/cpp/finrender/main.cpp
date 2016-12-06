@@ -47,57 +47,59 @@ void renderFrame(GLContextHolder *holder, jbyte *data ,jint width, jint height,j
             return ;
         }
     }
-    /**
-     * 输入定点坐标
-     */
-    glEnableVertexAttribArray(holder->positions[0]);
-    glVertexAttribPointer(holder->positions[0], 2, GL_FLOAT, GL_FALSE, holder->vertexStride, (const void *) holder->offsetVertex);
+    glUseProgram(holder->program);
+    //输入顶点
+    glEnableVertexAttribArray(holder->posAttrVertices);
+    glVertexAttribPointer(holder->posAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, VERTICES_COORD);
 
-    /**
-     * 输入纹理坐标
-     */
-    glEnableVertexAttribArray(holder->positions[1]);
-    glVertexAttribPointer(holder->positions[1], 2, GL_FLOAT, GL_FALSE, holder->texStride, (const void *) holder->offsetTex);
+    //输入纹理坐标，处理旋转和镜像
+//    degree = 0;
+    glEnableVertexAttribArray(holder->posAttrTexCoords);
+    {
+        degree %= 360;
+        if (degree < 0) degree += 360;
+        int idx;
+        if (mirror) {
+            idx = degree / 90 * 2;
+            glVertexAttribPointer(holder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD_MIRROR + idx);
+            LOGE("鏡像，rotation=%d",degree);
+        } else {
+            degree = 360 - degree;
+            idx = degree / 90 * 2;
+            glVertexAttribPointer(holder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD_NOR + idx);
+            LOGE("沒有鏡像，rotation=%d",degree);
+        }
+    }
 
-    /**
-     * rgb texture
-     */
+    //上传纹理 Y通道
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, holder->textures[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+    glUniform1i(holder->posUniTextureY, 0);
 
-    glUniform1i(holder->positions[2], 0);
+    //上传UV通道
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D,holder->textures[1]);
+    glTexImage2D(GL_TEXTURE_2D,0,GL_LUMINANCE_ALPHA, width / 2, height / 2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, data + (width * height));
+    glUniform1i(holder->posUniTextureUV,1);
 
-    //no need concern this.
-    //rotation
-//    if (holder->frameDegree != frameDegree) {
-//        holder->rotationMatrix = new GLfloat[4]{cosf(d2r(frameDegree)), -sinf(d2r(frameDegree)), sinf(d2r(frameDegree)), cosf(d2r(frameDegree))};
-//        holder->frameDegree = frameDegree;
-//    }
-//    glVertexAttrib4fv(holder->positions[3], holder->rotationMatrix);
-
-//    glClear(GL_COLOR_BUFFER_BIT);
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-    glDisableVertexAttribArray(holder->positions[0]);
-    glDisableVertexAttribArray(holder->positions[1]);
+    glDisableVertexAttribArray(holder->posAttrVertices);
+    glDisableVertexAttribArray(holder->posAttrTexCoords);
 
+    glFinish();
     eglSwapBuffers(holder->eglDisplay, holder->eglSurface);
 }
 
 //释放指定上下文
 void releaseGLContext(GLContextHolder *holder) {
-    glDeleteBuffers(1,&(holder->vertexBuff));
+//    glDeleteBuffers(1,&(holder->vertexBuff));
     glDeleteTextures(holder->textureNums, holder->textures);
     glDeleteProgram(holder->program);
     eglDestroySurface(holder->eglDisplay, holder->eglSurface);
     eglDestroyContext(holder->eglDisplay, holder->eglContext);
-    delete[](holder->positions);
     delete[](holder->textures);
     delete (holder);
 }
@@ -124,8 +126,8 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, jboolean isSurfaceT
                     EGL_RED_SIZE, 8,
                     EGL_GREEN_SIZE, 8,
                     EGL_BLUE_SIZE, 8,
-                    EGL_ALPHA_SIZE, 8,// if you need the alpha channel
-                    EGL_DEPTH_SIZE, 0,// if you need the depth buffer
+                    EGL_ALPHA_SIZE, 8,
+                    EGL_DEPTH_SIZE, 0,
                     EGL_STENCIL_SIZE, 0,
                     EGL_NONE
             };
@@ -166,7 +168,7 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, jboolean isSurfaceT
     }
 
     //context create success,now create program
-    ShaderBase shader = ShaderRGBA();
+    ShaderBase shader = ShaderNV21();
     GLuint programYUV = createProgram(shader.vertexShader, shader.fragmentShader);
 //    delete shader;
     if (programYUV == 0) {
@@ -182,33 +184,39 @@ GLContextHolder *newGLContext(JNIEnv *env, jobject jSurface, jboolean isSurfaceT
     gl_holder->eglSurface = eglSurface;
     gl_holder->program = programYUV;
 
-    GLint posAttrVertices = glGetAttribLocation(programYUV, "aPosition");
-    GLint posAttrTexCoords = glGetAttribLocation(programYUV, "aTexCoord");
-    GLint posUniRgbTexture = glGetUniformLocation(programYUV, "rgbTexture");
-    GLuint *positions = new GLuint[3];
-    positions[0] = (GLuint) posAttrVertices;
-    positions[1] = (GLuint) posAttrTexCoords;
-    positions[2] = (GLuint) posUniRgbTexture;
-    gl_holder->positions = positions;
-//    gl_holder->frameDegree = -1;
+    gl_holder->posAttrVertices = (GLuint) glGetAttribLocation(programYUV, "aPosition");
+    gl_holder->posAttrTexCoords = (GLuint) glGetAttribLocation(programYUV, "aTexCoord");
+    gl_holder->posUniTextureY = (GLuint) glGetUniformLocation(programYUV, "yTexture");
+    gl_holder->posUniTextureUV = (GLuint) glGetUniformLocation(programYUV, "uvTexture");
 
     //tex
     GLuint *textures = new GLuint[2];
     glGenTextures(2, textures);
+    glBindTexture(GL_TEXTURE_2D, textures[0]);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D, textures[1]);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
     gl_holder->textureNums = 2;
     gl_holder->textures = textures;
 
     //buff
-    glUseProgram(programYUV);
-    GLuint vertexBuff;
-    glGenBuffers(1,&vertexBuff);
-    glBindBuffer(GL_ARRAY_BUFFER,vertexBuff);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES_COORD),VERTICES_COORD,GL_STATIC_DRAW);
-    gl_holder->vertexBuff = vertexBuff;
-    gl_holder->vertexStride = 4 * sizeof(GLfloat);
-    gl_holder->texStride = 4 * sizeof(GLfloat);
-    gl_holder->offsetVertex = 0;
-    gl_holder->offsetTex = 2 * sizeof(GLfloat);
+//    glUseProgram(programYUV);
+//    GLuint vertexBuff;
+//    glGenBuffers(1,&vertexBuff);
+//    glBindBuffer(GL_ARRAY_BUFFER,vertexBuff);
+//    glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES_COORD),VERTICES_COORD,GL_STATIC_DRAW);
+//    gl_holder->vertexBuff = vertexBuff;
+//    gl_holder->vertexStride = 4 * sizeof(GLfloat);
+//    gl_holder->texStride = 4 * sizeof(GLfloat);
+//    gl_holder->offsetVertex = 0;
+//    gl_holder->offsetTex = 2 * sizeof(GLfloat);
 
     glDepthMask(GL_FALSE);
     glDisable(GL_BLEND);

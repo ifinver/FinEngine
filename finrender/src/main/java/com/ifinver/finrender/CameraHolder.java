@@ -103,8 +103,12 @@ public class CameraHolder {
                 mVideoBufferIdx = 1 - mVideoBufferIdx;
                 mCamera.addCallbackBuffer(mVideoBuffer[mVideoBufferIdx].array());
 
-                mListener.onVideoBuffer(data, mFrameWidth, mFrameHeight);
+                mListener.onVideoBuffer(data, mFrameWidth, mFrameHeight,mCameraOrientation,isFrontCurrent());
             }
+        }
+
+        private boolean isFrontCurrent() {
+            return mCameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT;
         }
 
 
@@ -176,6 +180,11 @@ public class CameraHolder {
         private void toggleCameraInternal() {
             Log.d(TAG, "toggleCamera");
             stopCamera();
+            if(mCameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT){
+                mCameraIndex = Camera.CameraInfo.CAMERA_FACING_BACK;
+            }else{
+                mCameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
+            }
             final boolean finalSuccess = initCamera();
             if (mListener != null) {
                 mMainHandler.post(new Runnable() {
@@ -363,7 +372,7 @@ public class CameraHolder {
         /**
          * notice that this method may be invoked before onCameraStart.
          */
-        void onVideoBuffer(byte[] data, int frameWidth, int frameHeight);
+        void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean frontCurrent);
 
         void onToggleCameraComplete(boolean success);
     }
