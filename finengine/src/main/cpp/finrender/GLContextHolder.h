@@ -27,7 +27,10 @@ public:
     GLuint posUniTextureY;
 
     GLuint posUniTextureUV;
-    GLuint inputTexture;
+
+    int textureNums;
+
+    GLuint *textures;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

@@ -16,7 +16,7 @@ import android.widget.Toast;
 import com.ifinver.finenginesample.FrameMeter;
 import com.ifinver.finenginesample.R;
 import com.ifinver.finenginesample.Renderer;
-import com.ifinver.finrender.CameraHolder;
+import com.ifinver.finengine.CameraHolder;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -64,10 +64,10 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 //            public boolean onTouch(View v, MotionEvent event) {
 //                switch (event.getAction()){
 //                    case MotionEvent.ACTION_DOWN:
-//                        FinRecorder.getInstance().recording(mRenderer.getSurfaceTexture());
+//                        FinRender.getInstance().recording(mRenderer.getSurfaceTexture());
 //                        break;
 //                    case MotionEvent.ACTION_POINTER_UP:
-//                        FinRecorder.getInstance().stopRecording();
+//                        FinRender.getInstance().stopRecording();
 //                        break;
 //                }
 //                return true;
@@ -83,7 +83,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 //        tvLittle.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
 //            @Override
 //            public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-//                FinRecorder.getInstance().prepare(new Surface(surface));
+//                FinRender.getInstance().prepare(new Surface(surface));
 //            }
 //
 //            @Override
@@ -92,7 +92,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 //
 //            @Override
 //            public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-//                FinRecorder.getInstance().release();
+//                FinRender.getInstance().release();
 //                return false;
 //            }
 //

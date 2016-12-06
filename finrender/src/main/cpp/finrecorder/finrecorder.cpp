@@ -10,7 +10,6 @@
 #include <android/native_window_jni.h>
 #include <GLES2/gl2ext.h>
 
-FinRecorderHolder *recorderHolder = NULL;
 const GLfloat VERTICES_COORD[] =
         {
                 -1.0f, 1.0f,
@@ -34,7 +33,7 @@ const char *vertexShader =
                 "   gl_Position = aPosition;                        \n"
                 "}                                                  \n";
 const char *fragmentShader =
-                "#extension GL_OES_EGL_image_external : require     \n"
+        "#extension GL_OES_EGL_image_external : require     \n"
                 "precision mediump float;                           \n"
                 "varying vec2 vTexCoord;                            \n"
                 "uniform samplerExternalOES sTexture;               \n"
@@ -42,7 +41,7 @@ const char *fragmentShader =
                 "    gl_FragColor = texture2D(sTexture, vTexCoord); \n"
                 "}                                                  \n";
 
-JNIEXPORT jint JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativePrepare(JNIEnv *env, jobject instance, jobject jSurface) {
+JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_nativeCreate(JNIEnv *env, jobject, jobject output) {
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
         checkGlError("eglGetDisplay");
@@ -74,7 +73,7 @@ JNIEXPORT jint JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativePrepare(JN
         checkGlError("eglChooseConfig");
         return 0;
     }
-    ANativeWindow *surface = ANativeWindow_fromSurface(env, jSurface);
+    ANativeWindow *surface = ANativeWindow_fromSurface(env, output);
     EGLSurface eglSurface = eglCreateWindowSurface(display, config, surface, NULL);
     if (surface == EGL_NO_SURFACE) {
         checkGlError("eglCreateWindowSurface");
@@ -90,7 +89,7 @@ JNIEXPORT jint JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativePrepare(JN
         checkGlError("eglCreateContext");
         return 0;
     }
-    recorderHolder = new FinRecorderHolder();
+    FinRecorderHolder *recorderHolder = new FinRecorderHolder();
 
     if (!eglMakeCurrent(display, eglSurface, eglSurface, eglContext)) {
         checkGlError("eglMakeCurrent");
@@ -142,56 +141,56 @@ JNIEXPORT jint JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativePrepare(JN
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_DITHER);
 
-    return recorderHolder->inputTex;
+    return (jlong) recorderHolder;
 }
 
-void renderFrame(){
+void renderFrame(FinRecorderHolder *pHolder) {
     //输入顶点
-    glEnableVertexAttribArray(recorderHolder->posAttrVertices);
-    glVertexAttribPointer(recorderHolder->posAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, VERTICES_COORD);
+    glEnableVertexAttribArray(pHolder->posAttrVertices);
+    glVertexAttribPointer(pHolder->posAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, VERTICES_COORD);
 
     //输入纹理坐标
-    glEnableVertexAttribArray(recorderHolder->posAttrTexCoords);
-    glVertexAttribPointer(recorderHolder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD);
+    glEnableVertexAttribArray(pHolder->posAttrTexCoords);
+    glVertexAttribPointer(pHolder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, recorderHolder->inputTex);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, pHolder->inputTex);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glUniform1i(recorderHolder->posUniTextureS, 0);
+    glUniform1i(pHolder->posUniTextureS, 0);
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-    glDisableVertexAttribArray(recorderHolder->posAttrVertices);
-    glDisableVertexAttribArray(recorderHolder->posAttrTexCoords);
+    glDisableVertexAttribArray(pHolder->posAttrVertices);
+    glDisableVertexAttribArray(pHolder->posAttrTexCoords);
 
     glFinish();
-    eglSwapBuffers(recorderHolder->eglDisplay,recorderHolder->eglSurface);
+    eglSwapBuffers(pHolder->eglDisplay, pHolder->eglSurface);
 }
 
-JNIEXPORT void JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeRenderOutput(JNIEnv *env, jobject instance, jobject input) {
-//    if (!eglMakeCurrent(recorderHolder->eglDisplay, recorderHolder->eglSurface, recorderHolder->eglSurface, recorderHolder->eglContext)) {
-//        LOGE("make current failed!");
-//        checkGlError("eglMakeCurrent");
-//        return ;
-//    }else{
-//        LOGE("make current success");
-//    }
+JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_nativeRenderOut(JNIEnv *env, jobject, jlong engine, jobject input) {
+    FinRecorderHolder *recorderHolder = (FinRecorderHolder *) engine;
 //    env->CallVoidMethod(input, recorderHolder->midAttachToGlContext, recorderHolder->inputTex);
     env->CallVoidMethod(input, recorderHolder->midUpdateTexImage);
-    renderFrame();
+    renderFrame(recorderHolder);
 //    env->CallVoidMethod(input, recorderHolder->midDetachFromGLContext);
 }
 
-JNIEXPORT void JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeRelease(JNIEnv *env, jobject instance) {
-    if (recorderHolder != NULL) {
-        glDeleteTextures(1, &recorderHolder->inputTex);
-        glDeleteProgram(recorderHolder->program);
-//        delete[](badHolder->positions);
-        delete (recorderHolder);
-        recorderHolder = NULL;
-    }
+JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_nativeRelease(JNIEnv *env, jobject instance, jlong engine) {
+    FinRecorderHolder *pHolder = (FinRecorderHolder *) engine;
+    glDeleteTextures(1, &pHolder->inputTex);
+    glDeleteProgram(pHolder->program);
+    delete (pHolder);
 }
 
+JNIEXPORT jint JNICALL Java_com_ifinver_finrender_FinRender_getInputTex(JNIEnv *env, jobject instance, jlong engine){
+    FinRecorderHolder *pHolder = (FinRecorderHolder *) engine;
+    return pHolder->inputTex;
+}
+
+JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_getEglContext(JNIEnv *env, jobject instance, jlong engine){
+    FinRecorderHolder *pHolder = (FinRecorderHolder *) engine;
+    return (jlong)pHolder->eglContext;
+}

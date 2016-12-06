@@ -4,5 +4,5 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:25.0.0'
 //    compile project(':finengine')
     compile project(':finrender')
-    compile project(':finrecorder')
+    compile project(':finengine')
 }

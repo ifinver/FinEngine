@@ -1,1 +1,1 @@
-include ':sample', ':finengine', ':finrender', ':finrecorder', ':badrender'
+include ':sample', ':finengine', ':finrender'

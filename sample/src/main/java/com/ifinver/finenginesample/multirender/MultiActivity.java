@@ -10,10 +10,9 @@ import android.view.TextureView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ifinver.finengine.CameraHolder;
 import com.ifinver.finenginesample.FrameMeter;
 import com.ifinver.finenginesample.R;
-import com.ifinver.finrender.CameraHolder;
-import com.ifinver.finrender.FinRender;
 import com.ifinver.finenginesample.TextureRenderer;
 
 import java.util.Timer;
@@ -48,7 +47,7 @@ public class MultiActivity extends AppCompatActivity  {
 
         mRenderer = new TextureRenderer[4];
         for(int i = 0;i < 4;i ++){
-            mRenderer[i] = new TextureRenderer(FinRender.FORMAT_NV21);
+            mRenderer[i] = new TextureRenderer();
             tvContent[i].setSurfaceTextureListener(mRenderer[i]);
         }
 

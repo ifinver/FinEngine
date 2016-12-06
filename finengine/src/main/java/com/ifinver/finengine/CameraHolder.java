@@ -1,4 +1,4 @@
-package com.ifinver.finrender;
+package com.ifinver.finengine;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
 
+
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -26,7 +27,7 @@ import java.util.List;
 
 public class CameraHolder {
 
-    private static final String TAG = "FinRender";
+    private static final String TAG = "FinEngine";
 
     private Context mAppCtx;
 
@@ -66,6 +67,7 @@ public class CameraHolder {
         mEngineThread.exit();
     }
 
+    @SuppressWarnings({"WeakerAccess", "deprecation"})
     private class FinEngineThread extends HandlerThread implements  Handler.Callback, Camera.PreviewCallback {
 
         private final int MSG_INIT = 0x101;
@@ -287,9 +289,9 @@ public class CameraHolder {
                     e.printStackTrace();
                 }
             }
-            if(BuildConfig.DEBUG) {
+//            if(BuildConfig.DEBUG) {
                 Log.d(TAG, init ? "摄像头初始化成功！" : "摄像头初始化失败！");
-            }
+//            }
             if (mListener != null) {
                 final boolean finalInit = init;
                 mMainHandler.post(new Runnable() {
@@ -381,7 +383,7 @@ public class CameraHolder {
         int width;
         int height;
 
-        public CameraSize(int width, int height) {
+        CameraSize(int width, int height) {
             this.width = width;
             this.height = height;
         }

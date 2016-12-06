@@ -5,7 +5,7 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 
-import com.ifinver.finrender.FinRender;
+import com.ifinver.finengine.FinEngine;
 
 /**
  * Created by iFinVer on 2016/11/21.
@@ -13,19 +13,17 @@ import com.ifinver.finrender.FinRender;
  */
 
 public class TextureRenderer implements TextureView.SurfaceTextureListener {
-    private static final String TAG = "FinRender";
+    private static final String TAG = "FinEngine";
 
 
     private RenderThread mRenderThread;
     private Surface mSurface;
-    private int mFrameFormat;
     private SurfaceTexture mSurfaceTexture;
 
 
-    public TextureRenderer(int frameFormat) {
+    public TextureRenderer() {
         this.mSurface = null;
         this.mRenderThread = null;
-        this.mFrameFormat = frameFormat;
     }
 
     private void release() {
@@ -35,9 +33,9 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         }
     }
 
-    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight,int degree,boolean isFrontCamera) {
+    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera) {
         if (mRenderThread != null) {
-            mRenderThread.notifyWithBuffer(data, frameWidth, frameHeight,degree,isFrontCamera);
+            mRenderThread.notifyWithBuffer(data, frameWidth, frameHeight, degree, isFrontCamera);
         }
     }
 
@@ -46,13 +44,13 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         this.mSurfaceTexture = surface;
         mSurface = new Surface(surface);
 
-        if ( mRenderThread == null ) {
-            mRenderThread = new RenderThread(mSurface, mFrameFormat);
+        if (mRenderThread == null) {
+            mRenderThread = new RenderThread(mSurface);
             mRenderThread.start();
         }
     }
 
-    public SurfaceTexture getSurfaceTexture(){
+    public SurfaceTexture getSurfaceTexture() {
         return mSurfaceTexture;
     }
 
@@ -77,20 +75,18 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
     private static class RenderThread extends Thread {
         boolean quit = false;
         Surface mSurface;
-        private long mEngine;
         private int mFrameWidth;
         private int mFrameHeight;
         private byte[] mData;
-        private int mFrameFormat;
         private int mDegree;
         private boolean isFrontCamera;
+        private boolean inited;
 
-        RenderThread(Surface surface, int frameFormat) {
+        RenderThread(Surface surface) {
             this.mSurface = surface;
-            this.mFrameFormat = frameFormat;
         }
 
-        public void notifyWithBuffer(byte[] data, int frameWidth, int frameHeight,int degree,boolean isFrontCamera) {
+        public void notifyWithBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera) {
             this.mFrameWidth = frameWidth;
             this.mFrameHeight = frameHeight;
             this.mData = data;
@@ -103,54 +99,52 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         }
 
         private void onDrawFrame() {
-            if (mEngine != 0 && mData != null) {
+            if (inited && mData != null) {
 //                long spend = SystemClock.elapsedRealtime();
-                FinRender.renderOnContext(mEngine,mData,mFrameWidth,mFrameHeight,mDegree,isFrontCamera);
+                FinEngine.render(mData, mFrameWidth, mFrameHeight, mDegree, isFrontCamera);
 //                spend = SystemClock.elapsedRealtime() - spend;
 //                Log.d(TAG, "渲染一帧:" + spend);
             }
         }
 
 
-    public void quit() {
-        Log.d(TAG, "开始退出渲染线程");
-        quit = true;
-        interrupt();
-    }
-
-    private void initGL() {
-        mEngine = FinRender.createGLContext(mSurface, mFrameFormat);
-        if (mEngine == 0) {
-            Log.e(TAG, "渲染引擎启动失败！");
-        } else {
-            Log.d(TAG, "渲染引擎初始化成功");
+        public void quit() {
+            Log.d(TAG, "开始退出渲染线程");
+            quit = true;
+            interrupt();
         }
-    }
 
-    private void destroyGL() {
-        if (mEngine != 0) {
-            FinRender.releaseGLContext(mEngine);
-        }
-        Log.d(TAG, "渲染引擎已退出");
-    }
-
-    @Override
-    public void run() {
-        initGL();
-
-        while (!quit) {
-            synchronized (this) {
-                onDrawFrame();
-
-                try {
-                    wait();
-                } catch (InterruptedException e) {
-                    quit = true;
-                }
+        private void initGL() {
+            inited = FinEngine.init(mSurface);
+            if (!inited) {
+                Log.e(TAG, "渲染引擎启动失败！");
+            } else {
+                Log.d(TAG, "渲染引擎初始化成功");
             }
         }
 
-        destroyGL();
+        private void destroyGL() {
+            FinEngine.release();
+            Log.d(TAG, "渲染引擎已退出");
+        }
+
+        @Override
+        public void run() {
+            initGL();
+
+            while (!quit) {
+                synchronized (this) {
+                    onDrawFrame();
+
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        quit = true;
+                    }
+                }
+            }
+
+            destroyGL();
+        }
     }
-}
 }

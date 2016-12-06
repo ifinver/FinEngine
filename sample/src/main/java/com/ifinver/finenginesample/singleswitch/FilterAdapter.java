@@ -35,38 +35,38 @@ class FilterAdapter extends RecyclerView.Adapter<FilterViewHolder> {
 //        model = new FilterDataModel();
 //        model.filterName = "Normal";
 //        model.filterImageResId = R.mipmap.ic_launcher;
-//        model.filterType = FinRender.FILTER_TYPE_NORMAL;
+//        model.filterType = FinEngine.FILTER_TYPE_NORMAL;
 //        mDataList.add(model);
 //
 //        model = new FilterDataModel();
 //        model.filterName = "Cyan";
 //        model.filterImageResId = R.mipmap.ic_launcher;
-//        model.filterType = FinRender.FILTER_TYPE_CYAN;
+//        model.filterType = FinEngine.FILTER_TYPE_CYAN;
 //        mDataList.add(model);
 //
 //        model = new FilterDataModel();
 //        model.filterName = "Fish eye";
 //        model.filterImageResId = R.mipmap.ic_launcher;
-//        model.filterType = FinRender.FILTER_TYPE_FISH_EYE;
+//        model.filterType = FinEngine.FILTER_TYPE_FISH_EYE;
 //        mDataList.add(model);
 //
 //        model = new FilterDataModel();
 //        model.filterName = "Grey scale";
 //        model.filterImageResId = R.mipmap.ic_launcher;
-//        model.filterType = FinRender.FILTER_TYPE_GREY_SCALE;
+//        model.filterType = FinEngine.FILTER_TYPE_GREY_SCALE;
 //        mDataList.add(model);
 //
 //        model = new FilterDataModel();
 //        model.filterName = "Negative123456789color";
 //        model.filterImageResId = R.mipmap.ic_launcher;
-//        model.filterType = FinRender.FILTER_TYPE_NEGATIVE_COLOR;
+//        model.filterType = FinEngine.FILTER_TYPE_NEGATIVE_COLOR;
 //        mDataList.add(model);
 //
 //        for (int i = 0; i < 25; i++) {
 //            model = new FilterDataModel();
 //            model.filterName = "Coming soon";
 //            model.filterImageResId = R.mipmap.coming_soon;
-//            model.filterType = FinRender.FILTER_TYPE_NORMAL;
+//            model.filterType = FinEngine.FILTER_TYPE_NORMAL;
 //            mDataList.add(model);
 //        }
     }
