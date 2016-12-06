@@ -5,10 +5,10 @@ cmake_minimum_required(VERSION 3.4.1)
 #加载fin render lib
 add_library(fin-engine-lib
             SHARED
-            finrender/main.cpp
-            finrender/utils.cpp
-            finrender/shaders.cpp
-            finrender/GLContextHolder.cpp
+            finengine/main.cpp
+            finengine/utils.cpp
+            finengine/shaders.cpp
+            finengine/GLContextHolder.cpp
             )
 target_link_libraries(fin-engine-lib
                       EGL

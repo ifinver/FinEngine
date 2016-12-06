@@ -5,9 +5,9 @@ cmake_minimum_required(VERSION 3.4.1)
 #加载fin engine lib
 add_library(fin-render-lib
     SHARED
-    finrecorder/finrecorder.cpp
-    finrecorder/utils.cpp
-    finrecorder/FinRecorderHolder.cpp
+    finrender/finrecorder.cpp
+    finrender/utils.cpp
+    finrender/FinRecorderHolder.cpp
 )
 target_link_libraries(fin-render-lib
     EGL
