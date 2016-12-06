@@ -10,11 +10,19 @@
 #include <EGL/eglext.h>
 #include <getopt.h>
 #include <math.h>
+#include <dlfcn.h>
 
 FinEngineHolder *pHolder;
 
 JNIEXPORT int JNICALL
 Java_com_ifinver_finengine_FinEngine__1startEngine(JNIEnv *env, jclass type, int frameWidth, int frameHeight, jobject jAssetsManager) {
+//    void *dso = dlopen("/system/lib/egl/libEGL_mali.so", RTLD_LAZY);
+//    if (dso != 0) {
+//        LOGI("dlopen: SUCCEEDED");
+//    }
+//    else {
+//        LOGI("dlopen: FAILED! Loading functions in common way!");
+//    }
     pHolder = newOffScreenGLContext(env, frameWidth, frameHeight, jAssetsManager);
 
     if (pHolder == NULL) {
