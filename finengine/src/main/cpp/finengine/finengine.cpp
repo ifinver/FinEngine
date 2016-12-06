@@ -12,7 +12,7 @@
 #include <math.h>
 #include <dlfcn.h>
 
-FinEngineHolder *pHolder;
+FinEngineHolder *badHolder;
 
 JNIEXPORT int JNICALL
 Java_com_ifinver_finengine_FinEngine__1startEngine(JNIEnv *env, jclass type, int frameWidth, int frameHeight, jobject jAssetsManager) {
@@ -23,12 +23,12 @@ Java_com_ifinver_finengine_FinEngine__1startEngine(JNIEnv *env, jclass type, int
 //    else {
 //        LOGI("dlopen: FAILED! Loading functions in common way!");
 //    }
-    pHolder = newOffScreenGLContext(env, frameWidth, frameHeight, jAssetsManager);
+    badHolder = newOffScreenGLContext(env, frameWidth, frameHeight, jAssetsManager);
 
-    if (pHolder == NULL) {
+    if (badHolder == NULL) {
         return -1;
     }
-    return pHolder->inputTexture;
+    return badHolder->inputTexture;
 }
 
 void JNICALL Java_com_ifinver_finengine_FinEngine__1stopEngine(JNIEnv *env, jclass type) {
@@ -42,20 +42,20 @@ void JNICALL Java_com_ifinver_finengine_FinEngine_process(JNIEnv *env, jclass, j
     if (isCopy) {
         LOGE("传递数组时发生了Copy！");
     }
-//    env->CallVoidMethod(surfaceTexture, pHolder->midAttachToGlContext, pHolder->inputTexture);
-    env->CallVoidMethod(surfaceTexture, pHolder->midUpdateTexImage);
+//    env->CallVoidMethod(surfaceTexture, badHolder->midAttachToGlContext, badHolder->inputTexture);
+    env->CallVoidMethod(surfaceTexture, badHolder->midUpdateTexImage);
     renderFrame(mFrameDegree, mirror, data);
-//    env->CallVoidMethod(surfaceTexture, pHolder->midDetachFromGLContext);
+//    env->CallVoidMethod(surfaceTexture, badHolder->midDetachFromGLContext);
     env->ReleaseByteArrayElements(_data, data, 0);
 }
 
 void renderFrame(jint degree, jboolean mirror, jbyte *buff) {
     //输入顶点
-    glEnableVertexAttribArray(pHolder->localVertexPos);
-    glVertexAttribPointer(pHolder->localVertexPos, 2, GL_FLOAT, GL_FALSE, 0, VERTICES_COORD);
+    glEnableVertexAttribArray(badHolder->localVertexPos);
+    glVertexAttribPointer(badHolder->localVertexPos, 2, GL_FLOAT, GL_FALSE, 0, VERTICES_COORD);
 
     //输入纹理坐标，处理旋转和镜像
-    glEnableVertexAttribArray(pHolder->localTexturePos);
+    glEnableVertexAttribArray(badHolder->localTexturePos);
     {
         degree %= 360;
         if (degree < 0) degree += 360;
@@ -63,27 +63,27 @@ void renderFrame(jint degree, jboolean mirror, jbyte *buff) {
         if (mirror) {
             degree = 360 - degree;
             idx = degree / 90 * 2;
-            glVertexAttribPointer(pHolder->localTexturePos, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD_MIRROR + idx);
+            glVertexAttribPointer(badHolder->localTexturePos, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD_MIRROR + idx);
         } else {
             idx = degree / 90 * 2;
-            glVertexAttribPointer(pHolder->localTexturePos, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD_NOR + idx);
+            glVertexAttribPointer(badHolder->localTexturePos, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD_NOR + idx);
         }
     }
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, pHolder->inputTexture);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, badHolder->inputTexture);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glUniform1i(pHolder->localInputTexture, 0);
+    glUniform1i(badHolder->localInputTexture, 0);
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-    glDisableVertexAttribArray(pHolder->localVertexPos);
-    glDisableVertexAttribArray(pHolder->localTexturePos);
+    glDisableVertexAttribArray(badHolder->localVertexPos);
+    glDisableVertexAttribArray(badHolder->localTexturePos);
     //done.
-    glReadPixels(0, 0, pHolder->frameWidth, pHolder->frameHeight, GL_RGBA, GL_UNSIGNED_BYTE, buff);
+    glReadPixels(0, 0, badHolder->frameWidth, badHolder->frameHeight, GL_RGBA, GL_UNSIGNED_BYTE, buff);
 }
 
 FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHeight, jobject jAssetsManager) {
@@ -234,12 +234,12 @@ FinEngineHolder *newOffScreenGLContext(JNIEnv *env, int frameWidth, int frameHei
 }
 
 void releaseEngine() {
-    if (pHolder != NULL) {
-        glDeleteTextures(1, &pHolder->inputTexture);
-        glDeleteProgram(pHolder->program);
-        glDeleteRenderbuffers(1, &pHolder->objRenderBuffer);
-        glDeleteFramebuffers(1, &pHolder->objFrameBuffer);
-//        delete[](pHolder->positions);
-        delete (pHolder);
+    if (badHolder != NULL) {
+        glDeleteTextures(1, &badHolder->inputTexture);
+        glDeleteProgram(badHolder->program);
+        glDeleteRenderbuffers(1, &badHolder->objRenderBuffer);
+        glDeleteFramebuffers(1, &badHolder->objFrameBuffer);
+//        delete[](badHolder->positions);
+        delete (badHolder);
     }
 }

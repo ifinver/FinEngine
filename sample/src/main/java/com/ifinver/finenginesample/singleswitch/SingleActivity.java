@@ -15,9 +15,8 @@ import android.widget.Toast;
 
 import com.ifinver.finenginesample.FrameMeter;
 import com.ifinver.finenginesample.R;
+import com.ifinver.finenginesample.Renderer;
 import com.ifinver.finrender.CameraHolder;
-import com.ifinver.finrender.FinRender;
-import com.ifinver.finrender.TextureRenderer;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -34,7 +33,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
     private TextView tvFps;
     private Timer mFpsTimer;
     private Handler mHandler;
-    private TextureRenderer mRenderer;
+    private Renderer mRenderer;
     private FrameMeter mFrameMeter;
 
     @Override
@@ -56,14 +55,51 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
                 });
             }
         }, 1000, 300);
-        TextureView tvRender = (TextureView) findViewById(R.id.tex);
-        mRenderer = new TextureRenderer(FinRender.FORMAT_NV21);
+        final TextureView tvRender = (TextureView) findViewById(R.id.tex);
+        mRenderer = new Renderer();
         tvRender.setSurfaceTextureListener(mRenderer);
+
+//        tvRender.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                switch (event.getAction()){
+//                    case MotionEvent.ACTION_DOWN:
+//                        FinRecorder.getInstance().recording(mRenderer.getSurfaceTexture());
+//                        break;
+//                    case MotionEvent.ACTION_POINTER_UP:
+//                        FinRecorder.getInstance().stopRecording();
+//                        break;
+//                }
+//                return true;
+//            }
+//        });
 
         RecyclerView rvFilter = (RecyclerView) findViewById(R.id.rv_filter);
         rvFilter.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvFilter.addItemDecoration(new SpaceItemDecoration(10));
         rvFilter.setAdapter(new FilterAdapter(this,this));
+
+//        TextureView tvLittle = (TextureView) findViewById(R.id.tex_l);
+//        tvLittle.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
+//            @Override
+//            public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+//                FinRecorder.getInstance().prepare(new Surface(surface));
+//            }
+//
+//            @Override
+//            public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+//            }
+//
+//            @Override
+//            public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+//                FinRecorder.getInstance().release();
+//                return false;
+//            }
+//
+//            @Override
+//            public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+//            }
+//        });
     }
 
     @Override
@@ -105,7 +141,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
     @Override
     public void onCameraStart(boolean success, int frameWidth, int frameHeight) {
-
+        mRenderer.onCameraStart(frameWidth,frameHeight);
     }
 
     @Override

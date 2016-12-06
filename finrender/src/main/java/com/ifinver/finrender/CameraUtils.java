@@ -30,7 +30,7 @@ public final class CameraUtils {
     private int mExpectedWidth;
     private int mExpectedHeight;
 
-    /*Package*/ CameraUtils() {
+    /*Package*/public CameraUtils() {
         mCameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
     }
 

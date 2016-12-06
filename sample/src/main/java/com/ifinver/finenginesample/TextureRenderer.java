@@ -1,9 +1,11 @@
-package com.ifinver.finrender;
+package com.ifinver.finenginesample;
 
 import android.graphics.SurfaceTexture;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
+
+import com.ifinver.finrender.FinRender;
 
 /**
  * Created by iFinVer on 2016/11/21.
@@ -17,6 +19,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
     private RenderThread mRenderThread;
     private Surface mSurface;
     private int mFrameFormat;
+    private SurfaceTexture mSurfaceTexture;
 
 
     public TextureRenderer(int frameFormat) {
@@ -40,12 +43,17 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+        this.mSurfaceTexture = surface;
         mSurface = new Surface(surface);
 
         if ( mRenderThread == null ) {
             mRenderThread = new RenderThread(mSurface, mFrameFormat);
             mRenderThread.start();
         }
+    }
+
+    public SurfaceTexture getSurfaceTexture(){
+        return mSurfaceTexture;
     }
 
     @Override

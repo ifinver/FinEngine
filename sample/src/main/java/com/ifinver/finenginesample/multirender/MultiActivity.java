@@ -14,7 +14,7 @@ import com.ifinver.finenginesample.FrameMeter;
 import com.ifinver.finenginesample.R;
 import com.ifinver.finrender.CameraHolder;
 import com.ifinver.finrender.FinRender;
-import com.ifinver.finrender.TextureRenderer;
+import com.ifinver.finenginesample.TextureRenderer;
 
 import java.util.Timer;
 import java.util.TimerTask;

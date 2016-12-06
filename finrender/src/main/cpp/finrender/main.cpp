@@ -62,12 +62,10 @@ void renderFrame(GLContextHolder *holder, jbyte *data ,jint width, jint height,j
         if (mirror) {
             idx = degree / 90 * 2;
             glVertexAttribPointer(holder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD_MIRROR + idx);
-            LOGE("鏡像，rotation=%d",degree);
         } else {
             degree = 360 - degree;
             idx = degree / 90 * 2;
             glVertexAttribPointer(holder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD_NOR + idx);
-            LOGE("沒有鏡像，rotation=%d",degree);
         }
     }
 
@@ -89,7 +87,9 @@ void renderFrame(GLContextHolder *holder, jbyte *data ,jint width, jint height,j
     glDisableVertexAttribArray(holder->posAttrVertices);
     glDisableVertexAttribArray(holder->posAttrTexCoords);
 
-    glFinish();
+    glViewport(0,0,width,height);
+
+//    glFinish();
     eglSwapBuffers(holder->eglDisplay, holder->eglSurface);
 }
 
