@@ -21,7 +21,7 @@ public class FinRender {
     private static final String TAG = "FinRender";
 
     private static FinRender instance;
-    private RecorderThread mRecorderThread;
+    private RenderThread mRenderThread;
     private boolean isPrepared = false;
     private FinRenderListener mListener;
 
@@ -37,32 +37,27 @@ public class FinRender {
     }
 
     private FinRender() {
-        mRecorderThread = new RecorderThread();
-        mRecorderThread.start();
+        mRenderThread = new RenderThread();
+        mRenderThread.start();
     }
 
     public void prepare(Surface output,FinRenderListener listener) {
         this.mListener = listener;
-        mRecorderThread.prepare(output);
+        mRenderThread.prepare(output);
     }
 
     public void startWithInput(SurfaceTexture inputSurface) {
-        mRecorderThread.startOutput(inputSurface);
-    }
-
-    public void stopRecording() {
-        mRecorderThread.stopOutput();
+        mRenderThread.startOutput(inputSurface);
     }
 
     public void release() {
         this.mListener = null;
-        mRecorderThread.release();
+        mRenderThread.release();
     }
 
-    private class RecorderThread extends HandlerThread implements Handler.Callback, SurfaceTexture.OnFrameAvailableListener {
+    private class RenderThread extends HandlerThread implements Handler.Callback, SurfaceTexture.OnFrameAvailableListener {
         private final int MSG_INIT = 0x101;
         private final int MSG_START = 0x102;
-        private final int MSG_STOP = 0x103;
         private final int MSG_RELEASE = 0x104;
         private final int MSG_PROCESS = 0x105;
 
@@ -73,14 +68,14 @@ public class FinRender {
         private SurfaceTexture mInputSurface;
         private long mRenderEngine;
 
-        public RecorderThread() {
+        public RenderThread() {
             super("FinRecorderThread", Process.THREAD_PRIORITY_URGENT_DISPLAY);
 //            mMainHandler = new Handler(Looper.getMainLooper());
         }
 
         @Override
         protected void onLooperPrepared() {
-            synchronized (RecorderThread.class) {
+            synchronized (RenderThread.class) {
                 mSelfHandler = new Handler(getLooper(), this);
                 if (delayStart) {
                     delayStart = false;
@@ -117,17 +112,14 @@ public class FinRender {
                 case MSG_START:
                     startOutputInternal();
                     return true;
-                case MSG_STOP:
-                    stopOutputInternal();
-                    return true;
                 case MSG_RELEASE:
+                    stopOutputInternal();
                     nativeRelease(mRenderEngine);
                     mRenderEngine = 0;
                     Log.d(TAG,"已释放");
                     return true;
                 case MSG_PROCESS:
                     process();
-                    Log.d(TAG,"已释放");
                     return true;
             }
             return false;
@@ -165,7 +157,7 @@ public class FinRender {
                 if (mSelfHandler != null) {
                     mSelfHandler.sendEmptyMessage(MSG_INIT);
                 } else {
-                    synchronized (RecorderThread.class) {
+                    synchronized (RenderThread.class) {
                         if (mSelfHandler != null) {
                             mSelfHandler.sendEmptyMessage(MSG_INIT);
                         } else {
@@ -185,12 +177,6 @@ public class FinRender {
             this.mInputSurface = inputSurface;
             mSelfHandler.sendEmptyMessage(MSG_START);
         }
-
-        public void stopOutput() {
-            isPrepared = false;
-            mSelfHandler.sendEmptyMessage(MSG_STOP);
-        }
-
     }
 
     public interface FinRenderListener{

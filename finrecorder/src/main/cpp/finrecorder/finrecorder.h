@@ -1,0 +1,8 @@
+//
+// Created by iFinVer on 2016/12/7.
+//
+
+#ifndef FINENGINE_FINRECORDER_H
+#define FINENGINE_FINRECORDER_H
+
+#endif //FINENGINE_FINRECORDER_H
