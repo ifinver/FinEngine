@@ -8,15 +8,7 @@ JNIEXPORT jlong JNICALL
 Java_com_ifinver_finrender_FinRender_createGLContext(JNIEnv *env, jclass, jobject jSurface, jboolean isSurfaceThreadExclusive,int frameFormat) {
     GLContextHolder *pHolder = NULL;
 
-    switch (frameFormat){
-        case FORMAT_RGBA:
-            pHolder = newGLContext(env, jSurface, isSurfaceThreadExclusive);
-            break;
-        default:
-            LOGE("暂不支持格式：%d",frameFormat);
-            break;
-    }
-
+    pHolder = newGLContext(env, jSurface, isSurfaceThreadExclusive);
 
     if (pHolder == NULL) {
         return 0;
@@ -30,7 +22,7 @@ Java_com_ifinver_finrender_FinRender_releaseGLContext(JNIEnv *, jclass, jlong na
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_finrender_FinRender_renderOnContext(JNIEnv *env, jclass, jlong nativeGlContext, jbyteArray data_,jint frameWidth,jint frameHeight) {
+Java_com_ifinver_finrender_FinRender_renderOnContext(JNIEnv *env, jclass, jlong nativeGlContext, jbyteArray data_,jint frameWidth,jint frameHeight,jint degree,jboolean mirror) {
 //    jboolean isCopy;
     jbyte *data = env->GetByteArrayElements(data_, 0);
 //    if (isCopy) {
@@ -39,7 +31,7 @@ Java_com_ifinver_finrender_FinRender_renderOnContext(JNIEnv *env, jclass, jlong 
 //        LOGI("isCopy=false");
 //    }
 
-    renderFrame((GLContextHolder *) nativeGlContext, data,frameWidth, frameHeight);
+    renderFrame((GLContextHolder *) nativeGlContext, data,frameWidth, frameHeight,degree,mirror);
 
 //    if (isCopy) {
         env->ReleaseByteArrayElements(data_, data, JNI_ABORT);
@@ -47,7 +39,7 @@ Java_com_ifinver_finrender_FinRender_renderOnContext(JNIEnv *env, jclass, jlong 
 }
 //.........................................................................................................................
 
-void renderFrame(GLContextHolder *holder, jbyte *data ,jint width, jint height) {
+void renderFrame(GLContextHolder *holder, jbyte *data ,jint width, jint height,jint degree,jboolean mirror) {
     if(!holder->isSurfaceThreadExclusive) {
         if (!eglMakeCurrent(holder->eglDisplay, holder->eglSurface, holder->eglSurface, holder->eglContext)) {
             LOGE("make current failed!!! [当前surface是多个线程共享的]");

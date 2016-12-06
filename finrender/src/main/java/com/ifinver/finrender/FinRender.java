@@ -8,7 +8,15 @@ import android.view.Surface;
  */
 
 public class FinRender {
-    public static final int FORMAT_RGBA = 0x101;
+
+    public static final int FILTER_TYPE_NORMAL = 0;
+    public static final int FILTER_TYPE_CYAN = 1;
+    public static final int FILTER_TYPE_FISH_EYE = 2;
+    public static final int FILTER_TYPE_GREY_SCALE = 3;
+    public static final int FILTER_TYPE_NEGATIVE_COLOR = 4;
+
+//    public static final int FORMAT_RGBA = 0x201;
+    public static final int FORMAT_NV21 = 0x202;
     static {
         System.loadLibrary("fin-render-lib");
     }
@@ -24,5 +32,5 @@ public class FinRender {
 
     public static native void releaseGLContext(long nativeContext);
 
-    public static native void renderOnContext(long nativeGlContext, byte[] data,int frameWidth, int frameHeight);
+    public static native void renderOnContext(long nativeGlContext, byte[] data,int frameWidth, int frameHeight,int degree,boolean mirror);
 }

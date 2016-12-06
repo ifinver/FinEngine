@@ -4,16 +4,15 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.TextureView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ifinver.finengine.FinEngine;
 import com.ifinver.finenginesample.FrameMeter;
 import com.ifinver.finenginesample.R;
+import com.ifinver.finrender.CameraHolder;
 import com.ifinver.finrender.FinRender;
 import com.ifinver.finrender.TextureRenderer;
 
@@ -25,7 +24,7 @@ import java.util.TimerTask;
  * ilzq@foxmail.com
  */
 
-public class MultiActivity extends AppCompatActivity implements FinEngine.EngineListener {
+public class MultiActivity extends AppCompatActivity  {
 
     private static final String TAG = "MultiActivity";
 
@@ -73,28 +72,10 @@ public class MultiActivity extends AppCompatActivity implements FinEngine.Engine
     }
 
     @Override
-    public void onEngineStart(boolean success, int frameWidth, int frameHeight) {
-
-    }
-
-    @Override
-    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight) {
-        for(TextureRenderer r : mRenderer){
-            r.onVideoBuffer(data,frameWidth,frameHeight);
-        }
-        mFrameMeter.meter();
-    }
-
-    @Override
-    public void onToggleCameraComplete(boolean success) {
-        Log.d(TAG, "onToggleCameraComplete,success= " + success);
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.toggle_camera:
-                if(FinEngine.getInstance().toggleCamera()) {
+                if(CameraHolder.getInstance().toggleCamera()) {
                     Toast.makeText(this, "switching", Toast.LENGTH_SHORT).show();
                 }else{
                     Toast.makeText(this, "can't switch", Toast.LENGTH_SHORT).show();
@@ -104,17 +85,6 @@ public class MultiActivity extends AppCompatActivity implements FinEngine.Engine
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        FinEngine.getInstance().startEngine(this, this);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        FinEngine.getInstance().stopEngine();
-    }
 
 
     @Override

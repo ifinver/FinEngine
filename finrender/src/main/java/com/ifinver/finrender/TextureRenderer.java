@@ -80,7 +80,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
             this.mFrameFormat = frameFormat;
         }
 
-        public void notifyWithBuffer(byte[] data, int frameWidth, int frameHeight) {
+        public void notifyWithBuffer(byte[] data, int frameWidth, int frameHeight,int degree) {
             this.mFrameWidth = frameWidth;
             this.mFrameHeight = frameHeight;
             this.mData = data;

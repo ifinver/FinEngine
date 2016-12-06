@@ -13,9 +13,9 @@ import android.view.TextureView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ifinver.finengine.FinEngine;
 import com.ifinver.finenginesample.FrameMeter;
 import com.ifinver.finenginesample.R;
+import com.ifinver.finrender.CameraHolder;
 import com.ifinver.finrender.FinRender;
 import com.ifinver.finrender.TextureRenderer;
 
@@ -27,7 +27,7 @@ import java.util.TimerTask;
  * ilzq@foxmail.com
  */
 
-public class SingleActivity extends AppCompatActivity implements FinEngine.EngineListener, FilterAdapter.OnItemClickListener {
+public class SingleActivity extends AppCompatActivity implements FilterAdapter.OnItemClickListener, CameraHolder.CameraListener {
 
     private static final String TAG = "SingleActivity";
 
@@ -57,7 +57,7 @@ public class SingleActivity extends AppCompatActivity implements FinEngine.Engin
             }
         }, 1000, 300);
         TextureView tvRender = (TextureView) findViewById(R.id.tex);
-        mRenderer = new TextureRenderer(FinRender.FORMAT_RGBA);
+        mRenderer = new TextureRenderer(FinRender.FORMAT_NV21);
         tvRender.setSurfaceTextureListener(mRenderer);
 
         RecyclerView rvFilter = (RecyclerView) findViewById(R.id.rv_filter);
@@ -75,7 +75,7 @@ public class SingleActivity extends AppCompatActivity implements FinEngine.Engin
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.toggle_camera:
-                if(FinEngine.getInstance().toggleCamera()) {
+                if(CameraHolder.getInstance().toggleCamera()) {
                     Toast.makeText(this, "switching", Toast.LENGTH_SHORT).show();
                 }else{
                     Toast.makeText(this, "can't switch", Toast.LENGTH_SHORT).show();
@@ -89,13 +89,13 @@ public class SingleActivity extends AppCompatActivity implements FinEngine.Engin
     @Override
     protected void onResume() {
         super.onResume();
-        FinEngine.getInstance().startEngine(this, this);
+        CameraHolder.getInstance().start(this, this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        FinEngine.getInstance().stopEngine();
+        CameraHolder.getInstance().stopCamera();
     }
 
     @Override
@@ -104,7 +104,7 @@ public class SingleActivity extends AppCompatActivity implements FinEngine.Engin
     }
 
     @Override
-    public void onEngineStart(boolean success, int frameWidth, int frameHeight) {
+    public void onCameraStart(boolean success, int frameWidth, int frameHeight) {
 
     }
 
