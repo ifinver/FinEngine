@@ -339,7 +339,7 @@ public class CameraHolder {
                 }
                 mCameraOrientation = (360 - mCameraOrientation) % 360; // compensate the mirror
                 mCamera.setDisplayOrientation(mCameraOrientation);
-                Log.d(TAG, "setCameraDispOri = " + mCameraOrientation);
+                Log.d(TAG, "摄像机角度 = " + mCameraOrientation);
             }
 
         }

@@ -1,84 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:alignmentMode="alignMargins"
-    android:background="@color/red"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:baselineAligned="false"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:alignmentMode="alignMargins"
+        android:background="@color/red"
+        android:orientation="vertical">
 
-        <FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_margin="1dp"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
-            android:background="@color/black"
-            tools:ignore="NestedWeights">
-            <TextureView
-                android:id="@+id/av_0"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="1dp"
+                android:layout_weight="1"
+                android:background="@color/black"
+                tools:ignore="NestedWeights">
+
+                <TextureView
+                    android:id="@+id/av_0"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
             </FrameLayout>
 
-        <FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="fill"
-            android:layout_margin="1dp"
-            android:layout_weight="1"
-            android:background="@color/black">
-            <TextureView
-                android:id="@+id/av_1"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-            <TextView
-                android:id="@+id/tv_fps"
-                android:textColor="@android:color/holo_red_dark"
-                android:layout_width="wrap_content"
-                android:layout_gravity="end|top"
-                android:layout_height="wrap_content"/>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="fill"
+                android:layout_margin="1dp"
+                android:layout_weight="1"
+                android:background="@color/black">
+
+                <TextureView
+                    android:id="@+id/av_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+
+                <TextView
+                    android:id="@+id/tv_fps"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end|top"
+                    android:textColor="@android:color/holo_red_dark"/>
             </FrameLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_margin="1dp"
+                android:layout_weight="1"
+                android:background="@color/black"
+                tools:ignore="NestedWeights">
+
+                <TextureView
+                    android:id="@+id/av_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+            </FrameLayout>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="fill"
+                android:layout_margin="1dp"
+                android:layout_weight="1"
+                android:background="@color/black">
+
+                <TextureView
+                    android:id="@+id/av_3"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+            </FrameLayout>
+        </LinearLayout>
     </LinearLayout>
 
-    <LinearLayout
+    <TextView
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:shadowColor="@color/black"
+        android:textColor="@color/red"
+        android:textSize="40dp"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:baselineAligned="false"
-        android:orientation="horizontal">
-
-        <FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_margin="1dp"
-            android:layout_weight="1"
-            android:background="@color/black"
-            tools:ignore="NestedWeights">
-            <TextureView
-                android:id="@+id/av_2"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-            </FrameLayout>
-
-        <FrameLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="fill"
-            android:layout_margin="1dp"
-            android:layout_weight="1"
-            android:background="@color/black">
-            <TextureView
-                android:id="@+id/av_3"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-            </FrameLayout>
-    </LinearLayout>
-</LinearLayout>
+        android:text="Coming Soon"
+        android:layout_height="wrap_content"/>
+</FrameLayout>

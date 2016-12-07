@@ -1,41 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:animateLayoutChanges="true"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true">
 
     <TextureView
         android:id="@+id/tex"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
-    <!--<TextureView-->
-        <!--android:id="@+id/tex_l"-->
-        <!--android:layout_gravity="center"-->
-        <!--android:layout_width="100dp"-->
-        <!--android:layout_height="100dp"/>-->
+    <FrameLayout
+        android:id="@+id/tv_container"
+        android:layout_width="180dp"
+        android:layout_height="330dp"
+        android:padding="1dp"
+        android:layout_above="@+id/ll_filters">
+
+        <TextureView
+            android:id="@+id/tex_l"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </FrameLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/ll_filters"
+        android:layout_alignParentEnd="true"
+        android:shadowColor="@color/black"
+        android:text="按住屏幕录制"
+        android:textColor="@android:color/holo_green_dark"/>
 
     <TextView
         android:id="@+id/tv_fps"
-        android:textColor="@android:color/holo_red_dark"
         android:layout_width="wrap_content"
-        android:layout_gravity="end|top"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:shadowColor="@color/black"
+        android:textColor="@android:color/holo_red_dark"/>
 
     <LinearLayout
         android:id="@+id/ll_filters"
-        android:layout_gravity="bottom"
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical">
+
         <TextView
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="@string/tip_choose_filter"
-            android:layout_height="wrap_content"/>
+            android:textColor="@color/red"/>
+
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rv_filter"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
     </LinearLayout>
-</FrameLayout>
+</RelativeLayout>

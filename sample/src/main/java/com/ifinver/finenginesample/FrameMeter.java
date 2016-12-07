@@ -16,7 +16,7 @@ public class FrameMeter {
     private DecimalFormat df;
 
     public FrameMeter(){
-        df = new DecimalFormat("#0");
+        df = new DecimalFormat("#0.00");
     }
 
     public void meter(){

@@ -17,99 +17,116 @@ public class FinRecorder {
     static {
         System.loadLibrary("fin-recorder-lib");
     }
+
     private static final String TAG = "FinRecorder";
-    private static FinRecorder instance;
     private RecorderThread mRecorderThread;
-    public static FinRecorder getInstance(){
-        if(instance == null){
-            synchronized (FinRecorder.class){
-                if(instance == null){
-                    instance = new FinRecorder();
-                }
-            }
-        }
-        return instance;
+
+    public static FinRecorder prepare(Surface out, int inputTex, long sharedCtx,Object locker) {
+        return new FinRecorder(out, inputTex, sharedCtx,locker);
     }
-    private FinRecorder(){
-        mRecorderThread = new RecorderThread();
+
+    private FinRecorder(Surface out, int inputTex, long sharedCtx, Object locker) {
+        mRecorderThread = new RecorderThread(out, inputTex, sharedCtx,locker);
         mRecorderThread.start();
     }
 
-    public void prepare(Surface out,int inputTex,long sharedCtx){
-        mRecorderThread.prepare(out,inputTex,sharedCtx);
+    public void record(){
+        mRecorderThread.process();
     }
 
+    public void release() {
+        mRecorderThread.release();
+    }
 
 
     private class RecorderThread extends HandlerThread implements Handler.Callback {
         private final int MSG_INIT = 0x101;
-        private final int MSG_START = 0x102;
         private final int MSG_RELEASE = 0x104;
         private final int MSG_PROCESS = 0x105;
 
         private Surface mOutputSurface;
         private int mInputTex;
-        private long sharedCtx;
+        private long mSharedCtx;
         private Handler mSelfHandler;
-        private boolean delayStart = false;
         private long mRecorderEngine;
+        private final Object mLocker;
+        private long mRecorder;
 
-        public RecorderThread(){
+        private RecorderThread(Surface out, int inputTex, long mSharedCtx, Object locker) {
             super("RecorderThread", Process.THREAD_PRIORITY_URGENT_DISPLAY);
+            this.mOutputSurface = out;
+            this.mInputTex = inputTex;
+            this.mSharedCtx = mSharedCtx;
+            this.mLocker = locker;
         }
 
         @Override
         protected void onLooperPrepared() {
-            synchronized (RecorderThread.class) {
-                mSelfHandler = new Handler(getLooper(), this);
-                if (delayStart) {
-                    delayStart = false;
-                    mSelfHandler.sendEmptyMessage(MSG_INIT);
-                }
+            mSelfHandler = new Handler(getLooper(), this);
+            mSelfHandler.sendEmptyMessage(MSG_INIT);
+        }
+
+        private void release() {
+            mSelfHandler.sendEmptyMessage(MSG_RELEASE);
+        }
+
+        private void process(){
+            if(mSelfHandler != null) {
+                mSelfHandler.sendEmptyMessage(MSG_PROCESS);
             }
         }
+
         @Override
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
                 case MSG_INIT:
-                    Log.d(TAG,"开始初始化");
                     initRecorder();
                     return true;
-                case MSG_START:
-                    return true;
                 case MSG_RELEASE:
+                    releaseInternal();
+                    Log.d(TAG, "录制引擎已释放");
                     return true;
                 case MSG_PROCESS:
+                    processInternal();
                     return true;
             }
             return false;
         }
 
         private void initRecorder() {
-
+            Log.d(TAG, "录制引擎开始初始化");
+            mRecorder = nativeCreate(mSharedCtx, mOutputSurface);
+            if(mRecorder != 0){
+                Log.d(TAG, "录制引擎初始化成功");
+            }else{
+                Log.d(TAG, "录制引擎初始化失败!");
+                mSelfHandler.sendEmptyMessage(MSG_RELEASE);
+            }
         }
 
-        public void prepare(Surface out, int inputTex, long sharedCtx) {
-            this.mOutputSurface = out;
-            this.mInputTex = inputTex;
-            this.sharedCtx = sharedCtx;
-
-            if (mRecorderEngine != 0) {
-                if (mSelfHandler != null) {
-                    mSelfHandler.sendEmptyMessage(MSG_INIT);
-                } else {
-                    synchronized (RecorderThread.class) {
-                        if (mSelfHandler != null) {
-                            mSelfHandler.sendEmptyMessage(MSG_INIT);
-                        } else {
-                            delayStart = true;
-                        }
-                    }
+        private void processInternal() {
+            if(mRecorder != 0) {
+                synchronized (mLocker) {
+                    nativeProcess(mRecorder, mInputTex);
                 }
             }
         }
 
-
+        private void releaseInternal() {
+            if(mOutputSurface != null){
+                mOutputSurface.release();
+                mOutputSurface = null;
+            }
+            if(mRecorder != 0) {
+                nativeRelease(mRecorder);
+            }
+            quitSafely();
+        }
     }
 
+    private native long nativeCreate(long sharedCtx,Surface output);
+
+    private native void nativeProcess(long recorder,int inputTex);
+
+    private native void nativeRelease(long recorder);
 }

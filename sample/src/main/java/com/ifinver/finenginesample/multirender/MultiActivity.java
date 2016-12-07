@@ -13,7 +13,6 @@ import android.widget.Toast;
 import com.ifinver.finengine.CameraHolder;
 import com.ifinver.finenginesample.FrameMeter;
 import com.ifinver.finenginesample.R;
-import com.ifinver.finenginesample.TextureRenderer;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -27,7 +26,7 @@ public class MultiActivity extends AppCompatActivity  {
 
     private static final String TAG = "MultiActivity";
 
-    private TextureRenderer[] mRenderer;
+//    private TextureRenderer[] mRenderer;
     //帧率
     private FrameMeter mFrameMeter;
     private TextView tvFPS;
@@ -45,11 +44,11 @@ public class MultiActivity extends AppCompatActivity  {
         tvContent[2] = (TextureView) findViewById(R.id.av_2);
         tvContent[3] = (TextureView) findViewById(R.id.av_3);
 
-        mRenderer = new TextureRenderer[4];
-        for(int i = 0;i < 4;i ++){
-            mRenderer[i] = new TextureRenderer();
-            tvContent[i].setSurfaceTextureListener(mRenderer[i]);
-        }
+//        mRenderer = new TextureRenderer[4];
+//        for(int i = 0;i < 4;i ++){
+//            mRenderer[i] = new TextureRenderer();
+//            tvContent[i].setSurfaceTextureListener(mRenderer[i]);
+//        }
 
         //帧率
         mHandler = new Handler();

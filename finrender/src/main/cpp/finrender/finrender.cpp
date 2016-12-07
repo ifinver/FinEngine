@@ -1,8 +1,8 @@
 //
 // Created by iFinVer on 2016/12/6.
 //
-#include "finrecorder.h"
-#include "FinRecorderHolder.h"
+#include "finrender.h"
+#include "FinRenderHolder.h"
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
 #include "utils.h"
@@ -89,7 +89,6 @@ JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_nativeCreate(JNIEnv
         checkGlError("eglCreateContext");
         return 0;
     }
-    FinRecorderHolder *recorderHolder = new FinRecorderHolder();
 
     if (!eglMakeCurrent(display, eglSurface, eglSurface, eglContext)) {
         checkGlError("eglMakeCurrent");
@@ -109,6 +108,8 @@ JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_nativeCreate(JNIEnv
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     //success
+    FinRecorderHolder *recorderHolder = new FinRecorderHolder();
+
     recorderHolder->eglDisplay = display;
     recorderHolder->eglContext = eglContext;
     recorderHolder->eglSurface = eglSurface;
@@ -182,15 +183,17 @@ JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_nativeRelease(JNIEnv
     FinRecorderHolder *pHolder = (FinRecorderHolder *) engine;
     glDeleteTextures(1, &pHolder->inputTex);
     glDeleteProgram(pHolder->program);
+    eglDestroySurface(pHolder->eglDisplay,pHolder->eglSurface);
+    eglDestroyContext(pHolder->eglDisplay,pHolder->eglContext);
     delete (pHolder);
 }
 
-JNIEXPORT jint JNICALL Java_com_ifinver_finrender_FinRender_getInputTex(JNIEnv *env, jobject instance, jlong engine){
+JNIEXPORT jint JNICALL Java_com_ifinver_finrender_FinRender_nativeGetInputTex(JNIEnv *env, jobject instance, jlong engine){
     FinRecorderHolder *pHolder = (FinRecorderHolder *) engine;
     return pHolder->inputTex;
 }
 
-JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_getEglContext(JNIEnv *env, jobject instance, jlong engine){
+JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_nativeGetEglContext(JNIEnv *env, jobject instance, jlong engine){
     FinRecorderHolder *pHolder = (FinRecorderHolder *) engine;
     return (jlong)pHolder->eglContext;
 }

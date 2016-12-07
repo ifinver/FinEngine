@@ -5,4 +5,5 @@ dependencies {
 //    compile project(':finengine')
     compile project(':finrender')
     compile project(':finengine')
+    compile project(':finrecorder')
 }

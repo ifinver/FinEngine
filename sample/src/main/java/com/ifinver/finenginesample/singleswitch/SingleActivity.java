@@ -9,14 +9,19 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.Surface;
 import android.view.TextureView;
+import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ifinver.finengine.CameraHolder;
 import com.ifinver.finenginesample.FrameMeter;
 import com.ifinver.finenginesample.R;
 import com.ifinver.finenginesample.Renderer;
-import com.ifinver.finengine.CameraHolder;
+import com.ifinver.finrecorder.FinRecorder;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -26,7 +31,8 @@ import java.util.TimerTask;
  * ilzq@foxmail.com
  */
 
-public class SingleActivity extends AppCompatActivity implements FilterAdapter.OnItemClickListener, CameraHolder.CameraListener {
+@SuppressWarnings({"FieldCanBeLocal", "deprecation"})
+public class SingleActivity extends AppCompatActivity implements FilterAdapter.OnItemClickListener, CameraHolder.CameraListener, View.OnTouchListener {
 
     private static final String TAG = "SingleActivity";
 
@@ -35,12 +41,93 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
     private Handler mHandler;
     private Renderer mRenderer;
     private FrameMeter mFrameMeter;
+    private TextureView tvLittle;
+    private FinRecorder mRecorder;
+    private FrameLayout flContainer;
+    private TextureView tvRender;
+    private RecyclerView rvFilter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single);
+
+        // init views
         tvFps = (TextView) findViewById(R.id.tv_fps);
+        tvLittle = (TextureView) findViewById(R.id.tex_l);
+        flContainer = (FrameLayout) findViewById(R.id.tv_container);
+        tvRender = (TextureView) findViewById(R.id.tex);
+        rvFilter = (RecyclerView) findViewById(R.id.rv_filter);
+
+        mRenderer = new Renderer();
+        tvRender.setSurfaceTextureListener(mRenderer);
+
+        rvFilter.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvFilter.addItemDecoration(new SpaceItemDecoration(10));
+        rvFilter.setAdapter(new FilterAdapter(this, this));
+
+        //fps
+        initFPS();
+        //touch event
+        tvRender.setOnTouchListener(this);
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if(v == tvRender){
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    Log.d("FinEngine","开始录制");
+                    flContainer.setVisibility(View.VISIBLE);
+                    mRecorder = FinRecorder.prepare(
+                            new Surface(tvLittle.getSurfaceTexture()),
+                            mRenderer.getInputTex(),
+                            mRenderer.getSharedCtx(),
+                            mRenderer.getLocker());
+                    mRenderer.setRecorder(mRecorder);
+                    flContainer.setBackgroundColor(getResources().getColor(R.color.red));
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    Log.d("FinEngine","停止录制");
+                    mRecorder.release();
+                    mRenderer.setRecorder(null);
+                    flContainer.setVisibility(View.INVISIBLE);
+                    break;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void onFilterItemClick(int filter) {
+        Toast.makeText(this,"switching filter(coming soon)",Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean frontCurrent) {
+        mRenderer.onVideoBuffer(data, frameWidth, frameHeight, degree, frontCurrent);
+
+        //计算帧率
+        mFrameMeter.meter();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.toggle_camera:
+                if (CameraHolder.getInstance().toggleCamera()) {
+                    Toast.makeText(this, "switching", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "can't switch", Toast.LENGTH_SHORT).show();
+                }
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void initFPS() {
         mHandler = new Handler();
         mFpsTimer = new Timer(true);
         mFrameMeter = new FrameMeter();
@@ -50,77 +137,12 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        tvFps.setText(getString(R.string.tip_fps,mFrameMeter.getFPSString()));
+                        tvFps.setText(getString(R.string.tip_fps, mFrameMeter.getFPSString()));
                     }
                 });
             }
-        }, 1000, 300);
-        final TextureView tvRender = (TextureView) findViewById(R.id.tex);
-        mRenderer = new Renderer();
-        tvRender.setSurfaceTextureListener(mRenderer);
-
-//        tvRender.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                switch (event.getAction()){
-//                    case MotionEvent.ACTION_DOWN:
-//                        FinRender.getInstance().recording(mRenderer.getSurfaceTexture());
-//                        break;
-//                    case MotionEvent.ACTION_POINTER_UP:
-//                        FinRender.getInstance().stopRecording();
-//                        break;
-//                }
-//                return true;
-//            }
-//        });
-
-        RecyclerView rvFilter = (RecyclerView) findViewById(R.id.rv_filter);
-        rvFilter.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        rvFilter.addItemDecoration(new SpaceItemDecoration(10));
-        rvFilter.setAdapter(new FilterAdapter(this,this));
-
-//        TextureView tvLittle = (TextureView) findViewById(R.id.tex_l);
-//        tvLittle.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
-//            @Override
-//            public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-//                FinRender.getInstance().prepare(new Surface(surface));
-//            }
-//
-//            @Override
-//            public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-//            }
-//
-//            @Override
-//            public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-//                FinRender.getInstance().nativeRelease();
-//                return false;
-//            }
-//
-//            @Override
-//            public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-//            }
-//        });
+        }, 500, 100);
     }
-
-    @Override
-    public void onFilterItemClick(int filter) {
-        Log.d(TAG, "onFilterItemClick,filter=" + filter);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.toggle_camera:
-                if(CameraHolder.getInstance().toggleCamera()) {
-                    Toast.makeText(this, "switching", Toast.LENGTH_SHORT).show();
-                }else{
-                    Toast.makeText(this, "can't switch", Toast.LENGTH_SHORT).show();
-                }
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
 
     @Override
     protected void onResume() {
@@ -141,15 +163,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
     @Override
     public void onCameraStart(boolean success, int frameWidth, int frameHeight) {
-        mRenderer.onCameraStart(frameWidth,frameHeight);
-    }
-
-    @Override
-    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean frontCurrent) {
-        mRenderer.onVideoBuffer(data, frameWidth, frameHeight,degree,frontCurrent);
-
-        //计算帧率
-        mFrameMeter.meter();
+        mRenderer.onCameraStart(frameWidth, frameHeight);
     }
 
     @Override
@@ -157,5 +171,4 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
-
 }
