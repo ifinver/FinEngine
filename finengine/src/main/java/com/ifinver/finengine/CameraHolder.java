@@ -365,7 +365,7 @@ public class CameraHolder {
             }
             Log.d(TAG,"期望的Size:"+expectWidth+"x"+expectHeight+",width/height="+(float)expectWidth/expectHeight);
 
-            return new CameraSize(352, 288);
+            return new CameraSize(calcWidth, calcHeight);
         }
     }
 

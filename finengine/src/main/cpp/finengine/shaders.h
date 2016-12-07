@@ -43,26 +43,23 @@ const GLfloat TEXTURE_COORD_MIRROR[] =
                 0.0f, 0.0f,
         };
 
-class ShaderBase{
+class ShaderBase {
 public:
     const char *vertexShader;
     const char *fragmentShader;
 
-    ShaderBase(){
+    ShaderBase() {
         vertexShader =
                         "precision highp float;                                   \n"
-                        "attribute highp vec4 aPosition;                          \n"
+                        "attribute highp vec2 aPosition;                          \n"
                         "attribute highp vec2 aTexCoord;                          \n"
                         "attribute highp float aScaleX;                          \n"
                         "attribute highp float aScaleY;                          \n"
                         "varying highp vec2 vTexCoord;                            \n"
                         "void main(){                                       \n"
+                        "   vTexCoord = aTexCoord;               \n"
                         "   highp mat2 aScaleMtx = mat2(aScaleX,0,0,aScaleY);                                      \n"
-                        "   highp vec2 scaled = aScaleMtx * aTexCoord;              \n"
-                        "   highp float offX = (1.0 - aScaleX)/2.0;              \n"
-                        "   highp float offY = (1.0 - aScaleY)/2.0;              \n"
-                        "   vTexCoord = vec2(scaled.x+offX,scaled.y+offY);               \n"
-                        "   gl_Position = aPosition;                        \n"
+                        "   gl_Position = vec4(aScaleMtx * aPosition,1.0,1.0);                        \n"
                         "}                                                  \n";
     }
 
@@ -76,7 +73,7 @@ class ShaderNV21 : public ShaderBase {
 public:
     ShaderNV21() {
         fragmentShader =
-                        "#extension GL_OES_EGL_image_external : require     \n"
+                "#extension GL_OES_EGL_image_external : require     \n"
                         "precision highp float;                           \n"
                         "varying highp vec2 vTexCoord;                            \n"
                         "uniform sampler2D yTexture;                        \n"
@@ -100,4 +97,5 @@ public:
                         "}                                                  \n";
     }
 };
+
 #endif

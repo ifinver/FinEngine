@@ -185,15 +185,11 @@ void renderFrame(jbyte *data, jint width, jint height, jint degree, jboolean mir
         fixHeight = (float)width / outWidth * outHeight;
     }
 
-    float scaleX = fixWidth / width;
-    float scaleY = fixHeight / height;
+    float scaleX =  width/fixWidth;
+    float scaleY =  height/fixHeight;
 
-    float scale = fminf(scaleX,scaleY);
-
-//    LOGE("scaleX=%f,scaleY=%f",scaleX,scaleY);
-
-    glVertexAttrib1f(engineHolder->posAttrScaleX, scale);
-    glVertexAttrib1f(engineHolder->posAttrScaleY, scale);
+    glVertexAttrib1f(engineHolder->posAttrScaleX, scaleX);
+    glVertexAttrib1f(engineHolder->posAttrScaleY, scaleY);
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 

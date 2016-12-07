@@ -33,6 +33,7 @@ public:
     GLuint *textures;
 
     GLuint posAttrScaleX;
+
     GLuint posAttrScaleY;
 };
 
