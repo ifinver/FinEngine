@@ -46,31 +46,42 @@ public class FinRender {
         mRenderThread.prepare(output);
     }
 
-    public void startWithInput(SurfaceTexture inputSurface) {
-        mRenderThread.startOutput(inputSurface);
-    }
-
     public void release() {
         this.mListener = null;
         mRenderThread.release();
     }
 
+    public void setFrameSize(int mFrameWidth, int mFrameHeight) {
+        mRenderThread.setFrameSize(mFrameWidth,mFrameHeight);
+    }
+
     private class RenderThread extends HandlerThread implements Handler.Callback, SurfaceTexture.OnFrameAvailableListener {
         private final int MSG_INIT = 0x101;
-        private final int MSG_START = 0x102;
         private final int MSG_RELEASE = 0x104;
         private final int MSG_PROCESS = 0x105;
 
         private Handler mSelfHandler;
-//        private Handler mMainHandler;
         private boolean delayStart = false;
         private Surface mOutputSurface;
         private SurfaceTexture mInputSurface;
         private long mRenderEngine;
+        private final Object mLocker;
+        private int mFrameWidth;
+        private int mFrameHeight;
 
         public RenderThread() {
             super("FinRecorderThread", Process.THREAD_PRIORITY_URGENT_DISPLAY);
-//            mMainHandler = new Handler(Looper.getMainLooper());
+            mLocker = new Object();
+        }
+
+        public void setFrameSize(int mFrameWidth, int mFrameHeight) {
+            synchronized (RenderThread.class) {
+                this.mFrameWidth = mFrameWidth;
+                this.mFrameHeight = mFrameHeight;
+                if (mInputSurface != null) {
+                    mInputSurface.setDefaultBufferSize(mFrameWidth, mFrameHeight);
+                }
+            }
         }
 
         @Override
@@ -88,29 +99,7 @@ public class FinRender {
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
                 case MSG_INIT:
-                    Log.d(TAG,"开始初始化");
-                    mRenderEngine = nativeCreate(mOutputSurface);
-                    isPrepared = mRenderEngine != 0;
-                    if(isPrepared){
-                        Log.d(TAG,"初始化完成");
-                    }else{
-                        Log.e(TAG,"初始化出错");
-                    }
-                    //在当前线程回调
-                    if(mListener != null){
-                        mListener.onPrepared(isPrepared,getInputTex(mRenderEngine),getEglContext(mRenderEngine));
-                    }
-//                    mMainHandler.post(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            if(mListener != null){
-//                                mListener.onPrepared(inputTex);
-//                            }
-//                        }
-//                    });
-                    return true;
-                case MSG_START:
-                    startOutputInternal();
+                    init();
                     return true;
                 case MSG_RELEASE:
                     stopOutputInternal();
@@ -125,10 +114,37 @@ public class FinRender {
             return false;
         }
 
+        private void init() {
+            Log.d(TAG,"开始初始化");
+            mRenderEngine = nativeCreate(mOutputSurface);
+            isPrepared = mRenderEngine != 0;
+            if(isPrepared){
+                Log.d(TAG,"初始化完成");
+            }else{
+                Log.e(TAG,"初始化出错");
+            }
+            mInputSurface = new SurfaceTexture(getInputTex(mRenderEngine));
+            mInputSurface.setOnFrameAvailableListener(this);
+            synchronized (RenderThread.class) {
+                if (mFrameHeight != 0 && mFrameWidth != 0) {
+                    mInputSurface.setDefaultBufferSize(mFrameWidth, mFrameHeight);
+                }
+            }
+            //在当前线程回调
+            if(mListener != null){
+                mListener.onRenderPrepared(isPrepared,mInputSurface,getInputTex(mRenderEngine),getEglContext(mRenderEngine));
+            }
+        }
+
         private void process() {
             if(isPrepared){
                 Log.d(TAG,"process recorder");
-                nativeRenderOut(mRenderEngine,mInputSurface);
+                synchronized (mLocker) {
+                    nativeRenderOut(mRenderEngine, mInputSurface);
+                }
+                if(mListener != null){
+                    mListener.onFrameRendered(mLocker);
+                }
             }
         }
 
@@ -138,12 +154,6 @@ public class FinRender {
             mInputSurface = null;
         }
 
-        private void startOutputInternal() {
-            if(mInputSurface != null) {
-                Log.d(TAG,"recording");
-                mInputSurface.setOnFrameAvailableListener(this);
-            }
-        }
         @Override
         public void onFrameAvailable(SurfaceTexture surfaceTexture) {
             if(isPrepared){
@@ -172,15 +182,11 @@ public class FinRender {
             isPrepared = false;
             mSelfHandler.sendEmptyMessage(MSG_RELEASE);
         }
-
-        public void startOutput(SurfaceTexture inputSurface) {
-            this.mInputSurface = inputSurface;
-            mSelfHandler.sendEmptyMessage(MSG_START);
-        }
     }
 
     public interface FinRenderListener{
-        void onPrepared(boolean isPrepared, int texName, long eglContext);
+        void onRenderPrepared(boolean isPrepared, SurfaceTexture inputSurface, int texName, long eglContext);
+        void onFrameRendered(Object locker);
     }
 
     private native long nativeCreate(Surface output);

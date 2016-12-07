@@ -101,7 +101,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         private void onDrawFrame() {
             if (inited && mData != null) {
 //                long spend = SystemClock.elapsedRealtime();
-                FinEngine.render(mData, mFrameWidth, mFrameHeight, mDegree, isFrontCamera);
+                FinEngine.nativeRender(mData, mFrameWidth, mFrameHeight, mDegree, isFrontCamera);
 //                spend = SystemClock.elapsedRealtime() - spend;
 //                Log.d(TAG, "渲染一帧:" + spend);
             }
@@ -115,7 +115,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         }
 
         private void initGL() {
-            inited = FinEngine.init(mSurface);
+            inited = FinEngine.nativeInit(mSurface);
             if (!inited) {
                 Log.e(TAG, "渲染引擎启动失败！");
             } else {
@@ -124,7 +124,7 @@ public class TextureRenderer implements TextureView.SurfaceTextureListener {
         }
 
         private void destroyGL() {
-            FinEngine.release();
+            FinEngine.nativeRelease();
             Log.d(TAG, "渲染引擎已退出");
         }
 

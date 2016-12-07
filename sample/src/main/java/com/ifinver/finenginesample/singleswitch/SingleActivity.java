@@ -92,7 +92,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 //
 //            @Override
 //            public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-//                FinRender.getInstance().release();
+//                FinRender.getInstance().nativeRelease();
 //                return false;
 //            }
 //

@@ -19,9 +19,9 @@
 const int FORMAT_RGBA = 0x101;
 
 extern "C" {
-JNIEXPORT jboolean JNICALL Java_com_ifinver_finengine_FinEngine_init(JNIEnv *env, jclass type, jobject jSurface);
-JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_release(JNIEnv *env, jclass type);
-JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_render(JNIEnv *env, jclass, jbyteArray data_, jint frameWidth, jint frameHeight,
+JNIEXPORT jboolean JNICALL Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass type, jobject jSurface);
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeRelease(JNIEnv *env, jclass type);
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *env, jclass, jbyteArray data_, jint frameWidth, jint frameHeight,
                                                     jint degree, jboolean mirror);
 }
 

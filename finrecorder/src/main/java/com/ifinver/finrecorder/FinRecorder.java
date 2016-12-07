@@ -7,7 +7,6 @@ import android.os.Process;
 import android.util.Log;
 import android.view.Surface;
 
-import static android.content.ContentValues.TAG;
 
 /**
  * Created by iFinVer on 2016/12/7.
@@ -18,6 +17,7 @@ public class FinRecorder {
     static {
         System.loadLibrary("fin-recorder-lib");
     }
+    private static final String TAG = "FinRecorder";
     private static FinRecorder instance;
     private RecorderThread mRecorderThread;
     public static FinRecorder getInstance(){
@@ -73,6 +73,7 @@ public class FinRecorder {
             switch (msg.what) {
                 case MSG_INIT:
                     Log.d(TAG,"开始初始化");
+                    initRecorder();
                     return true;
                 case MSG_START:
                     return true;
@@ -82,6 +83,10 @@ public class FinRecorder {
                     return true;
             }
             return false;
+        }
+
+        private void initRecorder() {
+
         }
 
         public void prepare(Surface out, int inputTex, long sharedCtx) {

@@ -7,7 +7,7 @@
 GLContextHolder *engineHolder = NULL;
 
 JNIEXPORT jboolean JNICALL
-Java_com_ifinver_finengine_FinEngine_init(JNIEnv *env, jclass, jobject jSurface) {
+Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSurface) {
     releaseGLContext();
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
@@ -113,12 +113,12 @@ Java_com_ifinver_finengine_FinEngine_init(JNIEnv *env, jclass, jobject jSurface)
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_finengine_FinEngine_release(JNIEnv *, jclass) {
+Java_com_ifinver_finengine_FinEngine_nativeRelease(JNIEnv *, jclass) {
     releaseGLContext();
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_finengine_FinEngine_render(JNIEnv *env, jclass, jbyteArray data_, jint frameWidth, jint frameHeight,
+Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *env, jclass, jbyteArray data_, jint frameWidth, jint frameHeight,
                                             jint degree, jboolean mirror) {
     jbyte *data = env->GetByteArrayElements(data_, 0);
 
