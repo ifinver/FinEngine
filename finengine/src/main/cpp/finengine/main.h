@@ -22,11 +22,11 @@ extern "C" {
 JNIEXPORT jboolean JNICALL Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass type, jobject jSurface);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeRelease(JNIEnv *env, jclass type);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *env, jclass, jbyteArray data_, jint frameWidth, jint frameHeight,
-                                                    jint degree, jboolean mirror);
+                                                    jint degree, jboolean mirror,jint outWidth,jint outHeight);
 }
 
 void releaseGLContext();
 
-void renderFrame(jbyte *data, jint width, jint height,jint degree,jboolean mirror);
+void renderFrame(jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight);
 
 #endif //MYOPENGLES_GL_NATIVE_LIB_H

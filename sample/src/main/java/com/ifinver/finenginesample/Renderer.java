@@ -19,11 +19,13 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        FinRender.getInstance().prepare(new Surface(surface), this);
+        FinRender.getInstance().prepare(new Surface(surface), width,height,this);
     }
 
     @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {}
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+        FinRender.getInstance().onSizeChange(width,height);
+    }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
@@ -35,13 +37,14 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
     @Override
     public void onSurfaceTextureUpdated(SurfaceTexture surface) {}
 
-    public void onCameraStart(int frameWidth, int frameHeight) {
-        FinRender.getInstance().setFrameSize(frameWidth, frameHeight);
+    @Override
+    public void onRenderPrepared(boolean isPrepared, SurfaceTexture inputSurface, int texName, long eglContext, int surfaceWidth, int surfaceHeight) {
+        FinEngine.getInstance().prepare(new Surface(inputSurface),surfaceWidth,surfaceHeight);
     }
 
     @Override
-    public void onRenderPrepared(boolean isPrepared, SurfaceTexture inputSurface, int texName, long eglContext) {
-        FinEngine.getInstance().prepare(new Surface(inputSurface));
+    public void onInputSurfaceChanged(int surfaceWidth, int surfaceHeight) {
+        FinEngine.getInstance().resizeInput(surfaceWidth,surfaceHeight);
     }
 
     @Override

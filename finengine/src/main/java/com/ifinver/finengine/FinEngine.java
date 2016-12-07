@@ -45,8 +45,8 @@ public class FinEngine {
         mEngineThread.start();
     }
 
-    public void prepare(Surface output){
-        mEngineThread.prepare(output);
+    public void prepare(Surface output, int width, int height){
+        mEngineThread.prepare(output,width,height);
     }
 
     public void process(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera){
@@ -55,6 +55,10 @@ public class FinEngine {
 
     public void release(){
         mEngineThread.release();
+    }
+
+    public void resizeInput(int surfaceWidth, int surfaceHeight) {
+        mEngineThread.resizeInput(surfaceWidth,surfaceHeight);
     }
 
     private class FinEngineThread extends HandlerThread implements Handler.Callback {
@@ -71,6 +75,8 @@ public class FinEngine {
         private byte[] mData;
         private int mDegree;
         private boolean isFrontCamera;
+        private int mOutWidth;
+        private int mOutHeight;
 
         FinEngineThread() {
             super("FinEngineThread", Process.THREAD_PRIORITY_URGENT_DISPLAY);
@@ -87,8 +93,10 @@ public class FinEngine {
             }
         }
 
-        public void prepare(Surface output) {
+        public void prepare(Surface output, int width, int height) {
             this.mOutputSurface = output;
+            this.mOutWidth = width;
+            this.mOutHeight = height;
             if (!isPrepared) {
                 if (mSelfHandler != null) {
                     mSelfHandler.sendEmptyMessage(MSG_INIT);
@@ -127,7 +135,7 @@ public class FinEngine {
                     return true;
                 case MSG_PROCESS:
                     if(isPrepared && mData != null){
-                        nativeRender(mData, mFrameWidth, mFrameHeight, mDegree, isFrontCamera);
+                        nativeRender(mData, mFrameWidth, mFrameHeight, mDegree, isFrontCamera,mOutWidth,mOutHeight);
                     }
                     return true;
             }
@@ -141,6 +149,11 @@ public class FinEngine {
         public void release() {
             mSelfHandler.sendEmptyMessage(MSG_RELEASE);
         }
+
+        public void resizeInput(int surfaceWidth, int surfaceHeight) {
+            this.mOutWidth = surfaceWidth;
+            this.mOutHeight = surfaceHeight;
+        }
     }
 
     /**
@@ -150,5 +163,5 @@ public class FinEngine {
 
     private native void nativeRelease();
 
-    private native void nativeRender(byte[] data, int frameWidth, int frameHeight, int degree, boolean mirror);
+    private native void nativeRender(byte[] data, int frameWidth, int frameHeight, int degree, boolean mirror, int mOutWidth, int mOutHeight);
 }

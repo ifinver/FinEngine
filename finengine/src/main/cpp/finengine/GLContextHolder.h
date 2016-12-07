@@ -31,6 +31,9 @@ public:
     int textureNums;
 
     GLuint *textures;
+
+    GLuint posAttrScaleX;
+    GLuint posAttrScaleY;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

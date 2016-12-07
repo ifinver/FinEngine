@@ -83,6 +83,8 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
 
     engineHolder->posAttrVertices = (GLuint) glGetAttribLocation(programYUV, "aPosition");
     engineHolder->posAttrTexCoords = (GLuint) glGetAttribLocation(programYUV, "aTexCoord");
+    engineHolder->posAttrScaleX = (GLuint) glGetAttribLocation(programYUV, "aScaleX");
+    engineHolder->posAttrScaleY = (GLuint) glGetAttribLocation(programYUV, "aScaleY");
     engineHolder->posUniTextureY = (GLuint) glGetUniformLocation(programYUV, "yTexture");
     engineHolder->posUniTextureUV = (GLuint) glGetUniformLocation(programYUV, "uvTexture");
 
@@ -119,17 +121,21 @@ Java_com_ifinver_finengine_FinEngine_nativeRelease(JNIEnv *, jclass) {
 
 JNIEXPORT void JNICALL
 Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *env, jclass, jbyteArray data_, jint frameWidth, jint frameHeight,
-                                            jint degree, jboolean mirror) {
+                                                  jint degree, jboolean mirror, jint outWidth, jint outHeight) {
     jbyte *data = env->GetByteArrayElements(data_, 0);
 
-    renderFrame(data, frameWidth, frameHeight, degree, mirror);
+    renderFrame(data, frameWidth, frameHeight, degree, mirror, outWidth, outHeight);
 
     env->ReleaseByteArrayElements(data_, data, JNI_ABORT);
 }
-//.........................................................................................................................
 
-void renderFrame(jbyte *data, jint width, jint height, jint degree, jboolean mirror) {
+//.........................................................................................................................
+void renderFrame(jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight) {
+
     glUseProgram(engineHolder->program);
+
+//    glViewport(0, 0, outWidth, outHeight);
+
     //输入顶点
     glEnableVertexAttribArray(engineHolder->posAttrVertices);
     glVertexAttribPointer(engineHolder->posAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, VERTICES_COORD);
@@ -162,13 +168,37 @@ void renderFrame(jbyte *data, jint width, jint height, jint degree, jboolean mir
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, width / 2, height / 2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, data + (width * height));
     glUniform1i(engineHolder->posUniTextureUV, 1);
 
+    jint odd = degree / 90;
+    if (odd == 1 || odd == 3) {
+        //如果旋转了90°，交换长和宽
+        int temp = width;
+        width = height;
+        height = temp;
+    }
+
+    float fixWidth,fixHeight;
+    if((float)width / height >= (float)outWidth / outHeight){
+        fixHeight = height;
+        fixWidth = (float)height / outHeight * outWidth;
+    }else{
+        fixWidth = width;
+        fixHeight = (float)width / outWidth * outHeight;
+    }
+
+    float scaleX = fixWidth / width;
+    float scaleY = fixHeight / height;
+
+    float scale = fminf(scaleX,scaleY);
+
+//    LOGE("scaleX=%f,scaleY=%f",scaleX,scaleY);
+
+    glVertexAttrib1f(engineHolder->posAttrScaleX, scale);
+    glVertexAttrib1f(engineHolder->posAttrScaleY, scale);
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     glDisableVertexAttribArray(engineHolder->posAttrVertices);
     glDisableVertexAttribArray(engineHolder->posAttrTexCoords);
-
-    glViewport(0, 0, width, height);
 
 //    glFinish();
     eglSwapBuffers(engineHolder->eglDisplay, engineHolder->eglSurface);

@@ -50,11 +50,18 @@ public:
 
     ShaderBase(){
         vertexShader =
-                        "attribute vec4 aPosition;                          \n"
-                        "attribute vec2 aTexCoord;                          \n"
-                        "varying vec2 vTexCoord;                            \n"
+                        "precision highp float;                                   \n"
+                        "attribute highp vec4 aPosition;                          \n"
+                        "attribute highp vec2 aTexCoord;                          \n"
+                        "attribute highp float aScaleX;                          \n"
+                        "attribute highp float aScaleY;                          \n"
+                        "varying highp vec2 vTexCoord;                            \n"
                         "void main(){                                       \n"
-                        "   vTexCoord = aTexCoord;                          \n"
+                        "   highp mat2 aScaleMtx = mat2(aScaleX,0,0,aScaleY);                                      \n"
+                        "   highp vec2 scaled = aScaleMtx * aTexCoord;              \n"
+                        "   highp float offX = (1.0 - aScaleX)/2.0;              \n"
+                        "   highp float offY = (1.0 - aScaleY)/2.0;              \n"
+                        "   vTexCoord = vec2(scaled.x+offX,scaled.y+offY);               \n"
                         "   gl_Position = aPosition;                        \n"
                         "}                                                  \n";
     }
@@ -70,8 +77,8 @@ public:
     ShaderNV21() {
         fragmentShader =
                         "#extension GL_OES_EGL_image_external : require     \n"
-                        "precision mediump float;                           \n"
-                        "varying vec2 vTexCoord;                            \n"
+                        "precision highp float;                           \n"
+                        "varying highp vec2 vTexCoord;                            \n"
                         "uniform sampler2D yTexture;                        \n"
                         "uniform sampler2D uvTexture;                       \n"
                         "                                                   \n"

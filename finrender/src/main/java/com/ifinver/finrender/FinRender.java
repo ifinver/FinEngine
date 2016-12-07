@@ -24,6 +24,8 @@ public class FinRender {
     private RenderThread mRenderThread;
     private boolean isPrepared = false;
     private FinRenderListener mListener;
+    private int mSurfaceWidth;
+    private int mSurfaceHeight;
 
     public static FinRender getInstance() {
         if (instance == null) {
@@ -41,8 +43,10 @@ public class FinRender {
         mRenderThread.start();
     }
 
-    public void prepare(Surface output, FinRenderListener listener) {
+    public void prepare(Surface output, int width, int height, FinRenderListener listener) {
         this.mListener = listener;
+        this.mSurfaceWidth = width;
+        this.mSurfaceHeight = height;
         mRenderThread.prepare(output);
     }
 
@@ -51,20 +55,22 @@ public class FinRender {
         mRenderThread.release();
     }
 
-    public void setFrameSize(int mFrameWidth, int mFrameHeight) {
-        mRenderThread.setFrameSize(mFrameWidth, mFrameHeight);
-    }
-
     public int getInputTex() {
         return mRenderThread.inputTex;
     }
 
-    public long getSharedCtx(){
+    public long getSharedCtx() {
         return mRenderThread.eglContext;
     }
 
     public Object getLocker() {
         return mRenderThread.mLocker;
+    }
+
+    public void onSizeChange(int width, int height) {
+        this.mSurfaceWidth = width;
+        this.mSurfaceHeight = height;
+        mRenderThread.resize();
     }
 
     private class RenderThread extends HandlerThread implements Handler.Callback, SurfaceTexture.OnFrameAvailableListener {
@@ -78,24 +84,12 @@ public class FinRender {
         private SurfaceTexture mInputSurface;
         private long mRenderEngine;
         private final Object mLocker;
-        private int mFrameWidth;
-        private int mFrameHeight;
         private int inputTex;
         private long eglContext;
 
         public RenderThread() {
             super("FinRecorderThread", Process.THREAD_PRIORITY_URGENT_DISPLAY);
             mLocker = new Object();
-        }
-
-        public void setFrameSize(int mFrameWidth, int mFrameHeight) {
-            synchronized (RenderThread.class) {
-                this.mFrameWidth = mFrameWidth;
-                this.mFrameHeight = mFrameHeight;
-                if (mInputSurface != null) {
-                    mInputSurface.setDefaultBufferSize(mFrameWidth, mFrameHeight);
-                }
-            }
         }
 
         @Override
@@ -141,14 +135,10 @@ public class FinRender {
             eglContext = nativeGetEglContext(mRenderEngine);
             mInputSurface = new SurfaceTexture(inputTex);
             mInputSurface.setOnFrameAvailableListener(this);
-            synchronized (RenderThread.class) {
-                if (mFrameHeight != 0 && mFrameWidth != 0) {
-                    mInputSurface.setDefaultBufferSize(mFrameWidth, mFrameHeight);
-                }
-            }
+            mInputSurface.setDefaultBufferSize(mSurfaceWidth, mSurfaceHeight);
             //在当前线程回调
             if (mListener != null) {
-                mListener.onRenderPrepared(isPrepared, mInputSurface, inputTex, eglContext);
+                mListener.onRenderPrepared(isPrepared, mInputSurface, inputTex, eglContext,mSurfaceWidth,mSurfaceHeight);
             }
         }
 
@@ -196,12 +186,24 @@ public class FinRender {
             isPrepared = false;
             mSelfHandler.sendEmptyMessage(MSG_RELEASE);
         }
+
+        public void resize() {
+            if(mInputSurface != null){
+                mInputSurface.setDefaultBufferSize(mSurfaceWidth,mSurfaceHeight);
+                if(mListener != null){
+                    mListener.onInputSurfaceChanged(mSurfaceWidth,mSurfaceHeight);
+                }
+            }
+        }
     }
 
     public interface FinRenderListener {
-        void onRenderPrepared(boolean isPrepared, SurfaceTexture inputSurface, int texName, long eglContext);
+
+        void onRenderPrepared(boolean isPrepared, SurfaceTexture inputSurface, int texName, long eglContext, int surfaceWidth, int surfaceHeight);
 
         void onFrameRendered();
+
+        void onInputSurfaceChanged(int surfaceWidth, int surfaceHeight);
     }
 
     private native long nativeCreate(Surface output);

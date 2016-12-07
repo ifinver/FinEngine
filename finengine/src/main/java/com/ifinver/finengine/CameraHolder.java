@@ -347,23 +347,25 @@ public class CameraHolder {
         /**
          * 根据期望选择合适宽高
          */
-        private CameraSize calculateCameraFrameSize(List<Camera.Size> supportedSizes, int maxAllowedWidth, int maxAllowedHeight) {
+        private CameraSize calculateCameraFrameSize(List<Camera.Size> supportedSizes, int expectWidth, int expectHeight) {
             int calcWidth = 0;
             int calcHeight = 0;
 
             for (Camera.Size size : supportedSizes) {
                 int width = size.width;
                 int height = size.height;
+                Log.d(TAG,"摄像头支持Size:"+width+"x"+height+", height/width="+(float)height/width);
 
-                if (width <= maxAllowedWidth && height <= maxAllowedHeight) {
+                if (width <= expectWidth && height <= expectHeight) {
                     if (width >= calcWidth && height >= calcHeight) {
                         calcWidth = width;
                         calcHeight = height;
                     }
                 }
             }
+            Log.d(TAG,"期望的Size:"+expectWidth+"x"+expectHeight+",width/height="+(float)expectWidth/expectHeight);
 
-            return new CameraSize(calcWidth, calcHeight);
+            return new CameraSize(352, 288);
         }
     }
 
