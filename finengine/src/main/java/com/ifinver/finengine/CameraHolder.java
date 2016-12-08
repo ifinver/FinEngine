@@ -245,10 +245,9 @@ public class CameraHolder {
                         List<int[]> support = params.getSupportedPreviewFpsRange();
                         if (support.size() > 0) {
                             int[] ints = support.get(0);
-                            int min = ints[1];
-                            int max = ints[1];
-                            params.setPreviewFpsRange(min, max);
-                            Log.d(TAG, "帧率设置为:[" + min + "," + max + "]");
+                            int max = Math.max(ints[0],ints[1]);
+                            params.setPreviewFpsRange(max, max);
+                            Log.d(TAG, "帧率设置为:[" + max + "," + max + "]");
                         } else {
                             Log.e(TAG, "WTF,不能设置帧率");
                         }
