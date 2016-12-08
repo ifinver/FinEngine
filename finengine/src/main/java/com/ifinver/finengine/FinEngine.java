@@ -140,8 +140,9 @@ public class FinEngine {
             this.mData = data;
             this.mDegree = degree;
             this.isFrontCamera = isFrontCamera;
-
-            mSelfHandler.sendEmptyMessage(MSG_PROCESS);
+            if(mSelfHandler != null) {
+                mSelfHandler.sendEmptyMessage(MSG_PROCESS);
+            }
         }
 
         @Override
