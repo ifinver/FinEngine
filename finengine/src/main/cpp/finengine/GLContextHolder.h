@@ -49,6 +49,9 @@ public:
     GLuint targetProgram;
 
     GLuint currentProgram;
+
+    int currentFilter;
+    GLuint defaultProgram;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

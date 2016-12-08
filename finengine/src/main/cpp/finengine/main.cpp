@@ -1,6 +1,9 @@
 #include "main.h"
 #include "utils.h"
 #include <android/native_window_jni.h>
+#include <sstream>
+#include <assert.h>
+#include <android/asset_manager_jni.h>
 
 GLContextHolder *engineHolder = NULL;
 
@@ -77,7 +80,10 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
     engineHolder->eglDisplay = display;
     engineHolder->eglContext = eglContext;
     engineHolder->eglSurface = eglSurface;
-    engineHolder->targetProgram = programYUV;
+
+    glUseProgram(programYUV);
+    engineHolder->defaultProgram = engineHolder->targetProgram = engineHolder->currentProgram = programYUV;
+    engineHolder->currentFilter = 0;
 
     engineHolder->posAttrVertices = (GLuint) glGetAttribLocation(programYUV, "aPosition");
     engineHolder->posAttrTexCoords = (GLuint) glGetAttribLocation(programYUV, "aTexCoord");
@@ -130,12 +136,61 @@ Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *env, jclass, jbyteArra
     env->ReleaseByteArrayElements(data_, data, JNI_ABORT);
 }
 
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(JNIEnv *env, jobject instance, jobject mAssetManager, jint mFilterType,jstring vertex_,jstring frag_){
+    if(mFilterType == engineHolder->currentFilter){
+        LOGI("选择的滤镜和上一个滤镜相同");
+        return;
+    }
+    if(mFilterType == 0){
+        LOGI("切换至空滤镜");
+        engineHolder->targetProgram = engineHolder->defaultProgram;
+        engineHolder->currentFilter = 0;
+        return;
+    }
+    AAssetManager* mgr = AAssetManager_fromJava(env, mAssetManager);
+    if(mgr == NULL){
+        LOGE("切换滤镜失败，AAssetManager不可用");
+        return;
+    }
+    //load vertex
+    const char *vertexName = env->GetStringUTFChars(vertex_, 0);
+    AAsset* vertexAsset = AAssetManager_open(mgr, vertexName, AASSET_MODE_BUFFER);
+    env->ReleaseStringUTFChars(vertex_, vertexName);
+    off_t length = AAsset_getLength(vertexAsset);
+    char* vertexContent = new char[length+1];
+    AAsset_read(vertexAsset, vertexContent, (size_t) length);
+    AAsset_close(vertexAsset);
+    vertexContent[length] = '\0';
+
+    //load fragment
+    const char *fragmentName = env->GetStringUTFChars(frag_, 0);
+    AAsset* fragAsset = AAssetManager_open(mgr, fragmentName, AASSET_MODE_BUFFER);
+    env->ReleaseStringUTFChars(frag_, fragmentName);
+    length = AAsset_getLength(fragAsset);
+    char* fragmentContent = new char[length+1];
+    AAsset_read(fragAsset, fragmentContent, (size_t) length);
+    AAsset_close(fragAsset);
+    fragmentContent[length] = '\0';
+
+    GLuint targetP = createProgram(vertexContent,fragmentContent);
+    if (targetP == 0) {
+        LOGE("切换滤镜失败,编译出错");
+        return ;
+    }
+    engineHolder->targetProgram = targetP;
+    engineHolder->currentFilter = mFilterType;
+}
+
 //.........................................................................................................................
 void renderFrame(jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight) {
 
-    if(engineHolder->targetProgram != engineHolder->currentProgram){
+    if(engineHolder->targetProgram != engineHolder->currentProgram) {
+        glUseProgram(engineHolder->targetProgram);
+        if (engineHolder->currentProgram != engineHolder->defaultProgram) { //默认滤镜不删
+            glDeleteProgram(engineHolder->currentProgram);
+        }
         engineHolder->currentProgram = engineHolder->targetProgram;
-        glUseProgram(engineHolder->currentProgram);
+        LOGI("切换滤镜成功！");
     }
 
     //输入顶点
@@ -157,6 +212,7 @@ void renderFrame(jbyte *data, jint width, jint height, jint degree, jboolean mir
     //输入纹理坐标，处理旋转和镜像
     glEnableVertexAttribArray(engineHolder->posAttrTexCoords);
     if (engineHolder->frameDegree != degree) {
+        engineHolder->frameDegree = degree;
         degree %= 360;
         if (degree < 0) degree += 360;
         int idx;
@@ -170,7 +226,6 @@ void renderFrame(jbyte *data, jint width, jint height, jint degree, jboolean mir
             inputTextureCoord = TEXTURE_COORD_NOR + idx;
         }
         engineHolder->inputTextureCorrd = inputTextureCoord;
-        engineHolder->frameDegree = degree;
     }
     glVertexAttribPointer(engineHolder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, engineHolder->inputTextureCorrd);
 

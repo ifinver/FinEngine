@@ -6,7 +6,7 @@
 #define MYOPENGLES_GL_NATIVE_LIB_H
 
 
-#define  LOG_TAG    "FinRender"
+#define  LOG_TAG    "FinEngine"
 
 #include <jni.h>
 #include <android/log.h>
@@ -23,6 +23,7 @@ JNIEXPORT jboolean JNICALL Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEn
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeRelease(JNIEnv *env, jclass type);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *env, jclass, jbyteArray data_, jint frameWidth, jint frameHeight,
                                                     jint degree, jboolean mirror,jint outWidth,jint outHeight);
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(JNIEnv *env, jobject instance, jobject mAssetManager, jint mFilterType,jstring vert,jstring frag);
 }
 
 void releaseGLContext();
