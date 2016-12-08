@@ -285,26 +285,40 @@ public class CameraHolder {
                         mCamera.setPreviewTexture(mSurfaceTexture);
                         mCamera.startPreview();
                         updateCameraDegree();
-                        init = true;
                         Log.d(TAG, "开始Camera预览");
+                        init = true;
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-//            if(BuildConfig.DEBUG) {
-                Log.d(TAG, init ? "摄像头初始化成功！" : "摄像头初始化失败！");
-//            }
+            if(init) {
+                Log.d(TAG, "摄像头初始化成功！");
+            }else{
+                if(mVideoBuffer != null){
+                    mVideoBuffer[0] = null;
+                    mVideoBuffer[1] = null;
+                    mVideoBuffer = null;
+                }
+                if(mSurfaceTexture != null){
+                    mSurfaceTexture.release();
+                    mSurfaceTexture = null;
+                }
+                mCamera = null;
+                Log.d(TAG, "摄像头初始化失败！");
+            }
             if (mListener != null) {
                 final boolean finalInit = init;
                 mMainHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         mListener.onCameraStart(finalInit);
-                        exited = false;
+                        if(finalInit) {
+                            exited = false;
+                        }
                     }
                 });
-            }else{
+            }else if(init){
                 exited = false;
             }
             return init;
