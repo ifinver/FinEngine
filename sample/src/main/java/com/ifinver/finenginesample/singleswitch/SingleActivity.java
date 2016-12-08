@@ -74,10 +74,10 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        if(v == tvRender){
+        if (v == tvRender) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    Log.d("FinEngine","开始录制");
+                    Log.d("FinEngine", "开始录制");
                     flContainer.setVisibility(View.VISIBLE);
                     mRecorder = FinRecorder.prepare(
                             new Surface(tvLittle.getSurfaceTexture()),
@@ -89,7 +89,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
                     break;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
-                    Log.d("FinEngine","停止录制");
+                    Log.d("FinEngine", "停止录制");
                     mRecorder.release();
                     mRenderer.setRecorder(null);
                     flContainer.setVisibility(View.INVISIBLE);
@@ -102,7 +102,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
     @Override
     public void onFilterItemClick(int filter) {
-        Toast.makeText(this,"switching filter(coming soon)",Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "switching filter(coming soon)", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -147,7 +147,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
     @Override
     protected void onResume() {
         super.onResume();
-        CameraHolder.getInstance().start(this, this);
+        CameraHolder.getInstance().start(640, 480, this, this);
     }
 
     @Override

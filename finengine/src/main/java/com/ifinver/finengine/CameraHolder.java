@@ -11,11 +11,9 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
-
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -52,10 +50,9 @@ public class CameraHolder {
         return mInstance;
     }
 
-    public void start(Context ctx, CameraListener listener) {
+    public void start(int expectedWidth,int expectedHeight,Context ctx, CameraListener listener) {
         this.mAppCtx = ctx.getApplicationContext();
-        DisplayMetrics dm = mAppCtx.getResources().getDisplayMetrics();
-        mEngineThread.start(dm.widthPixels, dm.heightPixels, listener);
+        mEngineThread.start(expectedWidth, expectedHeight, listener);
     }
 
     public boolean toggleCamera() {
