@@ -105,7 +105,7 @@ JNIEXPORT jlong JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeCreate(JN
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     //success
-    FinRecorderHolder *recorderHolder = new FinRecorderHolder();
+    FinRenderHolder *recorderHolder = new FinRenderHolder();
 
     recorderHolder->eglDisplay = display;
     recorderHolder->eglContext = eglContext;
@@ -143,7 +143,7 @@ JNIEXPORT jlong JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeCreate(JN
 }
 
 JNIEXPORT void JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeProcess(JNIEnv *env, jobject instance, jlong recorder, jint inputTex){
-    FinRecorderHolder *recorderHolder = (FinRecorderHolder *) recorder;
+    FinRenderHolder *recorderHolder = (FinRenderHolder *) recorder;
     if (!eglMakeCurrent(recorderHolder->eglDisplay, recorderHolder->eglSurface, recorderHolder->eglSurface, recorderHolder->eglContext)) {
         checkGlError("eglMakeCurrent");
         LOGE("eglMakeCurrent failed!");
@@ -170,7 +170,7 @@ JNIEXPORT void JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeProcess(JN
 }
 
 JNIEXPORT void JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeRelease(JNIEnv *env, jobject instance, jlong recorder){
-    FinRecorderHolder *recorderHolder = (FinRecorderHolder *) recorder;
+    FinRenderHolder *recorderHolder = (FinRenderHolder *) recorder;
     glDeleteProgram(recorderHolder->program);
     glDeleteBuffers(1,&recorderHolder->vertexBuffer);
     eglDestroySurface(recorderHolder->eglDisplay,recorderHolder->eglSurface);

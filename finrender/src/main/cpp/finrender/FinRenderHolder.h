@@ -10,7 +10,7 @@
 #include <GLES2/gl2.h>
 #include <jni.h>
 
-class FinRecorderHolder {
+class FinRenderHolder {
 public:
     EGLDisplay eglDisplay;
     EGLContext eglContext;

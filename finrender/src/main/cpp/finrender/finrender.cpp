@@ -105,16 +105,16 @@ JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_nativeCreate(JNIEnv
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     //success
-    FinRecorderHolder *recorderHolder = new FinRecorderHolder();
+    FinRenderHolder *renderHolder = new FinRenderHolder();
 
-    recorderHolder->eglDisplay = display;
-    recorderHolder->eglContext = eglContext;
-    recorderHolder->eglSurface = eglSurface;
-    recorderHolder->program = program;
+    renderHolder->eglDisplay = display;
+    renderHolder->eglContext = eglContext;
+    renderHolder->eglSurface = eglSurface;
+    renderHolder->program = program;
 
-    recorderHolder->posAttrVertices = (GLuint) glGetAttribLocation(program, "aPosition");
-    recorderHolder->posAttrTexCoords = (GLuint) glGetAttribLocation(program, "aTexCoord");
-    recorderHolder->posUniTextureS = (GLuint) glGetUniformLocation(program, "sTexture");
+    renderHolder->posAttrVertices = (GLuint) glGetAttribLocation(program, "aPosition");
+    renderHolder->posAttrTexCoords = (GLuint) glGetAttribLocation(program, "aTexCoord");
+    renderHolder->posUniTextureS = (GLuint) glGetUniformLocation(program, "sTexture");
 
     //tex
     GLuint textures;
@@ -124,21 +124,21 @@ JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_nativeCreate(JNIEnv
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    recorderHolder->inputTex = textures;
+    renderHolder->inputTex = textures;
 
     GLuint vertexBuffer;
     glGenBuffers(1,&vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES),VERTICES,GL_STATIC_DRAW);
-    recorderHolder->vertexBuffer = vertexBuffer;
-    recorderHolder->vertexStride = 4 * sizeof(GLfloat);
-    recorderHolder->texOffset = 2* sizeof(GLfloat);
+    renderHolder->vertexBuffer = vertexBuffer;
+    renderHolder->vertexStride = 4 * sizeof(GLfloat);
+    renderHolder->texOffset = 2* sizeof(GLfloat);
 
     //输入纹理的方法
     jclass jcSurfaceTexture = env->FindClass("android/graphics/SurfaceTexture");
-    recorderHolder->midAttachToGlContext = env->GetMethodID(jcSurfaceTexture, "attachToGLContext", "(I)V");
-    recorderHolder->midDetachFromGLContext = env->GetMethodID(jcSurfaceTexture, "detachFromGLContext", "()V");
-    recorderHolder->midUpdateTexImage = env->GetMethodID(jcSurfaceTexture, "updateTexImage", "()V");
+    renderHolder->midAttachToGlContext = env->GetMethodID(jcSurfaceTexture, "attachToGLContext", "(I)V");
+    renderHolder->midDetachFromGLContext = env->GetMethodID(jcSurfaceTexture, "detachFromGLContext", "()V");
+    renderHolder->midUpdateTexImage = env->GetMethodID(jcSurfaceTexture, "updateTexImage", "()V");
 
     glDepthMask(GL_FALSE);
     glDisable(GL_BLEND);
@@ -155,10 +155,10 @@ JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_nativeCreate(JNIEnv
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    return (jlong) recorderHolder;
+    return (jlong) renderHolder;
 }
 
-void renderFrame(FinRecorderHolder *pHolder) {
+void renderFrame(FinRenderHolder *pHolder) {
     //输入顶点
     glEnableVertexAttribArray(pHolder->posAttrVertices);
     glVertexAttribPointer(pHolder->posAttrVertices, 2, GL_FLOAT, GL_FALSE, pHolder->vertexStride, 0);
@@ -180,15 +180,15 @@ void renderFrame(FinRecorderHolder *pHolder) {
 }
 
 JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_nativeRenderOut(JNIEnv *env, jobject, jlong engine, jobject input) {
-    FinRecorderHolder *recorderHolder = (FinRecorderHolder *) engine;
+    FinRenderHolder *renderHolder = (FinRenderHolder *) engine;
 //    env->CallVoidMethod(input, recorderHolder->midAttachToGlContext, recorderHolder->inputTex);
-    env->CallVoidMethod(input, recorderHolder->midUpdateTexImage);
-    renderFrame(recorderHolder);
+    env->CallVoidMethod(input, renderHolder->midUpdateTexImage);
+    renderFrame(renderHolder);
 //    env->CallVoidMethod(input, recorderHolder->midDetachFromGLContext);
 }
 
 JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_nativeRelease(JNIEnv *env, jobject instance, jlong engine) {
-    FinRecorderHolder *pHolder = (FinRecorderHolder *) engine;
+    FinRenderHolder *pHolder = (FinRenderHolder *) engine;
     glDeleteTextures(1, &pHolder->inputTex);
     glDeleteProgram(pHolder->program);
     glDeleteBuffers(1,&pHolder->vertexBuffer);
@@ -198,11 +198,11 @@ JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_nativeRelease(JNIEnv
 }
 
 JNIEXPORT jint JNICALL Java_com_ifinver_finrender_FinRender_nativeGetInputTex(JNIEnv *env, jobject instance, jlong engine){
-    FinRecorderHolder *pHolder = (FinRecorderHolder *) engine;
+    FinRenderHolder *pHolder = (FinRenderHolder *) engine;
     return pHolder->inputTex;
 }
 
 JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_nativeGetEglContext(JNIEnv *env, jobject instance, jlong engine){
-    FinRecorderHolder *pHolder = (FinRecorderHolder *) engine;
+    FinRenderHolder *pHolder = (FinRenderHolder *) engine;
     return (jlong)pHolder->eglContext;
 }

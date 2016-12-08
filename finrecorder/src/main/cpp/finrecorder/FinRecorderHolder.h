@@ -6,7 +6,7 @@
 #define FINENGINE_FINRECORDERHOLDER_H
 
 
-class FinRecorderHolder {
+class FinRenderHolder {
 public:
     EGLDisplay eglDisplay;
     EGLContext eglContext;
