@@ -148,7 +148,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
     @Override
     protected void onResume() {
         super.onResume();
-        CameraHolder.getInstance().start(640, 480, this, this);
+        CameraHolder.getInstance().start(1280, 720, this, this);
     }
 
     @Override

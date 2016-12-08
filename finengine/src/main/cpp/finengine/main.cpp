@@ -233,6 +233,12 @@ void renderFrame(jbyte *data, jint width, jint height, jint degree, jboolean mir
             || engineHolder->frameHeight != height
             || engineHolder->outWidth != outWidth
             || engineHolder->outHeight != outHeight){
+
+        engineHolder->frameWidth = width;
+        engineHolder->frameHeight = height;
+        engineHolder->outWidth = outWidth;
+        engineHolder->outHeight = outHeight;
+        
         jint odd = degree / 90;
         if (odd == 1 || odd == 3) {
             //如果旋转了90°，交换长和宽
@@ -252,10 +258,6 @@ void renderFrame(jbyte *data, jint width, jint height, jint degree, jboolean mir
 
         engineHolder->frameScaleX = width / fixWidth;
         engineHolder->frameScaleY = height / fixHeight;
-        engineHolder->frameWidth = width;
-        engineHolder->frameHeight = height;
-        engineHolder->outWidth = outWidth;
-        engineHolder->outHeight = outHeight;
     }
 
 

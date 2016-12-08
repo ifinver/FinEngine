@@ -33,15 +33,15 @@ public class FinFiltersManager {
         mSupportFilters.add(model);
 
         model = new FilterDataModel();
-        model.filterName = "Cyan";
-//        model.filterImageResId = R.mipmap.ic_launcher;
-        model.filterType = FILTER_TYPE_CYAN;
-        mSupportFilters.add(model);
-
-        model = new FilterDataModel();
         model.filterName = "Grey scale";
 //        model.filterImageResId = R.mipmap.ic_launcher;
         model.filterType = FILTER_TYPE_GREY_SCALE;
+        mSupportFilters.add(model);
+
+        model = new FilterDataModel();
+        model.filterName = "Cyan";
+//        model.filterImageResId = R.mipmap.ic_launcher;
+        model.filterType = FILTER_TYPE_CYAN;
         mSupportFilters.add(model);
 
         model = new FilterDataModel();

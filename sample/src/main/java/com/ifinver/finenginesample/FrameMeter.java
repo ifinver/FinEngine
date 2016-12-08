@@ -26,6 +26,10 @@ public class FrameMeter {
         } else {
             long spend = SystemClock.elapsedRealtime() - mStartTime;
             fps = mFrameCount * 1000.0 / spend;
+            if(spend > 10000){
+                mStartTime = 0;
+                mFrameCount = 0;
+            }
         }
     }
 
