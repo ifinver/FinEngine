@@ -213,6 +213,10 @@ public class CameraHolder {
         }
 
         public boolean initCamera() {
+            if(mCamera != null){
+                Log.e(TAG,"初始化摄像头时,摄像头已经初始化过了！");
+                return false;
+            }
             Log.d(TAG, "摄像头开始初始化");
             boolean init = false;
             synchronized (this) {
