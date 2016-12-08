@@ -16,6 +16,11 @@ import com.ifinver.finrender.FinRender;
 public class Renderer implements TextureView.SurfaceTextureListener, FinRender.FinRenderListener {
 
     private FinRecorder mRecorder;
+    private RenderListener mListener;
+
+    public Renderer(RenderListener listener){
+        this.mListener = listener;
+    }
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
@@ -40,6 +45,9 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
     @Override
     public void onRenderPrepared(boolean isPrepared, SurfaceTexture inputSurface, int texName, long eglContext, int surfaceWidth, int surfaceHeight) {
         FinEngine.getInstance().prepare(new Surface(inputSurface),surfaceWidth,surfaceHeight);
+        if(mListener != null){
+            mListener.onRenderPrepared(surfaceWidth,surfaceHeight);
+        }
     }
 
     @Override
@@ -72,5 +80,9 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
 
     public void setRecorder(FinRecorder mRecorder) {
         this.mRecorder = mRecorder;
+    }
+
+    public interface RenderListener{
+        void onRenderPrepared(int outputWidth,int outputHeight);
     }
 }

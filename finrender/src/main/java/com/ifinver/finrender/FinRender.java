@@ -3,6 +3,7 @@ package com.ifinver.finrender;
 import android.graphics.SurfaceTexture;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.util.Log;
@@ -79,6 +80,7 @@ public class FinRender {
         private final int MSG_PROCESS = 0x105;
 
         private Handler mSelfHandler;
+        private Handler mMainHandler;
         private boolean delayStart = false;
         private Surface mOutputSurface;
         private SurfaceTexture mInputSurface;
@@ -90,6 +92,7 @@ public class FinRender {
         public RenderThread() {
             super("FinRecorderThread", Process.THREAD_PRIORITY_URGENT_DISPLAY);
             mLocker = new Object();
+            mMainHandler = new Handler(Looper.getMainLooper());
         }
 
         @Override
@@ -136,9 +139,15 @@ public class FinRender {
             mInputSurface = new SurfaceTexture(inputTex);
             mInputSurface.setOnFrameAvailableListener(this);
             mInputSurface.setDefaultBufferSize(mSurfaceWidth, mSurfaceHeight);
-            //在当前线程回调
             if (mListener != null) {
-                mListener.onRenderPrepared(isPrepared, mInputSurface, inputTex, eglContext,mSurfaceWidth,mSurfaceHeight);
+                mMainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(mListener != null) {
+                            mListener.onRenderPrepared(isPrepared, mInputSurface, inputTex, eglContext, mSurfaceWidth, mSurfaceHeight);
+                        }
+                    }
+                });
             }
         }
 

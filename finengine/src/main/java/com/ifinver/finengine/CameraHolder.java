@@ -246,6 +246,9 @@ public class CameraHolder {
                         if (support.size() > 0) {
                             int[] ints = support.get(0);
                             int max = Math.max(ints[0],ints[1]);
+                            for (int[] size : support) {
+                                max = Math.max(max,size[1]);
+                            }
                             params.setPreviewFpsRange(max, max);
                             Log.d(TAG, "帧率设置为:[" + max + "," + max + "]");
                         } else {
@@ -293,7 +296,7 @@ public class CameraHolder {
                 mMainHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        mListener.onCameraStart(finalInit, mFrameWidth, mFrameHeight,mCameraIndex);
+                        mListener.onCameraStart(finalInit);
                         exited = false;
                     }
                 });
@@ -367,8 +370,7 @@ public class CameraHolder {
 
     public interface CameraListener {
 
-        void onCameraStart(boolean success, int frameWidth, int frameHeight, int cameraId);
-
+        void onCameraStart(boolean success);
         /**
          * notice that this method may be invoked before onCameraStart.
          */
