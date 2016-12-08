@@ -28,3 +28,7 @@ android {
         }
     }
 }
+dependencies {
+    compile project(':finengine')
+    compile project(':finrecorder')
+}

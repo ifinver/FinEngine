@@ -1,4 +1,4 @@
-package com.ifinver.finenginesample;
+package com.ifinver.finrender;
 
 import android.graphics.SurfaceTexture;
 import android.view.Surface;
@@ -6,7 +6,6 @@ import android.view.TextureView;
 
 import com.ifinver.finengine.FinEngine;
 import com.ifinver.finrecorder.FinRecorder;
-import com.ifinver.finrender.FinRender;
 
 /**
  * Created by iFinVer on 2016/12/6.

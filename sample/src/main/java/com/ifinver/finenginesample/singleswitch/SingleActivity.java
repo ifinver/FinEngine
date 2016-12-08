@@ -21,7 +21,7 @@ import com.ifinver.finengine.CameraHolder;
 import com.ifinver.finengine.FinEngine;
 import com.ifinver.finenginesample.FrameMeter;
 import com.ifinver.finenginesample.R;
-import com.ifinver.finenginesample.Renderer;
+import com.ifinver.finrender.Renderer;
 import com.ifinver.finrecorder.FinRecorder;
 
 import java.util.Timer;
