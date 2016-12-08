@@ -100,9 +100,13 @@ public class CameraHolder {
             if(!exited) {
                 //prepare another frame
                 mVideoBufferIdx = 1 - mVideoBufferIdx;
-                mCamera.addCallbackBuffer(mVideoBuffer[mVideoBufferIdx].array());
+                if(mCamera != null) {
+                    mCamera.addCallbackBuffer(mVideoBuffer[mVideoBufferIdx].array());
+                }
 
-                mListener.onVideoBuffer(data, mFrameWidth, mFrameHeight,mCameraOrientation,isFrontCurrent());
+                if(mListener != null) {
+                    mListener.onVideoBuffer(data, mFrameWidth, mFrameHeight, mCameraOrientation, isFrontCurrent());
+                }
             }
         }
 
