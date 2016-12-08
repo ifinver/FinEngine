@@ -15,6 +15,9 @@ public:
     GLuint posAttrVertices;
     GLuint posAttrTexCoords;
     GLuint posUniTextureS;
+    GLuint vertexBuffer;
+    size_t vertexStride;
+    size_t texOffset;
 };
 
 

@@ -10,19 +10,16 @@
 #include <android/native_window_jni.h>
 #include <GLES2/gl2ext.h>
 
-const GLfloat VERTICES_COORD[] =
+const GLfloat VERTICES[] =
         {
-                -1.0f, 1.0f,
-                -1.0f, -1.0f,
-                1.0f, -1.0f,
-                1.0f, 1.0f,
-        };
-const GLfloat TEXTURE_COORD[] =
-        {
-                0.0f, 0.0f,
-                0.0f, 1.0f,
-                1.0f, 1.0f,
-                1.0f, 0.0f,
+                -1.0f, 1.0f,//pos0
+                0.0f, 0.0f,//tex0
+                -1.0f, -1.0f,//pos1
+                0.0f, 1.0f,//tex1
+                1.0f, -1.0f,//pos2
+                1.0f, 1.0f,//tex2
+                1.0f, 1.0f,//pos3
+                1.0f, 0.0f,//tex3
         };
 const char *vertexShader =
         "attribute vec4 aPosition;                          \n"
@@ -127,8 +124,15 @@ JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_nativeCreate(JNIEnv
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
     recorderHolder->inputTex = textures;
+
+    GLuint vertexBuffer;
+    glGenBuffers(1,&vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES),VERTICES,GL_STATIC_DRAW);
+    recorderHolder->vertexBuffer = vertexBuffer;
+    recorderHolder->vertexStride = 4 * sizeof(GLfloat);
+    recorderHolder->texOffset = 2* sizeof(GLfloat);
 
     //输入纹理的方法
     jclass jcSurfaceTexture = env->FindClass("android/graphics/SurfaceTexture");
@@ -141,6 +145,15 @@ JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_nativeCreate(JNIEnv
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_DITHER);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+
+    glActiveTexture(GL_TEXTURE0);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     return (jlong) recorderHolder;
 }
@@ -148,18 +161,13 @@ JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_nativeCreate(JNIEnv
 void renderFrame(FinRecorderHolder *pHolder) {
     //输入顶点
     glEnableVertexAttribArray(pHolder->posAttrVertices);
-    glVertexAttribPointer(pHolder->posAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, VERTICES_COORD);
+    glVertexAttribPointer(pHolder->posAttrVertices, 2, GL_FLOAT, GL_FALSE, pHolder->vertexStride, 0);
 
     //输入纹理坐标
     glEnableVertexAttribArray(pHolder->posAttrTexCoords);
-    glVertexAttribPointer(pHolder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD);
+    glVertexAttribPointer(pHolder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, pHolder->vertexStride, (const void *) (pHolder->texOffset));
 
-    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, pHolder->inputTex);
-    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glUniform1i(pHolder->posUniTextureS, 0);
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -167,7 +175,7 @@ void renderFrame(FinRecorderHolder *pHolder) {
     glDisableVertexAttribArray(pHolder->posAttrVertices);
     glDisableVertexAttribArray(pHolder->posAttrTexCoords);
 
-    glFinish();
+//    glFinish();
     eglSwapBuffers(pHolder->eglDisplay, pHolder->eglSurface);
 }
 
@@ -183,6 +191,7 @@ JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_nativeRelease(JNIEnv
     FinRecorderHolder *pHolder = (FinRecorderHolder *) engine;
     glDeleteTextures(1, &pHolder->inputTex);
     glDeleteProgram(pHolder->program);
+    glDeleteBuffers(1,&pHolder->vertexBuffer);
     eglDestroySurface(pHolder->eglDisplay,pHolder->eglSurface);
     eglDestroyContext(pHolder->eglDisplay,pHolder->eglContext);
     delete (pHolder);

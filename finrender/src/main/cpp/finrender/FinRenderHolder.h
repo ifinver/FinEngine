@@ -23,6 +23,9 @@ public:
     jmethodID midAttachToGlContext;
     jmethodID midDetachFromGLContext;
     jmethodID midUpdateTexImage;
+    GLuint vertexBuffer;
+    size_t vertexStride;
+    size_t texOffset;
 };
 
 

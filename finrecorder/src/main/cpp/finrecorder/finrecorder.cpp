@@ -11,19 +11,16 @@
 #include "FinRecorderHolder.h"
 #include "../../../../../finrender/src/main/cpp/finrender/FinRenderHolder.h"
 
-const GLfloat VERTICES_COORD[] =
+const GLfloat VERTICES[] =
         {
-                -1.0f, 1.0f,
-                -1.0f, -1.0f,
-                1.0f, -1.0f,
-                1.0f, 1.0f,
-        };
-const GLfloat TEXTURE_COORD[] =
-        {
-                0.0f, 0.0f,
-                0.0f, 1.0f,
-                1.0f, 1.0f,
-                1.0f, 0.0f,
+                -1.0f, 1.0f,//pos0
+                0.0f, 0.0f,//tex0
+                -1.0f, -1.0f,//pos1
+                0.0f, 1.0f,//tex1
+                1.0f, -1.0f,//pos2
+                1.0f, 1.0f,//tex2
+                1.0f, 1.0f,//pos3
+                1.0f, 0.0f,//tex3
         };
 const char *vertexShader =
         "attribute vec4 aPosition;                          \n"
@@ -119,11 +116,28 @@ JNIEXPORT jlong JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeCreate(JN
     recorderHolder->posAttrTexCoords = (GLuint) glGetAttribLocation(program, "aTexCoord");
     recorderHolder->posUniTextureS = (GLuint) glGetUniformLocation(program, "sTexture");
 
+    GLuint vertexBuffer;
+    glGenBuffers(1,&vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES),VERTICES,GL_STATIC_DRAW);
+    recorderHolder->vertexBuffer = vertexBuffer;
+    recorderHolder->vertexStride = 4 * sizeof(GLfloat);
+    recorderHolder->texOffset = 2* sizeof(GLfloat);
+
     glDepthMask(GL_FALSE);
     glDisable(GL_BLEND);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_DITHER);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+
+    glActiveTexture(GL_TEXTURE0);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     return (jlong) recorderHolder;
 }
@@ -137,17 +151,13 @@ JNIEXPORT void JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeProcess(JN
     }
     //输入顶点
     glEnableVertexAttribArray(recorderHolder->posAttrVertices);
-    glVertexAttribPointer(recorderHolder->posAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, VERTICES_COORD);
+    glVertexAttribPointer(recorderHolder->posAttrVertices, 2, GL_FLOAT, GL_FALSE, recorderHolder->vertexStride, 0);
 
     //输入纹理坐标
     glEnableVertexAttribArray(recorderHolder->posAttrTexCoords);
-    glVertexAttribPointer(recorderHolder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD);
-    glActiveTexture(GL_TEXTURE0);
+    glVertexAttribPointer(recorderHolder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, recorderHolder->vertexStride,(const void *) (recorderHolder->texOffset));
+
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, (GLuint) inputTex);
-    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glUniform1i(recorderHolder->posUniTextureS, 0);
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
@@ -155,13 +165,14 @@ JNIEXPORT void JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeProcess(JN
     glDisableVertexAttribArray(recorderHolder->posAttrVertices);
     glDisableVertexAttribArray(recorderHolder->posAttrTexCoords);
 
-    glFinish();
+//    glFinish();
     eglSwapBuffers(recorderHolder->eglDisplay,recorderHolder->eglSurface);
 }
 
 JNIEXPORT void JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeRelease(JNIEnv *env, jobject instance, jlong recorder){
     FinRecorderHolder *recorderHolder = (FinRecorderHolder *) recorder;
     glDeleteProgram(recorderHolder->program);
+    glDeleteBuffers(1,&recorderHolder->vertexBuffer);
     eglDestroySurface(recorderHolder->eglDisplay,recorderHolder->eglSurface);
     eglDestroyContext(recorderHolder->eglDisplay,recorderHolder->eglContext);
     delete (recorderHolder);
