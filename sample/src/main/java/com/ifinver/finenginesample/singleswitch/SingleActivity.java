@@ -141,7 +141,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
                     }
                 });
             }
-        }, 500, 100);
+        }, 500, 300);
     }
 
     @Override
