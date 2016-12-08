@@ -163,7 +163,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
     }
 
     @Override
-    public void onCameraStart(boolean success, int frameWidth, int frameHeight) {
+    public void onCameraStart(boolean success, int frameWidth, int frameHeight, int cameraId) {
 
     }
 

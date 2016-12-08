@@ -27,6 +27,10 @@ public class FinEngine {
     public static final int FILTER_TYPE_FISH_EYE = 0x102;
     public static final int FILTER_TYPE_GREY_SCALE = 0x103;
     public static final int FILTER_TYPE_NEGATIVE_COLOR = 0x104;
+    public static final int FILTER_TYPE_H_MIRROR = 0x105;
+    public static final int FILTER_TYPE_V_MIRROR = 0x106;
+    public static final int FILTER_TYPE_RADIAL_BLUR = 0x107;
+    public static final int FILTER_TYPE_SEPIA_STONE = 0x108;
 
     private static FinEngine instance;
     private final FinEngineThread mEngineThread;
@@ -165,33 +169,9 @@ public class FinEngine {
 
         private void switchFilterInternal() {
             Log.d(TAG, "开始切换滤镜");
-            String vertex;
-            String fragment;
             synchronized (FinEngineThread.class) {
-                switch (mFilterType) {
-                    default:
-                    case FILTER_TYPE_NORMAL:
-                        vertex = "";
-                        fragment = "";
-                        break;
-                    case FILTER_TYPE_CYAN:
-                        vertex = "vertex.glsl";
-                        fragment = "fragment_cyan.glsl";
-                        break;
-                    case FILTER_TYPE_FISH_EYE:
-                        vertex = "vertex.glsl";
-                        fragment = "fragment_fish_eye.glsl";
-                        break;
-                    case FILTER_TYPE_GREY_SCALE:
-                        vertex = "vertex.glsl";
-                        fragment = "fragment_grey.glsl";
-                        break;
-                    case FILTER_TYPE_NEGATIVE_COLOR:
-                        vertex = "vertex.glsl";
-                        fragment = "fragment_negative_color.glsl";
-                        break;
-                }
-                nativeSwitchFilter(mAssetManager, mFilterType, vertex, fragment);
+                FinFiltersManager.Shader shader = FinFiltersManager.findShader(mFilterType);
+                nativeSwitchFilter(mAssetManager, mFilterType, shader.vertex, shader.fragment);
             }
         }
 

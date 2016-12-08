@@ -294,7 +294,7 @@ public class CameraHolder {
                 mMainHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        mListener.onCameraStart(finalInit, mFrameWidth, mFrameHeight);
+                        mListener.onCameraStart(finalInit, mFrameWidth, mFrameHeight,mCameraIndex);
                         exited = false;
                     }
                 });
@@ -368,7 +368,7 @@ public class CameraHolder {
 
     public interface CameraListener {
 
-        void onCameraStart(boolean success, int frameWidth, int frameHeight);
+        void onCameraStart(boolean success, int frameWidth, int frameHeight, int cameraId);
 
         /**
          * notice that this method may be invoked before onCameraStart.

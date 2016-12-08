@@ -1,11 +1,11 @@
-package com.ifinver.finenginesample.singleswitch;
+package com.ifinver.finengine;
 
 /**
  * Created by iFinVer on 2016/11/25.
  * ilzq@foxmail.com
  */
 
-class FilterDataModel{
+public class FilterDataModel {
     public int filterImageResId; //resource id
     public String filterName;
     public int filterType;
