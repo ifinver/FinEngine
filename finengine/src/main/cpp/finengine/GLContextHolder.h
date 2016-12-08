@@ -18,8 +18,6 @@ public:
 
     EGLDisplay eglDisplay;
 
-    GLuint program;
-
     GLuint posAttrVertices;
 
     GLuint posAttrTexCoords;
@@ -35,6 +33,22 @@ public:
     GLuint posAttrScaleX;
 
     GLuint posAttrScaleY;
+
+    jint frameDegree;
+
+    const float *inputTextureCorrd;
+
+    jint frameWidth;
+
+    jint frameHeight;
+    jint outWidth;
+    jint outHeight;
+    float frameScaleX;
+    float frameScaleY;
+
+    GLuint targetProgram;
+
+    GLuint currentProgram;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

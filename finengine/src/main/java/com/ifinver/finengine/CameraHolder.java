@@ -93,7 +93,7 @@ public class CameraHolder {
         private int mCameraOrientation = 0;
 
         FinEngineThread() {
-            super("FinEngineThread", Process.THREAD_PRIORITY_URGENT_DISPLAY);
+            super("FinEngineThread", Process.THREAD_PRIORITY_DISPLAY);
             mCameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
             mMainHandler = new Handler(Looper.getMainLooper());
         }

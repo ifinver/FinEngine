@@ -79,7 +79,7 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
     engineHolder->eglDisplay = display;
     engineHolder->eglContext = eglContext;
     engineHolder->eglSurface = eglSurface;
-    engineHolder->program = programYUV;
+    engineHolder->targetProgram = programYUV;
 
     engineHolder->posAttrVertices = (GLuint) glGetAttribLocation(programYUV, "aPosition");
     engineHolder->posAttrTexCoords = (GLuint) glGetAttribLocation(programYUV, "aTexCoord");
@@ -110,6 +110,9 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_STENCIL_TEST);
     glDisable(GL_DITHER);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
 
     return JNI_TRUE;
 }
@@ -132,29 +135,14 @@ Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *env, jclass, jbyteArra
 //.........................................................................................................................
 void renderFrame(jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight) {
 
-    glUseProgram(engineHolder->program);
-
-//    glViewport(0, 0, outWidth, outHeight);
+    if(engineHolder->targetProgram != engineHolder->currentProgram){
+        engineHolder->currentProgram = engineHolder->targetProgram;
+        glUseProgram(engineHolder->currentProgram);
+    }
 
     //输入顶点
     glEnableVertexAttribArray(engineHolder->posAttrVertices);
     glVertexAttribPointer(engineHolder->posAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, VERTICES_COORD);
-
-    //输入纹理坐标，处理旋转和镜像
-    glEnableVertexAttribArray(engineHolder->posAttrTexCoords);
-    {
-        degree %= 360;
-        if (degree < 0) degree += 360;
-        int idx;
-        if (mirror) {
-            idx = degree / 90 * 2;
-            glVertexAttribPointer(engineHolder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD_MIRROR + idx);
-        } else {
-            degree = 360 - degree;
-            idx = degree / 90 * 2;
-            glVertexAttribPointer(engineHolder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD_NOR + idx);
-        }
-    }
 
     //上传纹理 Y通道
     glActiveTexture(GL_TEXTURE0);
@@ -168,28 +156,58 @@ void renderFrame(jbyte *data, jint width, jint height, jint degree, jboolean mir
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, width / 2, height / 2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, data + (width * height));
     glUniform1i(engineHolder->posUniTextureUV, 1);
 
-    jint odd = degree / 90;
-    if (odd == 1 || odd == 3) {
-        //如果旋转了90°，交换长和宽
-        int temp = width;
-        width = height;
-        height = temp;
+    //输入纹理坐标，处理旋转和镜像
+    glEnableVertexAttribArray(engineHolder->posAttrTexCoords);
+    if (engineHolder->frameDegree != degree) {
+        degree %= 360;
+        if (degree < 0) degree += 360;
+        int idx;
+        const float *inputTextureCoord;
+        if (mirror) {
+            idx = degree / 90 * 2;
+            inputTextureCoord = TEXTURE_COORD_MIRROR + idx;
+        } else {
+            degree = 360 - degree;
+            idx = degree / 90 * 2;
+            inputTextureCoord = TEXTURE_COORD_NOR + idx;
+        }
+        engineHolder->inputTextureCorrd = inputTextureCoord;
+        engineHolder->frameDegree = degree;
+    }
+    glVertexAttribPointer(engineHolder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, engineHolder->inputTextureCorrd);
+
+    if(engineHolder->frameWidth != width
+            || engineHolder->frameHeight != height
+            || engineHolder->outWidth != outWidth
+            || engineHolder->outHeight != outHeight){
+        jint odd = degree / 90;
+        if (odd == 1 || odd == 3) {
+            //如果旋转了90°，交换长和宽
+            int temp = width;
+            width = height;
+            height = temp;
+        }
+
+        float fixWidth, fixHeight;
+        if ((float) width / height >= (float) outWidth / outHeight) {
+            fixHeight = height;
+            fixWidth = (float) height / outHeight * outWidth;
+        } else {
+            fixWidth = width;
+            fixHeight = (float) width / outWidth * outHeight;
+        }
+
+        engineHolder->frameScaleX = width / fixWidth;
+        engineHolder->frameScaleY = height / fixHeight;
+        engineHolder->frameWidth = width;
+        engineHolder->frameHeight = height;
+        engineHolder->outWidth = outWidth;
+        engineHolder->outHeight = outHeight;
     }
 
-    float fixWidth,fixHeight;
-    if((float)width / height >= (float)outWidth / outHeight){
-        fixHeight = height;
-        fixWidth = (float)height / outHeight * outWidth;
-    }else{
-        fixWidth = width;
-        fixHeight = (float)width / outWidth * outHeight;
-    }
 
-    float scaleX =  width/fixWidth;
-    float scaleY =  height/fixHeight;
-
-    glVertexAttrib1f(engineHolder->posAttrScaleX, scaleX);
-    glVertexAttrib1f(engineHolder->posAttrScaleY, scaleY);
+    glVertexAttrib1f(engineHolder->posAttrScaleX, engineHolder->frameScaleX);
+    glVertexAttrib1f(engineHolder->posAttrScaleY, engineHolder->frameScaleY);
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -204,7 +222,10 @@ void renderFrame(jbyte *data, jint width, jint height, jint degree, jboolean mir
 void releaseGLContext() {
     if (engineHolder != NULL) {
         glDeleteTextures(engineHolder->textureNums, engineHolder->textures);
-        glDeleteProgram(engineHolder->program);
+        glDeleteProgram(engineHolder->currentProgram);
+        if(engineHolder->currentProgram != engineHolder->targetProgram){
+            glDeleteProgram(engineHolder->targetProgram);
+        }
         eglDestroySurface(engineHolder->eglDisplay, engineHolder->eglSurface);
         eglDestroyContext(engineHolder->eglDisplay, engineHolder->eglContext);
         delete (engineHolder);
