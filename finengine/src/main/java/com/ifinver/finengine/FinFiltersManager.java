@@ -128,7 +128,7 @@ public class FinFiltersManager {
 
     public static int nextFilter(){
         int f = FinEngine.getInstance().getCurrentFilter()+1;
-        if(f > FILTER_TYPE_SEPIA_STONE){
+        if(f > FILTER_TYPE_FISH_EYE){
             f = 0;
         }
         return f;
