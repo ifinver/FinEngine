@@ -126,6 +126,14 @@ public class FinFiltersManager {
         return new Shader(vertex,fragment);
     }
 
+    public static int nextFilter(){
+        int f = FinEngine.getInstance().getCurrentFilter()+1;
+        if(f > FILTER_TYPE_SEPIA_STONE){
+            f = 0;
+        }
+        return f;
+    }
+
     public static List<FilterDataModel> getSupportFilters() {
         return mSupportFilters;
     }

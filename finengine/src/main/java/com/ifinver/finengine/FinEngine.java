@@ -23,14 +23,14 @@ public class FinEngine {
     private static final String TAG = "FinEngine";
 
     public static final int FILTER_TYPE_NORMAL = 0; //must be zero here.
-    public static final int FILTER_TYPE_CYAN = 0x101;
-    public static final int FILTER_TYPE_FISH_EYE = 0x102;
-    public static final int FILTER_TYPE_GREY_SCALE = 0x103;
-    public static final int FILTER_TYPE_NEGATIVE_COLOR = 0x104;
-    public static final int FILTER_TYPE_H_MIRROR = 0x105;
-    public static final int FILTER_TYPE_V_MIRROR = 0x106;
-    public static final int FILTER_TYPE_RADIAL_BLUR = 0x107;
-    public static final int FILTER_TYPE_SEPIA_STONE = 0x108;
+    public static final int FILTER_TYPE_CYAN = 1;
+    public static final int FILTER_TYPE_FISH_EYE = 2;
+    public static final int FILTER_TYPE_GREY_SCALE = 3;
+    public static final int FILTER_TYPE_NEGATIVE_COLOR = 4;
+    public static final int FILTER_TYPE_H_MIRROR = 5;
+    public static final int FILTER_TYPE_V_MIRROR = 6;
+    public static final int FILTER_TYPE_RADIAL_BLUR = 7;
+    public static final int FILTER_TYPE_SEPIA_STONE = 8;
 
     private static FinEngine instance;
     private final FinEngineThread mEngineThread;
@@ -69,6 +69,10 @@ public class FinEngine {
 
     public void switchFilter(Context ctx, int filterType) {
         mEngineThread.switchFilter(ctx, filterType);
+    }
+
+    public int getCurrentFilter(){
+        return mEngineThread.mFilterType;
     }
 
     private class FinEngineThread extends HandlerThread implements Handler.Callback {
@@ -169,10 +173,12 @@ public class FinEngine {
         }
 
         private void switchFilterInternal() {
-            Log.d(TAG, "开始切换滤镜");
-            synchronized (FinEngineThread.class) {
-                FinFiltersManager.Shader shader = FinFiltersManager.findShader(mFilterType);
-                nativeSwitchFilter(mAssetManager, mFilterType, shader.vertex, shader.fragment);
+            if(isPrepared) {
+                Log.d(TAG, "开始切换滤镜");
+                synchronized (FinEngineThread.class) {
+                    FinFiltersManager.Shader shader = FinFiltersManager.findShader(mFilterType);
+                    nativeSwitchFilter(mAssetManager, mFilterType, shader.vertex, shader.fragment);
+                }
             }
         }
 
