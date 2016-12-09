@@ -38,6 +38,10 @@ public class FinRecorder {
         mRecorderThread.release();
     }
 
+    //if no ctx can get, 0 will be returned
+    public long fetchGLCtxOfThread(){
+        return nativeFetchGLCtx();
+    }
 
     private class RecorderThread extends HandlerThread implements Handler.Callback {
         private final int MSG_INIT = 0x101;
@@ -129,4 +133,6 @@ public class FinRecorder {
     private native void nativeProcess(long recorder,int inputTex);
 
     private native void nativeRelease(long recorder);
+
+    private native long nativeFetchGLCtx();
 }

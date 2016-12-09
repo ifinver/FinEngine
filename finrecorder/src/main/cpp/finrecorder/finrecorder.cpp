@@ -178,3 +178,11 @@ JNIEXPORT void JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeRelease(JN
     delete (recorderHolder);
 }
 
+JNIEXPORT jlong JNICALL
+Java_com_ifinver_finrecorder_FinRecorder_nativeFetchGLCtx(JNIEnv *env, jobject instance) {
+    EGLContext ctx = eglGetCurrentContext();
+    if(ctx == EGL_NO_CONTEXT){
+        return 0;
+    }
+    return (jlong) ctx;
+}
