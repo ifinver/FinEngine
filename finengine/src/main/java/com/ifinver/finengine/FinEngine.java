@@ -23,14 +23,14 @@ public class FinEngine {
     private static final String TAG = "FinEngine";
 
     public static final int FILTER_TYPE_NORMAL = 0; //must be zero here.
-    public static final int FILTER_TYPE_CYAN = 1;
-    public static final int FILTER_TYPE_FISH_EYE = 2;
-    public static final int FILTER_TYPE_GREY_SCALE = 3;
-    public static final int FILTER_TYPE_NEGATIVE_COLOR = 4;
-    public static final int FILTER_TYPE_H_MIRROR = 5;
+    public static final int FILTER_TYPE_GREY_SCALE = 1;
+    public static final int FILTER_TYPE_SEPIA_STONE = 2;
+    public static final int FILTER_TYPE_CYAN = 3;
+    public static final int FILTER_TYPE_RADIAL_BLUR = 4;
+    public static final int FILTER_TYPE_NEGATIVE_COLOR = 5;
     public static final int FILTER_TYPE_V_MIRROR = 6;
-    public static final int FILTER_TYPE_RADIAL_BLUR = 7;
-    public static final int FILTER_TYPE_SEPIA_STONE = 8;
+    public static final int FILTER_TYPE_H_MIRROR = 7;
+    public static final int FILTER_TYPE_FISH_EYE = 8;
 
     private static FinEngine instance;
     private final FinEngineThread mEngineThread;
