@@ -21,34 +21,25 @@ public class FinRender {
 
     private static final String TAG = "FinRender";
 
-    private static FinRender instance;
     private RenderThread mRenderThread;
     private boolean isPrepared = false;
     private FinRenderListener mListener;
     private int mSurfaceWidth;
     private int mSurfaceHeight;
 
-    public static FinRender getInstance() {
-        if (instance == null) {
-            synchronized (FinRender.class) {
-                if (instance == null) {
-                    instance = new FinRender();
-                }
-            }
-        }
-        return instance;
-    }
 
-    private FinRender() {
+    private FinRender(Surface output, int width, int height, FinRenderListener listener) {
         mRenderThread = new RenderThread();
         mRenderThread.start();
-    }
 
-    public void prepare(Surface output, int width, int height, FinRenderListener listener) {
         this.mListener = listener;
         this.mSurfaceWidth = width;
         this.mSurfaceHeight = height;
         mRenderThread.prepare(output);
+    }
+
+    public static FinRender prepare(Surface output, int width, int height, FinRenderListener listener) {
+        return new FinRender(output,width,height,listener);
     }
 
     public void release() {
@@ -113,16 +104,21 @@ public class FinRender {
                     init();
                     return true;
                 case MSG_RELEASE:
-                    stopOutputInternal();
-                    nativeRelease(mRenderEngine);
-                    mRenderEngine = 0;
-                    Log.d(TAG, "渲染引擎已释放");
+                    releaseInternal();
                     return true;
                 case MSG_PROCESS:
                     process();
                     return true;
             }
             return false;
+        }
+
+        private void releaseInternal() {
+            stopOutputInternal();
+            nativeRelease(mRenderEngine);
+            mRenderEngine = 0;
+            Log.d(TAG, "渲染引擎已释放");
+            quitSafely();
         }
 
         private void init() {

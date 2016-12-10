@@ -16,6 +16,7 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
 
     private FinRecorder mRecorder;
     private RenderListener mListener;
+    private FinRender mRenderEngine;
 
     public Renderer(RenderListener listener){
         this.mListener = listener;
@@ -23,18 +24,19 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        FinRender.getInstance().prepare(new Surface(surface), width,height,this);
+        mRenderEngine = FinRender.prepare(new Surface(surface), width,height,this);
     }
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-        FinRender.getInstance().onSizeChange(width,height);
+        mRenderEngine.onSizeChange(width,height);
     }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
         FinEngine.getInstance().release();
-        FinRender.getInstance().release();
+        mRenderEngine.release();
+        mRenderEngine = null;
         return true;
     }
 
@@ -66,15 +68,15 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
     }
 
     public int getInputTex() {
-        return FinRender.getInstance().getInputTex();
+        return mRenderEngine != null ? mRenderEngine.getInputTex():0;
     }
 
     public long getSharedCtx() {
-        return FinRender.getInstance().getSharedCtx();
+        return mRenderEngine != null ? mRenderEngine.getSharedCtx():0;
     }
 
     public Object getLocker() {
-        return FinRender.getInstance().getLocker();
+        return mRenderEngine != null ? mRenderEngine.getLocker():0;
     }
 
     public void setRecorder(FinRecorder mRecorder) {
