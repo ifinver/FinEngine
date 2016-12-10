@@ -19,18 +19,20 @@ public class FinRecorder {
     }
 
     private static final String TAG = "FinRecorder";
+    private static int sRecorderEngineCount = 0;
     private RecorderThread mRecorderThread;
 
-    public static FinRecorder prepare(Surface out, int inputTex, long sharedCtx,Object locker) {
-        return new FinRecorder(out, inputTex, sharedCtx,locker);
+    public static FinRecorder prepare(Surface out, int inputTex, long sharedCtx, Object locker) {
+        return new FinRecorder(out, inputTex, sharedCtx, locker);
     }
 
     private FinRecorder(Surface out, int inputTex, long sharedCtx, Object locker) {
-        mRecorderThread = new RecorderThread(out, inputTex, sharedCtx,locker);
+        mRecorderThread = new RecorderThread(out, inputTex, sharedCtx, locker);
         mRecorderThread.start();
+        sRecorderEngineCount++;
     }
 
-    public void record(){
+    public void record() {
         mRecorderThread.process();
     }
 
@@ -39,7 +41,7 @@ public class FinRecorder {
     }
 
     //if no ctx can get, 0 will be returned
-    public long fetchGLCtxOfThread(){
+    public long fetchGLCtxOfThread() {
         return nativeFetchGLCtx();
     }
 
@@ -74,8 +76,8 @@ public class FinRecorder {
             mSelfHandler.sendEmptyMessage(MSG_RELEASE);
         }
 
-        private void process(){
-            if(mSelfHandler != null) {
+        private void process() {
+            if (mSelfHandler != null) {
                 mSelfHandler.sendEmptyMessage(MSG_PROCESS);
             }
         }
@@ -97,18 +99,18 @@ public class FinRecorder {
         }
 
         private void initRecorder() {
-            Log.d(TAG, "录制引擎开始初始化");
+            Log.d(TAG, "录制引擎"+sRecorderEngineCount+"开始初始化");
             mRecorder = nativeCreate(mSharedCtx, mOutputSurface);
-            if(mRecorder != 0){
-                Log.d(TAG, "录制引擎初始化成功");
-            }else{
-                Log.d(TAG, "录制引擎初始化失败!");
+            if (mRecorder != 0) {
+                Log.d(TAG, "录制引擎"+sRecorderEngineCount+"初始化成功");
+            } else {
+                Log.d(TAG, "录制引擎"+sRecorderEngineCount+"初始化失败!");
                 mSelfHandler.sendEmptyMessage(MSG_RELEASE);
             }
         }
 
         private void processInternal() {
-            if(mRecorder != 0) {
+            if (mRecorder != 0) {
                 synchronized (mLocker) {
                     nativeProcess(mRecorder, mInputTex);
                 }
@@ -116,21 +118,22 @@ public class FinRecorder {
         }
 
         private void releaseInternal() {
-            if(mRecorder != 0) {
+            if (mRecorder != 0) {
                 nativeRelease(mRecorder);
             }
-            if(mOutputSurface != null){
+            if (mOutputSurface != null) {
                 mOutputSurface.release();
                 mOutputSurface = null;
             }
-            Log.d(TAG, "录制引擎已释放");
+            Log.d(TAG, "录制引擎"+sRecorderEngineCount+"已释放");
+            sRecorderEngineCount--;
             quitSafely();
         }
     }
 
-    private native long nativeCreate(long sharedCtx,Surface output);
+    private native long nativeCreate(long sharedCtx, Surface output);
 
-    private native void nativeProcess(long recorder,int inputTex);
+    private native void nativeProcess(long recorder, int inputTex);
 
     private native void nativeRelease(long recorder);
 
