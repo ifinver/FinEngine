@@ -84,7 +84,13 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
                             new Surface(tvLittle.getSurfaceTexture()),
                             mRenderer.getInputTex(),
                             mRenderer.getSharedCtx(),
-                            mRenderer.getLocker());
+                            mRenderer.getLocker(),
+                            new FinRecorder.RecorderListener() {
+                                @Override
+                                public void onFrameRendered() {
+
+                                }
+                            });
                     mRenderer.setRecorder(mRecorder);
                     flContainer.setBackgroundColor(getResources().getColor(R.color.red));
                     break;

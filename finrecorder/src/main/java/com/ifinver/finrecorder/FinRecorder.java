@@ -21,14 +21,15 @@ public class FinRecorder {
     private static final String TAG = "FinRecorder";
     private static int sRecorderEngineCount = 0;
     private RecorderThread mRecorderThread;
+    private RecorderListener mListener;
     private int mEngineId;
 
-    public static FinRecorder prepare(Surface out, int inputTex, long sharedCtx, Object locker) {
-        return new FinRecorder(out, inputTex, sharedCtx, locker);
+    public static FinRecorder prepare(Surface out, int inputTex, long sharedCtx, Object locker,RecorderListener listener) {
+        return new FinRecorder(out, inputTex, sharedCtx, locker,listener);
     }
 
-    private FinRecorder(Surface out, int inputTex, long sharedCtx, Object locker) {
-        mRecorderThread = new RecorderThread(out, inputTex, sharedCtx, locker);
+    private FinRecorder(Surface out, int inputTex, long sharedCtx, Object locker, RecorderListener listener) {
+        mRecorderThread = new RecorderThread(out, inputTex, sharedCtx, locker,listener);
         mRecorderThread.start();
         mEngineId = ++sRecorderEngineCount;
     }
@@ -50,6 +51,7 @@ public class FinRecorder {
         private final int MSG_INIT = 0x101;
         private final int MSG_RELEASE = 0x104;
         private final int MSG_PROCESS = 0x105;
+        private final RecorderListener mListener;
 
         private Surface mOutputSurface;
         private int mInputTex;
@@ -59,12 +61,13 @@ public class FinRecorder {
         private final Object mLocker;
         private long mRecorder;
 
-        private RecorderThread(Surface out, int inputTex, long mSharedCtx, Object locker) {
+        private RecorderThread(Surface out, int inputTex, long mSharedCtx, Object locker, RecorderListener listener) {
             super("RecorderThread", Process.THREAD_PRIORITY_URGENT_DISPLAY);
             this.mOutputSurface = out;
             this.mInputTex = inputTex;
             this.mSharedCtx = mSharedCtx;
             this.mLocker = locker;
+            this.mListener = listener;
         }
 
         @Override
@@ -114,6 +117,9 @@ public class FinRecorder {
             if (mRecorder != 0) {
                 synchronized (mLocker) {
                     nativeProcess(mRecorder, mInputTex);
+                    if(mListener != null){
+                        mListener.onFrameRendered();
+                    }
                 }
             }
         }
@@ -130,6 +136,10 @@ public class FinRecorder {
             sRecorderEngineCount--;
             quitSafely();
         }
+    }
+
+    public interface RecorderListener {
+        void onFrameRendered();
     }
 
     private native long nativeCreate(long sharedCtx, Surface output);
