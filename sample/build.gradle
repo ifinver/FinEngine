@@ -19,5 +19,28 @@ android {
         }
     }
 }
+def outputDir = file("${rootDir}/release/")
+android.applicationVariants.all { variant ->
+    def taskName = variant.name
+
+    tasks.all {
+        if ("assemble${taskName.capitalize()}".equalsIgnoreCase(it.name)) {
+            it.doLast {
+                copy {
+                    from "${rootDir}/finengine/build/outputs/aar/finengine-release.aar"
+                    into outputDir
+                }
+                copy {
+                    from "${rootDir}/finrender/build/outputs/aar/finrender-release.aar"
+                    into outputDir
+                }
+                copy {
+                    from "${rootDir}/finrecorder/build/outputs/aar/finrecorder-release.aar"
+                    into outputDir
+                }
+            }
+        }
+    }
+}
 
 apply from: "dependencies.gradle"
