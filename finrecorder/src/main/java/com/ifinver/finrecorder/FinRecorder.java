@@ -88,7 +88,6 @@ public class FinRecorder {
                     return true;
                 case MSG_RELEASE:
                     releaseInternal();
-                    Log.d(TAG, "录制引擎已释放");
                     return true;
                 case MSG_PROCESS:
                     processInternal();
@@ -117,13 +116,14 @@ public class FinRecorder {
         }
 
         private void releaseInternal() {
+            if(mRecorder != 0) {
+                nativeRelease(mRecorder);
+            }
             if(mOutputSurface != null){
                 mOutputSurface.release();
                 mOutputSurface = null;
             }
-            if(mRecorder != 0) {
-                nativeRelease(mRecorder);
-            }
+            Log.d(TAG, "录制引擎已释放");
             quitSafely();
         }
     }
