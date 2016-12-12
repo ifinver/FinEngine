@@ -156,7 +156,7 @@ public class FinEngine {
                     init();
                     return true;
                 case MSG_RELEASE:
-                    Log.w(TAG, "已释放");
+                    Log.w(TAG, "FinEngine已释放");
                     nativeRelease();
                     isPrepared = false;
                     return true;

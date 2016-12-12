@@ -265,7 +265,7 @@ public class CameraHolder {
                                 params = mCamera.getParameters();
                                 Log.w(TAG, "帧率设置为:[" + max + "," + max + "]");
                             } catch (Exception e) {
-                                Log.e(TAG, "WTF,不能设置帧率Range为最大值，尝试设置为[" + max * 0.9 + "," + max + "]");
+                                Log.e(TAG, "WTF,不能设置为:[" + max + "," + max + "]，尝试设置为[" + ((int)(max * 0.9)) + "," + max + "]");
                                 localParam = mCamera.getParameters();
                                 try {
                                     localParam.setPreviewFpsRange((int) (max * 0.9), max);
