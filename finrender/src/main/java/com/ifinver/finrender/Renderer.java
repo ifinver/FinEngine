@@ -6,6 +6,7 @@ import android.view.Surface;
 import android.view.TextureView;
 
 import com.ifinver.finengine.FinEngine;
+import com.ifinver.finengine.FinFiltersManager;
 import com.ifinver.finrecorder.FinRecorder;
 
 /**
@@ -91,9 +92,13 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
         this.mRecorder = mRecorder;
     }
 
-    public void switchFilter(Context ctx, int filter) {
+    public void nextFilter(Context ctx) {
+        switchFilter(ctx,FinFiltersManager.nextFilter(mFinEngine));
+    }
+
+    public void switchFilter(Context ctx,int filter){
         if(mFinEngine != null){
-            mFinEngine.switchFilter(ctx,filter);
+            mFinEngine.switchFilter(ctx, filter);
         }
     }
 
