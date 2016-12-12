@@ -121,17 +121,17 @@ public class FinRender {
             stopOutputInternal();
             nativeRelease(mRenderEngine);
             mRenderEngine = 0;
-            Log.d(TAG, "渲染引擎"+ mEngineId +"已释放");
+            Log.w(TAG, "渲染引擎"+ mEngineId +"已释放");
             sRenderEngineCount--;
             quitSafely();
         }
 
         private void init() {
-            Log.d(TAG, "渲染引擎"+ mEngineId +"开始初始化");
+            Log.w(TAG, "渲染引擎"+ mEngineId +"开始初始化");
             mRenderEngine = nativeCreate(mOutputSurface);
             isPrepared = mRenderEngine != 0;
             if (isPrepared) {
-                Log.d(TAG, "渲染引擎"+ mEngineId +"初始化完成");
+                Log.w(TAG, "渲染引擎"+ mEngineId +"初始化完成");
             } else {
                 Log.e(TAG, "渲染引擎"+ mEngineId +"初始化出错");
                 mSelfHandler.sendEmptyMessage(MSG_RELEASE);

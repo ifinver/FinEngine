@@ -78,7 +78,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
         if (v == tvRender) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    Log.d("FinEngine", "开始录制");
+                    Log.w("FinEngine", "开始录制");
                     flContainer.setVisibility(View.VISIBLE);
                     mRecorder = FinRecorder.prepare(
                             new Surface(tvLittle.getSurfaceTexture()),
@@ -96,7 +96,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
                     break;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
-                    Log.d("FinEngine", "停止录制");
+                    Log.w("FinEngine", "停止录制");
                     mRecorder.release();
                     mRenderer.setRecorder(null);
                     flContainer.setVisibility(View.INVISIBLE);
@@ -165,7 +165,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
     @Override
     public void onToggleCameraComplete(boolean success) {
-        Log.d(TAG, "onToggleCameraComplete,success= " + success);
+        Log.w(TAG, "onToggleCameraComplete,success= " + success);
     }
 
     @Override

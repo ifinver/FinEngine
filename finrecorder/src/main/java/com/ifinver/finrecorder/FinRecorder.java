@@ -103,12 +103,12 @@ public class FinRecorder {
         }
 
         private void initRecorder() {
-            Log.d(TAG, "录制引擎"+mEngineId+"开始初始化");
+            Log.w(TAG, "录制引擎"+mEngineId+"开始初始化");
             mRecorder = nativeCreate(mSharedCtx, mOutputSurface);
             if (mRecorder != 0) {
-                Log.d(TAG, "录制引擎"+mEngineId+"初始化成功");
+                Log.w(TAG, "录制引擎"+mEngineId+"初始化成功");
             } else {
-                Log.d(TAG, "录制引擎"+mEngineId+"初始化失败!");
+                Log.w(TAG, "录制引擎"+mEngineId+"初始化失败!");
                 mSelfHandler.sendEmptyMessage(MSG_RELEASE);
             }
         }
@@ -132,7 +132,7 @@ public class FinRecorder {
                 mOutputSurface.release();
                 mOutputSurface = null;
             }
-            Log.d(TAG, "录制引擎"+mEngineId+"已释放");
+            Log.w(TAG, "录制引擎"+mEngineId+"已释放");
             sRecorderEngineCount--;
             quitSafely();
         }

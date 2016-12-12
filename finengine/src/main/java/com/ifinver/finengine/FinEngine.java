@@ -156,7 +156,7 @@ public class FinEngine {
                     init();
                     return true;
                 case MSG_RELEASE:
-                    Log.d(TAG, "已释放");
+                    Log.w(TAG, "已释放");
                     nativeRelease();
                     isPrepared = false;
                     return true;
@@ -174,7 +174,7 @@ public class FinEngine {
 
         private void switchFilterInternal() {
             if(isPrepared) {
-                Log.d(TAG, "开始切换滤镜");
+                Log.w(TAG, "开始切换滤镜");
                 synchronized (FinEngineThread.class) {
                     FinFiltersManager.Shader shader = FinFiltersManager.findShader(mFilterType);
                     nativeSwitchFilter(mAssetManager, mFilterType, shader.vertex, shader.fragment);
