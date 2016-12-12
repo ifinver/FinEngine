@@ -50,7 +50,7 @@ public class CameraHolder {
         return mInstance;
     }
 
-    public void start(int expectedWidth,int expectedHeight,Context ctx, CameraListener listener) {
+    public void start(int expectedWidth, int expectedHeight, Context ctx, CameraListener listener) {
         this.mAppCtx = ctx.getApplicationContext();
         mEngineThread.start(expectedWidth, expectedHeight, listener);
     }
@@ -65,7 +65,7 @@ public class CameraHolder {
     }
 
     @SuppressWarnings({"WeakerAccess", "deprecation"})
-    private class FinEngineThread extends HandlerThread implements  Handler.Callback, Camera.PreviewCallback {
+    private class FinEngineThread extends HandlerThread implements Handler.Callback, Camera.PreviewCallback {
 
         private final int MSG_INIT = 0x101;
         private final int MSG_STOP = 0x103;
@@ -97,14 +97,14 @@ public class CameraHolder {
 
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
-            if(!exited) {
+            if (!exited) {
                 //prepare another frame
                 mVideoBufferIdx = 1 - mVideoBufferIdx;
-                if(mCamera != null) {
+                if (mCamera != null) {
                     mCamera.addCallbackBuffer(mVideoBuffer[mVideoBufferIdx].array());
                 }
 
-                if(mListener != null) {
+                if (mListener != null) {
                     mListener.onVideoBuffer(data, mFrameWidth, mFrameHeight, mCameraOrientation, isFrontCurrent());
                 }
             }
@@ -181,11 +181,11 @@ public class CameraHolder {
         }
 
         private void toggleCameraInternal() {
-            Log.d(TAG, "toggleCamera");
+            Log.w(TAG, "toggleCamera");
             stopCamera();
-            if(mCameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT){
+            if (mCameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT) {
                 mCameraIndex = Camera.CameraInfo.CAMERA_FACING_BACK;
-            }else{
+            } else {
                 mCameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
             }
             final boolean finalSuccess = initCamera();
@@ -208,16 +208,16 @@ public class CameraHolder {
                     mCamera.release();
                 }
                 mCamera = null;
-                Log.d(TAG, "摄像机已释放");
+                Log.w(TAG, "摄像机已释放");
             }
         }
 
         public boolean initCamera() {
-            if(mCamera != null){
-                Log.e(TAG,"初始化摄像头时,摄像头已经初始化过了！");
+            if (mCamera != null) {
+                Log.e(TAG, "初始化摄像头时,摄像头已经初始化过了！");
                 return false;
             }
-            Log.d(TAG, "摄像头开始初始化");
+            Log.w(TAG, "摄像头开始初始化");
             boolean init = false;
             synchronized (this) {
                 mCamera = null;
@@ -226,9 +226,9 @@ public class CameraHolder {
                     try {
                         mCamera = Camera.open(mCameraIndex);
                         if (mCameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                            Log.d(TAG, "已打开前置摄像头");
+                            Log.w(TAG, "已打开前置摄像头");
                         } else {
-                            Log.d(TAG, "已打开后置摄像头");
+                            Log.w(TAG, "已打开后置摄像头");
                         }
                     } catch (RuntimeException e) {
                         Log.e(TAG, "摄像头 #" + mCameraIndex + "打开失败！: " + e.getLocalizedMessage());
@@ -247,18 +247,35 @@ public class CameraHolder {
                         params.setPreviewFormat(ImageFormat.NV21);
                         //大小
                         CameraSize frameSize = calculateCameraFrameSize(sizes, mExpectedWidth, mExpectedHeight);
-                        Log.d(TAG, "预览设置为 " + frameSize.width + "x" + frameSize.height);
+                        Log.w(TAG, "预览设置为 " + frameSize.width + "x" + frameSize.height);
                         params.setPreviewSize(frameSize.width, frameSize.height);
+                        mCamera.setParameters(params);
                         //帧率
-                        List<int[]> support = params.getSupportedPreviewFpsRange();
+                        Camera.Parameters localParam = mCamera.getParameters();
+                        List<int[]> support = localParam.getSupportedPreviewFpsRange();
                         if (support.size() > 0) {
                             int[] ints = support.get(0);
-                            int max = Math.max(ints[0],ints[1]);
+                            int max = Math.max(ints[0], ints[1]);
                             for (int[] size : support) {
-                                max = Math.max(max,size[1]);
+                                max = Math.max(max, size[1]);
                             }
-                            params.setPreviewFpsRange(max, max);
-                            Log.d(TAG, "帧率设置为:[" + max + "," + max + "]");
+                            localParam.setPreviewFpsRange(max, max);
+                            try {
+                                mCamera.setParameters(localParam);
+                                params = mCamera.getParameters();
+                                Log.w(TAG, "帧率设置为:[" + max + "," + max + "]");
+                            } catch (Exception e) {
+                                Log.e(TAG, "WTF,不能设置帧率Range为最大值，尝试设置为[" + max * 0.9 + "," + max + "]");
+                                localParam = mCamera.getParameters();
+                                try {
+                                    localParam.setPreviewFpsRange((int) (max * 0.9), max);
+                                    mCamera.setParameters(localParam);
+                                    params = mCamera.getParameters();
+                                    Log.w(TAG, "帧率设置为[" + max * 0.9 + "," + max + "]");
+                                } catch (Exception e1) {
+                                    Log.e(TAG, "WTF,不能设置帧率");
+                                }
+                            }
                         } else {
                             Log.e(TAG, "WTF,不能设置帧率");
                         }
@@ -289,27 +306,29 @@ public class CameraHolder {
                         mCamera.setPreviewTexture(mSurfaceTexture);
                         mCamera.startPreview();
                         updateCameraDegree();
-                        Log.d(TAG, "开始Camera预览");
+                        Log.w(TAG, "开始Camera预览");
                         init = true;
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e(TAG, "开启Camera失败！", e);
                 }
             }
-            if(init) {
-                Log.d(TAG, "摄像头初始化成功！");
-            }else{
-                if(mVideoBuffer != null){
+            if (init) {
+                Log.w(TAG, "摄像头初始化成功！");
+            } else {
+                if (mVideoBuffer != null) {
                     mVideoBuffer[0] = null;
                     mVideoBuffer[1] = null;
                     mVideoBuffer = null;
                 }
-                if(mSurfaceTexture != null){
+                if (mSurfaceTexture != null) {
                     mSurfaceTexture.release();
                     mSurfaceTexture = null;
                 }
-                mCamera = null;
-                Log.d(TAG, "摄像头初始化失败！");
+                if (mCamera != null) {
+                    stopCamera();
+                }
+                Log.w(TAG, "摄像头初始化失败！");
             }
             if (mListener != null) {
                 final boolean finalInit = init;
@@ -317,12 +336,12 @@ public class CameraHolder {
                     @Override
                     public void run() {
                         mListener.onCameraStart(finalInit);
-                        if(finalInit) {
+                        if (finalInit) {
                             exited = false;
                         }
                     }
                 });
-            }else if(init){
+            } else if (init) {
                 exited = false;
             }
             return init;
@@ -360,7 +379,7 @@ public class CameraHolder {
                 }
                 mCameraOrientation = (360 - mCameraOrientation) % 360; // compensate the mirror
                 mCamera.setDisplayOrientation(mCameraOrientation);
-                Log.d(TAG, "摄像机角度 = " + mCameraOrientation);
+                Log.w(TAG, "摄像机角度 = " + mCameraOrientation);
             }
 
         }
@@ -375,7 +394,7 @@ public class CameraHolder {
             for (Camera.Size size : supportedSizes) {
                 int width = size.width;
                 int height = size.height;
-                Log.d(TAG,"摄像头支持Size:"+width+"x"+height+", height/width="+(float)height/width);
+                Log.w(TAG, "摄像头支持Size:" + width + "x" + height + ", height/width=" + (float) height / width);
 
                 if (width <= expectWidth && height <= expectHeight) {
                     if (width >= calcWidth && height >= calcHeight) {
@@ -384,7 +403,7 @@ public class CameraHolder {
                     }
                 }
             }
-            Log.d(TAG,"期望的Size:"+expectWidth+"x"+expectHeight+",width/height="+(float)expectWidth/expectHeight);
+            Log.w(TAG, "期望的Size:" + expectWidth + "x" + expectHeight + ",width/height=" + (float) expectWidth / expectHeight);
 
             return new CameraSize(calcWidth, calcHeight);
         }
@@ -393,6 +412,7 @@ public class CameraHolder {
     public interface CameraListener {
 
         void onCameraStart(boolean success);
+
         /**
          * notice that this method may be invoked before onCameraStart.
          */
