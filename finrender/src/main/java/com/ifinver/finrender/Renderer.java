@@ -68,6 +68,9 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
         if(mRecorder != null){
             mRecorder.record();
         }
+        if(mListener != null){
+            mListener.onFrameRendered();
+        }
     }
 
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera) {
@@ -104,5 +107,6 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
 
     public interface RenderListener{
         void onRenderPrepared(int outputWidth,int outputHeight);
+        void onFrameRendered();
     }
 }
