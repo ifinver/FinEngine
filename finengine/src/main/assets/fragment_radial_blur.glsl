@@ -31,12 +31,12 @@ void main(){
     dir = dir/dist;
     //累加色素并平均
     vec4 sum = color;
-    float pos = -0.09;//取样位置
-    for (int i = 0; i < 9; i++){
+    float pos = -0.08;//取样位置
+    for (int i = 0; i < 5; i++){
         sum += getBaseColor(vTexCoord + dir * pos * sampleDist );
-        pos += 0.02;
+        pos += 0.04;
     }
-    sum *= 1.0/10.0;
+    sum *= 1.0/6.0;
     //计算模糊程度
     float t = dist * sampleStrength;
     t = clamp( t ,0.0,1.0); //防止越界
