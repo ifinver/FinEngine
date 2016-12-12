@@ -231,7 +231,7 @@ public class CameraHolder {
                             Log.w(TAG, "已打开后置摄像头");
                         }
                     } catch (RuntimeException e) {
-                        Log.e(TAG, "摄像头 #" + mCameraIndex + "打开失败！: " + e.getLocalizedMessage());
+                        Log.e(TAG, "摄像头 #" + mCameraIndex + "打开失败!", e);
                     }
                 }
 
