@@ -126,8 +126,8 @@ public class FinFiltersManager {
         return new Shader(vertex,fragment);
     }
 
-    public static int nextFilter(){
-        int f = FinEngine.getInstance().getCurrentFilter()+1;
+    public int nextFilter(FinEngine engine){
+        int f = engine.getCurrentFilter()+1;
         if(f > FILTER_TYPE_FISH_EYE){
             f = 0;
         }

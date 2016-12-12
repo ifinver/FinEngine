@@ -1,5 +1,6 @@
 package com.ifinver.finrender;
 
+import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.view.Surface;
 import android.view.TextureView;
@@ -17,6 +18,7 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
     private FinRecorder mRecorder;
     private RenderListener mListener;
     private FinRender mRenderEngine;
+    private FinEngine mFinEngine;
 
     public Renderer(RenderListener listener){
         this.mListener = listener;
@@ -34,7 +36,9 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        FinEngine.getInstance().release();
+        if(mFinEngine != null) {
+            mFinEngine.release();
+        }
         mRenderEngine.release();
         mRenderEngine = null;
         return true;
@@ -45,7 +49,7 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
 
     @Override
     public void onRenderPrepared(boolean isPrepared, SurfaceTexture inputSurface, int texName, long eglContext, int surfaceWidth, int surfaceHeight) {
-        FinEngine.getInstance().prepare(new Surface(inputSurface),surfaceWidth,surfaceHeight);
+        mFinEngine = FinEngine.prepare(new Surface(inputSurface), surfaceWidth, surfaceHeight);
         if(mListener != null){
             mListener.onRenderPrepared(surfaceWidth,surfaceHeight);
         }
@@ -53,7 +57,9 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
 
     @Override
     public void onInputSurfaceChanged(int surfaceWidth, int surfaceHeight) {
-        FinEngine.getInstance().resizeInput(surfaceWidth,surfaceHeight);
+        if(mFinEngine != null) {
+            mFinEngine.resizeInput(surfaceWidth,surfaceHeight);
+        }
     }
 
     @Override
@@ -64,7 +70,9 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
     }
 
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera) {
-        FinEngine.getInstance().process(data,frameWidth,frameHeight,degree,isFrontCamera);
+        if(mFinEngine != null) {
+            mFinEngine.process(data,frameWidth,frameHeight,degree,isFrontCamera);
+        }
     }
 
     public int getInputTex() {
@@ -81,6 +89,12 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
 
     public void setRecorder(FinRecorder mRecorder) {
         this.mRecorder = mRecorder;
+    }
+
+    public void switchFilter(Context ctx, int filter) {
+        if(mFinEngine != null){
+            mFinEngine.switchFilter(ctx,filter);
+        }
     }
 
     public interface RenderListener{

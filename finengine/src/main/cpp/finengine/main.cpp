@@ -2,14 +2,10 @@
 #include "utils.h"
 #include <android/native_window_jni.h>
 #include <sstream>
-#include <assert.h>
 #include <android/asset_manager_jni.h>
 
-GLContextHolder *engineHolder = NULL;
-
-JNIEXPORT jboolean JNICALL
+JNIEXPORT jlong JNICALL
 Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSurface) {
-    releaseGLContext();
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
         checkGlError("eglGetDisplay");
@@ -75,6 +71,8 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
     // Use tightly packed data
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+    GLContextHolder *engineHolder = NULL;
+
     engineHolder = new GLContextHolder();
     //success
     engineHolder->eglDisplay = display;
@@ -118,25 +116,26 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
-    return JNI_TRUE;
+    return (jlong) engineHolder;
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_finengine_FinEngine_nativeRelease(JNIEnv *, jclass) {
-    releaseGLContext();
+Java_com_ifinver_finengine_FinEngine_nativeRelease(JNIEnv *, jclass,jlong engine) {
+    releaseGLContext((GLContextHolder *) engine);
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *env, jclass, jbyteArray data_, jint frameWidth, jint frameHeight,
+Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *env, jclass, jlong engine,jbyteArray data_, jint frameWidth, jint frameHeight,
                                                   jint degree, jboolean mirror, jint outWidth, jint outHeight) {
     jbyte *data = env->GetByteArrayElements(data_, 0);
-
-    renderFrame(data, frameWidth, frameHeight, degree, mirror, outWidth, outHeight);
+    GLContextHolder *engineHolder = (GLContextHolder *) engine;
+    renderFrame(engineHolder,data, frameWidth, frameHeight, degree, mirror, outWidth, outHeight);
 
     env->ReleaseByteArrayElements(data_, data, JNI_ABORT);
 }
 
-JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(JNIEnv *env, jobject instance, jobject mAssetManager, jint mFilterType,jstring vertex_,jstring frag_){
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(JNIEnv *env, jobject ,jlong engine,jobject mAssetManager, jint mFilterType,jstring vertex_,jstring frag_){
+    GLContextHolder *engineHolder = (GLContextHolder *) engine;
     if(mFilterType == engineHolder->currentFilter){
         LOGI("选择的滤镜和上一个滤镜相同");
         return;
@@ -182,8 +181,7 @@ JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(J
 }
 
 //.........................................................................................................................
-void renderFrame(jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight) {
-
+void renderFrame(GLContextHolder *engineHolder,jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight) {
     if(engineHolder->targetProgram != engineHolder->currentProgram) {
         glUseProgram(engineHolder->targetProgram);
         if (engineHolder->currentProgram != engineHolder->defaultProgram) { //默认滤镜不删
@@ -274,7 +272,7 @@ void renderFrame(jbyte *data, jint width, jint height, jint degree, jboolean mir
 }
 
 //释放指定上下文
-void releaseGLContext() {
+void releaseGLContext(GLContextHolder *engineHolder) {
     if (engineHolder != NULL) {
         glDeleteTextures(engineHolder->textureNums, engineHolder->textures);
         glDeleteProgram(engineHolder->currentProgram);
@@ -284,7 +282,6 @@ void releaseGLContext() {
         eglDestroySurface(engineHolder->eglDisplay, engineHolder->eglSurface);
         eglDestroyContext(engineHolder->eglDisplay, engineHolder->eglContext);
         delete (engineHolder);
-        engineHolder = NULL;
     }
 
 }

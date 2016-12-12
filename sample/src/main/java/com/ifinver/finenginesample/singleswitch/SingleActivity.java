@@ -18,11 +18,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ifinver.finengine.CameraHolder;
-import com.ifinver.finengine.FinEngine;
 import com.ifinver.finenginesample.FrameMeter;
 import com.ifinver.finenginesample.R;
-import com.ifinver.finrender.Renderer;
 import com.ifinver.finrecorder.FinRecorder;
+import com.ifinver.finrender.Renderer;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -109,7 +108,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
     @Override
     public void onFilterItemClick(int filter) {
-        FinEngine.getInstance().switchFilter(this,filter);
+        mRenderer.switchFilter(this,filter);
     }
 
     @Override

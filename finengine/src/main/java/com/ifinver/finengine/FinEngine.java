@@ -21,6 +21,7 @@ public class FinEngine {
     }
 
     private static final String TAG = "FinEngine";
+    private static int sFinEngineCount = 0;
 
     public static final int FILTER_TYPE_NORMAL = 0; //must be zero here.
     public static final int FILTER_TYPE_GREY_SCALE = 1;
@@ -32,27 +33,17 @@ public class FinEngine {
     public static final int FILTER_TYPE_H_MIRROR = 7;
     public static final int FILTER_TYPE_FISH_EYE = 8;
 
-    private static FinEngine instance;
     private final FinEngineThread mEngineThread;
+    private final int mEngineId;
 
-    public static FinEngine getInstance() {
-        if (instance == null) {
-            synchronized (FinEngine.class) {
-                if (instance == null) {
-                    instance = new FinEngine();
-                }
-            }
-        }
-        return instance;
-    }
-
-    private FinEngine() {
-        mEngineThread = new FinEngineThread();
+    private FinEngine(Surface output, int width, int height) {
+        mEngineThread = new FinEngineThread(output, width, height);
         mEngineThread.start();
+        mEngineId  = ++sFinEngineCount;
     }
 
-    public void prepare(Surface output, int width, int height) {
-        mEngineThread.prepare(output, width, height);
+    public static FinEngine prepare(Surface output, int width, int height) {
+        return new FinEngine(output, width, height);
     }
 
     public void process(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera) {
@@ -71,7 +62,7 @@ public class FinEngine {
         mEngineThread.switchFilter(ctx, filterType);
     }
 
-    public int getCurrentFilter(){
+    public int getCurrentFilter() {
         return mEngineThread.mFilterType;
     }
 
@@ -94,40 +85,21 @@ public class FinEngine {
         private int mOutHeight;
         private AssetManager mAssetManager;
         private int mFilterType;
+        private long mEngine;
 
-        FinEngineThread() {
+        FinEngineThread(Surface output, int width, int height) {
             super("FinEngineThread", Process.THREAD_PRIORITY_URGENT_DISPLAY);
-            mFilterType = FILTER_TYPE_NORMAL;
+            this.mFilterType = FILTER_TYPE_NORMAL;
+            this.mOutputSurface = output;
+            this.mOutWidth = width;
+            this.mOutHeight = height;
         }
 
         @Override
         protected void onLooperPrepared() {
-            synchronized (FinEngineThread.class) {
-                mSelfHandler = new Handler(getLooper(), this);
-                if (delayStart) {
-                    delayStart = false;
-                    mSelfHandler.sendEmptyMessage(MSG_INIT);
-                }
-            }
-        }
-
-        public void prepare(Surface output, int width, int height) {
-            this.mOutputSurface = output;
-            this.mOutWidth = width;
-            this.mOutHeight = height;
-            if (!isPrepared) {
-                if (mSelfHandler != null) {
-                    mSelfHandler.sendEmptyMessage(MSG_INIT);
-                } else {
-                    synchronized (FinEngineThread.class) {
-                        if (mSelfHandler != null) {
-                            mSelfHandler.sendEmptyMessage(MSG_INIT);
-                        } else {
-                            delayStart = true;
-                        }
-                    }
-                }
-            }
+            mSelfHandler = new Handler(getLooper(), this);
+            Log.w(TAG, "FinEngine"+mEngineId+"开始初始化");
+            mSelfHandler.sendEmptyMessage(MSG_INIT);
         }
 
         public void switchFilter(Context ctx, int filterType) {
@@ -144,7 +116,7 @@ public class FinEngine {
             this.mData = data;
             this.mDegree = degree;
             this.isFrontCamera = isFrontCamera;
-            if(mSelfHandler != null) {
+            if (mSelfHandler != null) {
                 mSelfHandler.sendEmptyMessage(MSG_PROCESS);
             }
         }
@@ -156,8 +128,9 @@ public class FinEngine {
                     init();
                     return true;
                 case MSG_RELEASE:
-                    Log.w(TAG, "FinEngine已释放");
-                    nativeRelease();
+                    nativeRelease(mEngine);
+                    Log.w(TAG, "FinEngine"+mEngineId+"已释放");
+                    sFinEngineCount --;
                     isPrepared = false;
                     return true;
                 case MSG_SWITCH_FILTER:
@@ -165,7 +138,7 @@ public class FinEngine {
                     return true;
                 case MSG_PROCESS:
                     if (isPrepared && mData != null) {
-                        nativeRender(mData, mFrameWidth, mFrameHeight, mDegree, isFrontCamera, mOutWidth, mOutHeight);
+                        nativeRender(mEngine,mData, mFrameWidth, mFrameHeight, mDegree, isFrontCamera, mOutWidth, mOutHeight);
                     }
                     return true;
             }
@@ -173,21 +146,34 @@ public class FinEngine {
         }
 
         private void switchFilterInternal() {
-            if(isPrepared) {
-                Log.w(TAG, "开始切换滤镜");
+            if (isPrepared) {
+                Log.w(TAG, "FinEngine"+mEngineId+"开始切换滤镜");
                 synchronized (FinEngineThread.class) {
                     FinFiltersManager.Shader shader = FinFiltersManager.findShader(mFilterType);
-                    nativeSwitchFilter(mAssetManager, mFilterType, shader.vertex, shader.fragment);
+                    nativeSwitchFilter(mEngine,mAssetManager, mFilterType, shader.vertex, shader.fragment);
                 }
             }
         }
 
         private void init() {
-            isPrepared = nativeInit(mOutputSurface);
+            mEngine = nativeInit(mOutputSurface);
+            isPrepared = mEngine != 0;
+            if (isPrepared) {
+                Log.w(TAG, "FinEngine"+mEngineId+"初始化成功");
+            } else {
+                Log.e(TAG, "FinEngine"+mEngineId+"初始化失败!");
+                sendReleaseMsg();
+            }
+        }
+
+        private void sendReleaseMsg() {
+            isPrepared = false;
+            mSelfHandler.sendEmptyMessage(MSG_RELEASE);
         }
 
         public void release() {
-            mSelfHandler.sendEmptyMessage(MSG_RELEASE);
+            Log.w(TAG, "FinEngine"+mEngineId+"开始释放");
+            sendReleaseMsg();
         }
 
         public void resizeInput(int surfaceWidth, int surfaceHeight) {
@@ -200,11 +186,11 @@ public class FinEngine {
     /**
      * @return 0 means failed
      */
-    private native boolean nativeInit(Surface output);
+    private native long nativeInit(Surface output);
 
-    private native void nativeRelease();
+    private native void nativeRelease(long engine);
 
-    private native void nativeSwitchFilter(AssetManager mAssetManager, int mFilterType, String mVertexName, String mFragmentName);
+    private native void nativeSwitchFilter(long engine,AssetManager mAssetManager, int mFilterType, String mVertexName, String mFragmentName);
 
-    private native void nativeRender(byte[] data, int frameWidth, int frameHeight, int degree, boolean mirror, int mOutWidth, int mOutHeight);
+    private native void nativeRender(long engine,byte[] data, int frameWidth, int frameHeight, int degree, boolean mirror, int mOutWidth, int mOutHeight);
 }
