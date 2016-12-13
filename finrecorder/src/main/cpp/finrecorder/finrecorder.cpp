@@ -9,7 +9,6 @@
 #include "log.h"
 #include <android/native_window_jni.h>
 #include "FinRecorderHolder.h"
-#include "../../../../../finrender/src/main/cpp/finrender/FinRenderHolder.h"
 
 const GLfloat VERTICES[] =
         {

@@ -17,7 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.ifinver.finenginesample.multirender.MultiActivity;
+import com.ifinver.finenginesample.unity.UnityActivity;
 import com.ifinver.finenginesample.singleswitch.SingleActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(new Intent(this, SingleActivity.class));
                 break;
             case R.id.iv_show_grey:
-                startActivity(new Intent(this, MultiActivity.class));
+                startActivity(new Intent(this, UnityActivity.class));
                 break;
         }
     }
@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_activity_multi:
-                startActivity(new Intent(this, MultiActivity.class));
+                startActivity(new Intent(this, UnityActivity.class));
                 return true;
             case R.id.menu_activity_switch:
                 startActivity(new Intent(this, SingleActivity.class));
