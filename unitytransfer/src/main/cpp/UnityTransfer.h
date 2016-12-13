@@ -13,8 +13,8 @@ public:
         int degree;
         int width;
         int height;
-        signed char* yPtr;
-        signed char* uvPtr = nullptr;
+        void* yPtr;
+        unsigned char* uvPtr = nullptr;
     } UnityMsg;
     typedef void (*Transfer)(void * intPtr);
 

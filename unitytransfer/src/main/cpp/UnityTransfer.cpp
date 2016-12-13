@@ -20,15 +20,15 @@ void UnityTransfer::transformToUnity(jbyte *yuvData, int width, int height, int 
         if(mUnityMsg->uvPtr != nullptr){
             delete[] mUnityMsg->uvPtr;
         }
-        mUnityMsg->uvPtr = new signed char[width * height * 3 / 4];
+        mUnityMsg->uvPtr = new unsigned char[width * height * 3 / 4];
     }
     //处理uv通道
     int yLen = width * height;
     int yuvLen =yLen * 3 / 2;
     int dstPtr = 0;
     for (int i = yLen; i < yuvLen; i += 2) {
-        mUnityMsg->uvPtr[dstPtr++] = yuvData[i];
-        mUnityMsg->uvPtr[dstPtr++] = yuvData[i + 1];
+        mUnityMsg->uvPtr[dstPtr++] = (unsigned char) (yuvData[i] & 0xFF);
+        mUnityMsg->uvPtr[dstPtr++] = (unsigned char) (yuvData[i + 1] & 0xFF);
         mUnityMsg->uvPtr[dstPtr++] = 0;
     }
     //y通道赋值
