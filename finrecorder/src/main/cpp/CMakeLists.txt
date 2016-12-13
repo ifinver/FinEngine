@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.4.1)
 
 
-#加载fin render lib
+#加载fin recorder lib
 add_library(fin-recorder-lib
             SHARED
             finrecorder/finrecorder.cpp

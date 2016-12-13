@@ -1,4 +1,4 @@
-package com.ifinver.finrender;
+package com.ifinver.finengine;
 
 import android.graphics.SurfaceTexture;
 import android.os.Handler;
@@ -16,7 +16,7 @@ import android.view.Surface;
 
 public class FinRender {
     static {
-        System.loadLibrary("fin-render-lib");
+        System.loadLibrary("fin-engine-lib");
     }
 
     private static final String TAG = "FinRender";

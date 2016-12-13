@@ -1,13 +1,9 @@
-package com.ifinver.finrender;
+package com.ifinver.finengine;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.view.Surface;
 import android.view.TextureView;
-
-import com.ifinver.finengine.FinEngine;
-import com.ifinver.finengine.FinFiltersManager;
-import com.ifinver.finrecorder.FinRecorder;
 
 /**
  * Created by iFinVer on 2016/12/6.
@@ -17,8 +13,13 @@ import com.ifinver.finrecorder.FinRecorder;
 public class Renderer implements TextureView.SurfaceTextureListener, FinRender.FinRenderListener {
 
     private FinRecorder mRecorder;
+    private RenderListener mListener;
     private FinRender mRenderEngine;
     private FinEngine mFinEngine;
+
+    public Renderer(RenderListener listener){
+        this.mListener = listener;
+    }
 
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
@@ -46,6 +47,9 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
     @Override
     public void onRenderPrepared(boolean isPrepared, SurfaceTexture inputSurface, int texName, long eglContext, int surfaceWidth, int surfaceHeight) {
         mFinEngine = FinEngine.prepare(new Surface(inputSurface), surfaceWidth, surfaceHeight);
+        if(mListener != null){
+            mListener.onRenderPrepared(surfaceWidth,surfaceHeight);
+        }
     }
 
     @Override
@@ -59,6 +63,9 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
     public void onFrameRendered() {
         if(mRecorder != null){
             mRecorder.record();
+        }
+        if(mListener != null){
+            mListener.onFrameRendered();
         }
     }
 
@@ -92,5 +99,10 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
         if(mFinEngine != null){
             mFinEngine.switchFilter(ctx, filter);
         }
+    }
+
+    public interface RenderListener{
+        void onRenderPrepared(int outputWidth,int outputHeight);
+        void onFrameRendered();
     }
 }

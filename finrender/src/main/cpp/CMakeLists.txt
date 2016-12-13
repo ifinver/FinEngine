@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.4.1)
 
 
-#加载fin engine lib
+#加载fin render lib
 add_library(fin-render-lib
     SHARED
     finrender/finrender.cpp

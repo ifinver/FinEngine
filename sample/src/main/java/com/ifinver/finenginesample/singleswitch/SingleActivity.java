@@ -32,7 +32,7 @@ import java.util.TimerTask;
  */
 
 @SuppressWarnings({"FieldCanBeLocal", "deprecation"})
-public class SingleActivity extends AppCompatActivity implements FilterAdapter.OnItemClickListener, CameraHolder.CameraListener, View.OnTouchListener, Renderer.RenderListener {
+public class SingleActivity extends AppCompatActivity implements FilterAdapter.OnItemClickListener, CameraHolder.CameraListener, View.OnTouchListener {
 
     private static final String TAG = "SingleActivity";
 
@@ -59,7 +59,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
         tvRender = (TextureView) findViewById(R.id.tex);
         rvFilter = (RecyclerView) findViewById(R.id.rv_filter);
 
-        mRenderer = new Renderer(this);
+        mRenderer = new Renderer();
         tvRender.setSurfaceTextureListener(mRenderer);
 
         rvFilter.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -169,18 +169,8 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
     @Override
     public void onCameraStart(boolean success) {
-
     }
 
-    @Override
-    public void onRenderPrepared(int outputWidth, int outputHeight) {
-
-    }
-
-    @Override
-    public void onFrameRendered() {
-
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
