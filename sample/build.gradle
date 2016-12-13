@@ -35,14 +35,6 @@ android.applicationVariants.all { variant ->
                     from "${rootDir}/finengine/build/outputs/aar/finengine-release.aar"
                     into outputDir
                 }
-                copy {
-                    from "${rootDir}/finrender/build/outputs/aar/finrender-release.aar"
-                    into outputDir
-                }
-                copy {
-                    from "${rootDir}/finrecorder/build/outputs/aar/finrecorder-release.aar"
-                    into outputDir
-                }
             }
         }
     }
