@@ -25,7 +25,7 @@ public class UnityBaseActivity extends AppCompatActivity implements SurfaceHolde
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setFormat(PixelFormat.RGBX_8888);
-        mUnityPlayer = new UnityPlayer(this);
+        mUnityPlayer = new FinUnityPlayer(this);
     }
 
     protected void initUnitySurface(SurfaceView unitySurface) {
@@ -86,6 +86,9 @@ public class UnityBaseActivity extends AppCompatActivity implements SurfaceHolde
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK){
+            onBackPressed();
+        }
         return mUnityPlayer.injectEvent(event);
     }
 

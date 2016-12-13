@@ -33,7 +33,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".singleswitch.SingleActivity"/>
-        <activity android:name=".unity.UnityActivity"/>
+        <activity android:process=":unity" android:name=".unity.UnityActivity"/>
     </application>
 
 </manifest>

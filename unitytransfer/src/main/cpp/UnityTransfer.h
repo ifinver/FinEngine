@@ -9,7 +9,7 @@
 
 class UnityTransfer{
 public:
-    typedef struct UnityMessage{
+    typedef struct UnityTransferMessage{
         int degree;
         int width;
         int height;
