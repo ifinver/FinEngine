@@ -8,10 +8,10 @@
 #include <jni.h>
 
 extern "C"{
-JNIEXPORT jlong JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeCreate(JNIEnv *env, jobject instance, jlong sharedCtx, jobject output);
-JNIEXPORT void JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeProcess(JNIEnv *env, jobject instance, jlong recorder, jint inputTex);
-JNIEXPORT void JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeRelease(JNIEnv *env, jobject instance, jlong recorder);
-JNIEXPORT jlong JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeFetchGLCtx(JNIEnv *env, jobject instance);
+JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_FinRecorder_nativeCreate(JNIEnv *env, jobject instance, jlong sharedCtx, jobject output);
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinRecorder_nativeProcess(JNIEnv *env, jobject instance, jlong recorder, jint inputTex);
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinRecorder_nativeRelease(JNIEnv *env, jobject instance, jlong recorder);
+JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_FinRecorder_nativeFetchGLCtx(JNIEnv *env, jobject instance);
 };
 
 #endif //FINENGINE_FINRECORDER_H

@@ -1,5 +1,5 @@
 #include "main.h"
-#include "utils.h"
+#include "../utils.h"
 #include <android/native_window_jni.h>
 #include <sstream>
 #include <android/asset_manager_jni.h>

@@ -5,12 +5,13 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-#include "utils.h"
-#include "log.h"
+#include "../utils.h"
+#include "../log.h"
 #include <android/native_window_jni.h>
 #include "FinRecorderHolder.h"
+#define LOG_TAG "FinRender"
 
-const GLfloat VERTICES[] =
+const GLfloat VERTICES_RECORD[] =
         {
                 -1.0f, 1.0f,//pos0
                 0.0f, 0.0f,//tex0
@@ -21,7 +22,7 @@ const GLfloat VERTICES[] =
                 1.0f, 1.0f,//pos3
                 1.0f, 0.0f,//tex3
         };
-const char *vertexShader =
+const char *vertexShader_recorder =
         "attribute vec4 aPosition;                          \n"
                 "attribute vec2 aTexCoord;                          \n"
                 "varying vec2 vTexCoord;                            \n"
@@ -29,7 +30,7 @@ const char *vertexShader =
                 "   vTexCoord = aTexCoord;                          \n"
                 "   gl_Position = aPosition;                        \n"
                 "}                                                  \n";
-const char *fragmentShader =
+const char *fragmentShader_recorder =
         "#extension GL_OES_EGL_image_external : require     \n"
                 "precision mediump float;                           \n"
                 "varying vec2 vTexCoord;                            \n"
@@ -38,7 +39,7 @@ const char *fragmentShader =
                 "    gl_FragColor = texture2D(sTexture, vTexCoord); \n"
                 "}                                                  \n";
 
-JNIEXPORT jlong JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeCreate(JNIEnv *env, jobject instance, jlong sharedCtx, jobject output){
+JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_FinRecorder_nativeCreate(JNIEnv *env, jobject instance, jlong sharedCtx, jobject output){
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
         checkGlError("eglGetDisplay");
@@ -92,7 +93,7 @@ JNIEXPORT jlong JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeCreate(JN
     }
 
     //context create success,now create program
-    GLuint program = createProgram(vertexShader, fragmentShader);
+    GLuint program = createProgram(vertexShader_recorder, fragmentShader_recorder);
 //    delete shader;
     if (program == 0) {
         return 0;
@@ -118,7 +119,7 @@ JNIEXPORT jlong JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeCreate(JN
     GLuint vertexBuffer;
     glGenBuffers(1,&vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES),VERTICES,GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES_RECORD),VERTICES_RECORD,GL_STATIC_DRAW);
     recorderHolder->vertexBuffer = vertexBuffer;
     recorderHolder->vertexStride = 4 * sizeof(GLfloat);
     recorderHolder->texOffset = 2* sizeof(GLfloat);
@@ -141,7 +142,7 @@ JNIEXPORT jlong JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeCreate(JN
     return (jlong) recorderHolder;
 }
 
-JNIEXPORT void JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeProcess(JNIEnv *env, jobject instance, jlong recorder, jint inputTex){
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinRecorder_nativeProcess(JNIEnv *env, jobject instance, jlong recorder, jint inputTex){
     FinRenderHolder *recorderHolder = (FinRenderHolder *) recorder;
     if (!eglMakeCurrent(recorderHolder->eglDisplay, recorderHolder->eglSurface, recorderHolder->eglSurface, recorderHolder->eglContext)) {
         checkGlError("eglMakeCurrent");
@@ -168,7 +169,7 @@ JNIEXPORT void JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeProcess(JN
     eglSwapBuffers(recorderHolder->eglDisplay,recorderHolder->eglSurface);
 }
 
-JNIEXPORT void JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeRelease(JNIEnv *env, jobject instance, jlong recorder){
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinRecorder_nativeRelease(JNIEnv *env, jobject instance, jlong recorder){
     FinRenderHolder *recorderHolder = (FinRenderHolder *) recorder;
     glDeleteProgram(recorderHolder->program);
     glDeleteBuffers(1,&recorderHolder->vertexBuffer);
@@ -177,8 +178,7 @@ JNIEXPORT void JNICALL Java_com_ifinver_finrecorder_FinRecorder_nativeRelease(JN
     delete (recorderHolder);
 }
 
-JNIEXPORT jlong JNICALL
-Java_com_ifinver_finrecorder_FinRecorder_nativeFetchGLCtx(JNIEnv *env, jobject instance) {
+JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_FinRecorder_nativeFetchGLCtx(JNIEnv *env, jobject instance) {
     EGLContext ctx = eglGetCurrentContext();
     if(ctx == EGL_NO_CONTEXT){
         return 0;

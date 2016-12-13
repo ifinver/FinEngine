@@ -5,6 +5,7 @@
 #include "log.h"
 #include <stdlib.h>
 
+#define LOG_TAG "FinEngineUtil"
 
 void checkGlError(const char *op) {
     for (GLint error = glGetError(); error; error = glGetError()) {

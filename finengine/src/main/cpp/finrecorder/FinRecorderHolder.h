@@ -6,6 +6,9 @@
 #define FINENGINE_FINRECORDERHOLDER_H
 
 
+#include <EGL/egl.h>
+#include <GLES2/gl2.h>
+
 class FinRenderHolder {
 public:
     EGLDisplay eglDisplay;

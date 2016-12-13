@@ -3,14 +3,16 @@
 //
 #include "finrender.h"
 #include "FinRenderHolder.h"
+#include "../log.h"
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
-#include "utils.h"
-#include "log.h"
+#include "../utils.h"
 #include <android/native_window_jni.h>
 #include <GLES2/gl2ext.h>
 
-const GLfloat VERTICES[] =
+#define LOG_TAG "FinRender"
+
+const GLfloat VERTICES_RENDER[] =
         {
                 -1.0f, 1.0f,//pos0
                 0.0f, 0.0f,//tex0
@@ -21,7 +23,7 @@ const GLfloat VERTICES[] =
                 1.0f, 1.0f,//pos3
                 1.0f, 0.0f,//tex3
         };
-const char *vertexShader =
+const char *vertexShader_render =
         "attribute vec4 aPosition;                          \n"
                 "attribute vec2 aTexCoord;                          \n"
                 "varying vec2 vTexCoord;                            \n"
@@ -29,7 +31,7 @@ const char *vertexShader =
                 "   vTexCoord = aTexCoord;                          \n"
                 "   gl_Position = aPosition;                        \n"
                 "}                                                  \n";
-const char *fragmentShader =
+const char *fragmentShader_render =
         "#extension GL_OES_EGL_image_external : require     \n"
                 "precision mediump float;                           \n"
                 "varying vec2 vTexCoord;                            \n"
@@ -38,7 +40,7 @@ const char *fragmentShader =
                 "    gl_FragColor = texture2D(sTexture, vTexCoord); \n"
                 "}                                                  \n";
 
-JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_nativeCreate(JNIEnv *env, jobject, jobject output) {
+JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_FinRender_nativeCreate(JNIEnv *env, jobject, jobject output) {
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
         checkGlError("eglGetDisplay");
@@ -93,7 +95,7 @@ JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_nativeCreate(JNIEnv
     }
 
     //context create success,now create program
-    GLuint program = createProgram(vertexShader, fragmentShader);
+    GLuint program = createProgram(vertexShader_render, fragmentShader_render);
 //    delete shader;
     if (program == 0) {
         return 0;
@@ -129,7 +131,7 @@ JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_nativeCreate(JNIEnv
     GLuint vertexBuffer;
     glGenBuffers(1,&vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES),VERTICES,GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(VERTICES_RENDER),VERTICES_RENDER,GL_STATIC_DRAW);
     renderHolder->vertexBuffer = vertexBuffer;
     renderHolder->vertexStride = 4 * sizeof(GLfloat);
     renderHolder->texOffset = 2* sizeof(GLfloat);
@@ -179,7 +181,7 @@ void renderFrame(FinRenderHolder *pHolder) {
     eglSwapBuffers(pHolder->eglDisplay, pHolder->eglSurface);
 }
 
-JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_nativeRenderOut(JNIEnv *env, jobject, jlong engine, jobject input) {
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinRender_nativeRenderOut(JNIEnv *env, jobject, jlong engine, jobject input) {
     FinRenderHolder *renderHolder = (FinRenderHolder *) engine;
 //    env->CallVoidMethod(input, recorderHolder->midAttachToGlContext, recorderHolder->inputTex);
     env->CallVoidMethod(input, renderHolder->midUpdateTexImage);
@@ -187,7 +189,7 @@ JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_nativeRenderOut(JNIE
 //    env->CallVoidMethod(input, recorderHolder->midDetachFromGLContext);
 }
 
-JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_nativeRelease(JNIEnv *env, jobject instance, jlong engine) {
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinRender_nativeRelease(JNIEnv *env, jobject instance, jlong engine) {
     FinRenderHolder *pHolder = (FinRenderHolder *) engine;
     glDeleteTextures(1, &pHolder->inputTex);
     glDeleteProgram(pHolder->program);
@@ -197,12 +199,12 @@ JNIEXPORT void JNICALL Java_com_ifinver_finrender_FinRender_nativeRelease(JNIEnv
     delete (pHolder);
 }
 
-JNIEXPORT jint JNICALL Java_com_ifinver_finrender_FinRender_nativeGetInputTex(JNIEnv *env, jobject instance, jlong engine){
+JNIEXPORT jint JNICALL Java_com_ifinver_finengine_FinRender_nativeGetInputTex(JNIEnv *env, jobject instance, jlong engine){
     FinRenderHolder *pHolder = (FinRenderHolder *) engine;
     return pHolder->inputTex;
 }
 
-JNIEXPORT jlong JNICALL Java_com_ifinver_finrender_FinRender_nativeGetEglContext(JNIEnv *env, jobject instance, jlong engine){
+JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_FinRender_nativeGetEglContext(JNIEnv *env, jobject instance, jlong engine){
     FinRenderHolder *pHolder = (FinRenderHolder *) engine;
     return (jlong)pHolder->eglContext;
 }

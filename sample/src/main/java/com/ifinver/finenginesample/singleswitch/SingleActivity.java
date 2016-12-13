@@ -18,10 +18,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ifinver.finengine.CameraHolder;
+import com.ifinver.finengine.FinRecorder;
+import com.ifinver.finengine.Renderer;
 import com.ifinver.finenginesample.FrameMeter;
 import com.ifinver.finenginesample.R;
-import com.ifinver.finrecorder.FinRecorder;
-import com.ifinver.finrender.Renderer;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -32,7 +32,7 @@ import java.util.TimerTask;
  */
 
 @SuppressWarnings({"FieldCanBeLocal", "deprecation"})
-public class SingleActivity extends AppCompatActivity implements FilterAdapter.OnItemClickListener, CameraHolder.CameraListener, View.OnTouchListener {
+public class SingleActivity extends AppCompatActivity implements FilterAdapter.OnItemClickListener, CameraHolder.CameraListener, View.OnTouchListener, Renderer.RenderListener {
 
     private static final String TAG = "SingleActivity";
 
@@ -59,7 +59,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
         tvRender = (TextureView) findViewById(R.id.tex);
         rvFilter = (RecyclerView) findViewById(R.id.rv_filter);
 
-        mRenderer = new Renderer();
+        mRenderer = new Renderer(this);
         tvRender.setSurfaceTextureListener(mRenderer);
 
         rvFilter.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -176,5 +176,15 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+
+    @Override
+    public void onRenderPrepared(int outputWidth, int outputHeight) {
+
+    }
+
+    @Override
+    public void onFrameRendered() {
+
     }
 }
