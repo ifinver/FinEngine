@@ -114,9 +114,6 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
     @Override
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean frontCurrent) {
         mRenderer.onVideoBuffer(data, frameWidth, frameHeight, degree, frontCurrent);
-
-        //计算帧率
-        mFrameMeter.meter();
     }
 
     @Override
@@ -185,6 +182,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
     @Override
     public void onFrameRendered() {
-
+        //计算帧率
+        mFrameMeter.meter();
     }
 }
