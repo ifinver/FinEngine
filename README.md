@@ -3,6 +3,7 @@
 
 ##Work Flow
 ![Work Flow](https://github.com/ifinver/FinEngine/blob/master/workflow.png)
+*图片位于项目跟目录下，workflow.png*
 ####耗时地方：
 1. 使用CPU在内存中进行美颜和人脸识别。
 2. 把数据从内存上传到gpu
