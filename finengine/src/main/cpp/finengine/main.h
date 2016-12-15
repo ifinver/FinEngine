@@ -20,12 +20,12 @@ extern "C" {
 JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass type, jobject jSurface);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeRelease(JNIEnv *env, jclass type,jlong engine);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *env, jclass,jlong engine,jbyteArray data_, jint frameWidth, jint frameHeight,
-                                                    jint degree, jboolean mirror,jint outWidth,jint outHeight);
+                                                    jint degree, jboolean mirror,jint outWidth,jint outHeight,jlong facePtr);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(JNIEnv *env, jobject instance,jlong engine,jobject mAssetManager, jint mFilterType,jstring vert,jstring frag);
 }
 
 void releaseGLContext(GLContextHolder *engineHolder);
 
-void renderFrame(GLContextHolder *engineHolder,jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight);
+void renderFrame(GLContextHolder *engineHolder,jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight,jlong facePtr);
 
 #endif //MYOPENGLES_GL_NATIVE_LIB_H

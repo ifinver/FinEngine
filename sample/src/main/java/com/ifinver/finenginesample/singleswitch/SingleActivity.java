@@ -115,7 +115,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
     @Override
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean frontCurrent) {
         long facePtr = FaceDetector.process(data,frameWidth,frameHeight);
-        mRenderer.onVideoBuffer(data, frameWidth, frameHeight, degree, frontCurrent);
+        mRenderer.onVideoBuffer(data, frameWidth, frameHeight, degree, frontCurrent,facePtr);
     }
 
     @Override

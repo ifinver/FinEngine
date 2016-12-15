@@ -6,6 +6,7 @@
 #include "arcsoft.h"
 #include "../log.h"
 #include "inc/arcsoft_spotlight.h"
+#include "../../../../../finengine/src/main/cpp/finengine/inc/faceresult.h"
 
 #define LOG_TAG "face detect"
 
@@ -100,6 +101,8 @@ jlong ArcSoftSpotlight::process(jbyte *data, jint width, jint height) {
                              faceDetectResult->pFaceOutlinePointOut,
                              faceDetectResult->rcFaceRectOut,
                              faceDetectResult->faceOrientOut);
+
+    faceDetectResult->faceOutlinePointCount = ASL_GetFaceOutlinePointCount();
 
     if (hr == MOK) {
         return (jlong) faceDetectResult;

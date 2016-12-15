@@ -69,9 +69,9 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
         }
     }
 
-    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera) {
+    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera, long facePtr) {
         if(mFinEngine != null) {
-            mFinEngine.process(data,frameWidth,frameHeight,degree,isFrontCamera);
+            mFinEngine.process(data,frameWidth,frameHeight,degree,isFrontCamera,facePtr);
         }
     }
 

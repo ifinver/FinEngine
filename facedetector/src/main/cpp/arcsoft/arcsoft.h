@@ -7,15 +7,9 @@
 
 #include <jni.h>
 #include <cwchar>
+#include <faceresult.h>
 #include "inc/amcomdef.h"
 #include "inc/asvloffscreen.h"
-
-struct FaceDetectResult{
-    MPOINT* pFaceOutlinePointOut;
-    MInt32 nFaceCountInOut;
-    MRECT *rcFaceRectOut;
-    MFloat *faceOrientOut;
-};
 
 class ArcSoftSpotlight {
 public:

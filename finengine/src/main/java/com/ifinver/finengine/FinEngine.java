@@ -46,8 +46,8 @@ public class FinEngine {
         return new FinEngine(output, width, height);
     }
 
-    public void process(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera) {
-        mEngineThread.process(data, frameWidth, frameHeight, degree, isFrontCamera);
+    public void process(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera, long facePtr) {
+        mEngineThread.process(data, frameWidth, frameHeight, degree, isFrontCamera,facePtr);
     }
 
     public void release() {
@@ -86,6 +86,7 @@ public class FinEngine {
         private AssetManager mAssetManager;
         private int mFilterType;
         private long mEngine;
+        private long mFacePtr;
 
         FinEngineThread(Surface output, int width, int height) {
             super("FinEngineThread", Process.THREAD_PRIORITY_URGENT_DISPLAY);
@@ -110,12 +111,13 @@ public class FinEngine {
             mSelfHandler.sendEmptyMessage(MSG_SWITCH_FILTER);
         }
 
-        public void process(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera) {
+        public void process(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera, long facePtr) {
             this.mFrameWidth = frameWidth;
             this.mFrameHeight = frameHeight;
             this.mData = data;
             this.mDegree = degree;
             this.isFrontCamera = isFrontCamera;
+            this.mFacePtr = facePtr;
             if (mSelfHandler != null) {
                 mSelfHandler.sendEmptyMessage(MSG_PROCESS);
             }
@@ -138,7 +140,7 @@ public class FinEngine {
                     return true;
                 case MSG_PROCESS:
                     if (isPrepared && mData != null) {
-                        nativeRender(mEngine,mData, mFrameWidth, mFrameHeight, mDegree, isFrontCamera, mOutWidth, mOutHeight);
+                        nativeRender(mEngine,mData, mFrameWidth, mFrameHeight, mDegree, isFrontCamera, mOutWidth, mOutHeight,mFacePtr);
                     }
                     return true;
             }
@@ -192,5 +194,5 @@ public class FinEngine {
 
     private native void nativeSwitchFilter(long engine,AssetManager mAssetManager, int mFilterType, String mVertexName, String mFragmentName);
 
-    private native void nativeRender(long engine,byte[] data, int frameWidth, int frameHeight, int degree, boolean mirror, int mOutWidth, int mOutHeight);
+    private native void nativeRender(long engine, byte[] data, int frameWidth, int frameHeight, int degree, boolean mirror, int mOutWidth, int mOutHeight, long mFacePtr);
 }

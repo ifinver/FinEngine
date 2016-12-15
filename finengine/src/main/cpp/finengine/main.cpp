@@ -3,6 +3,7 @@
 #include <android/native_window_jni.h>
 #include <sstream>
 #include <android/asset_manager_jni.h>
+#include "inc/faceresult.h"
 
 JNIEXPORT jlong JNICALL
 Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSurface) {
@@ -126,10 +127,10 @@ Java_com_ifinver_finengine_FinEngine_nativeRelease(JNIEnv *, jclass,jlong engine
 
 JNIEXPORT void JNICALL
 Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *env, jclass, jlong engine,jbyteArray data_, jint frameWidth, jint frameHeight,
-                                                  jint degree, jboolean mirror, jint outWidth, jint outHeight) {
+                                                  jint degree, jboolean mirror, jint outWidth, jint outHeight,jlong facePtr) {
     jbyte *data = env->GetByteArrayElements(data_, 0);
     GLContextHolder *engineHolder = (GLContextHolder *) engine;
-    renderFrame(engineHolder,data, frameWidth, frameHeight, degree, mirror, outWidth, outHeight);
+    renderFrame(engineHolder,data, frameWidth, frameHeight, degree, mirror, outWidth, outHeight,facePtr);
 
     env->ReleaseByteArrayElements(data_, data, JNI_ABORT);
 }
@@ -181,7 +182,7 @@ JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(J
 }
 
 //.........................................................................................................................
-void renderFrame(GLContextHolder *engineHolder,jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight) {
+void renderFrame(GLContextHolder *engineHolder,jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight,jlong facePtr) {
     if(engineHolder->targetProgram != engineHolder->currentProgram) {
         glUseProgram(engineHolder->targetProgram);
         if (engineHolder->currentProgram != engineHolder->defaultProgram) { //默认滤镜不删
@@ -189,6 +190,30 @@ void renderFrame(GLContextHolder *engineHolder,jbyte *data, jint width, jint hei
         }
         engineHolder->currentProgram = engineHolder->targetProgram;
         LOGI("切换滤镜成功！");
+    }
+    FaceDetectResult* faceData = NULL;
+    try{
+        faceData = (FaceDetectResult *) facePtr;
+    }catch (...){
+        LOGE("%s","不能转换出face detect result");
+    }
+    if(faceData != NULL){
+        //这里拿到了数据
+        if (faceData->nFaceCountInOut > 0) {
+            for (int nFaceIndex = 0; nFaceIndex < faceData->nFaceCountInOut; nFaceIndex++) {
+                // face rect
+                MRECT rcFace = faceData->rcFaceRectOut[nFaceIndex];
+                // face orientation
+                MFloat fRoll = faceData->faceOrientOut[nFaceIndex * 3 + 0];
+                MFloat fYaw = faceData->faceOrientOut[nFaceIndex * 3 + 1];
+                MFloat fPitch = faceData->faceOrientOut[nFaceIndex * 3 + 2];
+                // face outline points
+                for (int i = 0; i < faceData->faceOutlinePointCount; i++) {
+                    MPOINT ptIndex = faceData->pFaceOutlinePointOut[nFaceIndex * faceData->faceOutlinePointCount + i];
+                }
+//                LOGE("face fRoll=%f,fYaw=%f,fPitch=%f",fRoll,fYaw,fPitch);
+            }
+        }
     }
 
     //输入顶点
