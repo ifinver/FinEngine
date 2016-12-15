@@ -56,7 +56,11 @@ public class FaceDetector {
     }
 
     public static long process(byte[] data,int width,int height){
-        return nativeProcess(data,width,height);
+        if(initialized) {
+            return nativeProcess(data, width, height);
+        }else{
+            return 0;
+        }
     }
 
     public static void release(){
