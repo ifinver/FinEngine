@@ -17,6 +17,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ifinver.facedetect.FaceDetector;
 import com.ifinver.finengine.CameraHolder;
 import com.ifinver.finengine.FinRecorder;
 import com.ifinver.finengine.Renderer;
@@ -113,6 +114,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
     @Override
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean frontCurrent) {
+        long facePtr = FaceDetector.process(data,frameWidth,frameHeight);
         mRenderer.onVideoBuffer(data, frameWidth, frameHeight, degree, frontCurrent);
     }
 
@@ -157,6 +159,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
     protected void onPause() {
         super.onPause();
         CameraHolder.getInstance().stopCamera();
+        FaceDetector.release();
     }
 
     @Override
@@ -166,6 +169,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
     @Override
     public void onCameraStart(boolean success) {
+        FaceDetector.init(this);
     }
 
 

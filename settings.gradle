@@ -1,1 +1,1 @@
-include ':sample', ':finengine', ':unitytransfer', ':facedetect'
+include ':sample', ':finengine', ':unitytransfer', ':facedetector'
