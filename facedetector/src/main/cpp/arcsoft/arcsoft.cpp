@@ -49,6 +49,7 @@ int ArcSoftSpotlight::init(JNIEnv *env, jobject context,
         ASL_SetFaceSkinSoftenLevel(m_hEngine, skinFaceLevel);
         ASL_SetFaceBrightLevel(m_hEngine, brightLevel);
     } else {
+        m_hEngine = NULL;
         return -1;
     }
 

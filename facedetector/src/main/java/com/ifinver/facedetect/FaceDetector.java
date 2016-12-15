@@ -47,6 +47,7 @@ public class FaceDetector {
                 Log.e(TAG, "人脸检测初始化失败!");
                 initialized = false;
             }else{
+                Log.d(TAG, "人脸检测初始化成功!");
                 initialized = true;
             }
         }else{
@@ -65,6 +66,8 @@ public class FaceDetector {
 
     public static void release(){
         nativeRelease();
+        initialized = false;
+        Log.d(TAG,"人脸检测已释放");
     }
 
 

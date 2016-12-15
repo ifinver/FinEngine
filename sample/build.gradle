@@ -5,7 +5,7 @@ android {
     buildToolsVersion "24.0.3"
 
     defaultConfig {
-        applicationId "com.ifinver.finenginesample"
+        applicationId "com.loveorange.wt"
         minSdkVersion 18
         targetSdkVersion 24
         versionCode 1
