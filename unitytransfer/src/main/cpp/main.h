@@ -12,7 +12,7 @@ extern "C" {
 /**
  * will be invoked by java code
  */
-JNIEXPORT void JNICALL Java_com_ifinver_unitytransfer_UnityTransfer_onVideoBuffer(JNIEnv *, jclass, jbyteArray, jint, jint, jint);
+JNIEXPORT void JNICALL Java_com_ifinver_unitytransfer_UnityTransfer_onVideoBuffer(JNIEnv *, jclass, jbyteArray, jint, jint, jint,jboolean);
 
 /**
  * will be invoked by unity's scripts

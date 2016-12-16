@@ -13,6 +13,7 @@ public:
         int degree;
         int width;
         int height;
+//        int mirror;
         void* yPtr;
         unsigned char* uvPtr = nullptr;
     } UnityMsg;
@@ -20,7 +21,7 @@ public:
 
     UnityTransfer();
     void setTransferByUnity(Transfer);
-    void transformToUnity(jbyte*,int width,int height,int degree);
+    void transformToUnity(jbyte*,int width,int height,int degree,jboolean mirror);
     //will never be destroyed after app starting.
 //    ~UnityConnector();
 private:

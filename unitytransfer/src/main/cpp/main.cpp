@@ -12,10 +12,10 @@ UnityTransfer *mConnector = nullptr;
  * will be invoked by java code
  */
 JNIEXPORT void JNICALL Java_com_ifinver_unitytransfer_UnityTransfer_onVideoBuffer(
-        JNIEnv *env, jclass , jbyteArray data_, jint frameWidth, jint frameHeight, jint degree) {
+        JNIEnv *env, jclass , jbyteArray data_, jint frameWidth, jint frameHeight, jint degree,jboolean mirror) {
     jbyte *data = env->GetByteArrayElements(data_, 0);
     if(mConnector != nullptr){
-        mConnector->transformToUnity(data,frameWidth,frameHeight,degree);
+        mConnector->transformToUnity(data,frameWidth,frameHeight,degree,mirror);
     }
     env->ReleaseByteArrayElements(data_, data, JNI_ABORT);
 }

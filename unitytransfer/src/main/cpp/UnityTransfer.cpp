@@ -12,7 +12,7 @@ void UnityTransfer::setTransferByUnity(UnityTransfer::Transfer transfer) {
     this->mTransfer = transfer;
 }
 
-void UnityTransfer::transformToUnity(jbyte *yuvData, int width, int height, int degree) {
+void UnityTransfer::transformToUnity(jbyte *yuvData, int width, int height, int degree,jboolean mirror) {
     //宽高改变时重新初始化
     if(mUnityMsg->uvPtr == nullptr || mUnityMsg->width != width || mUnityMsg->height != height){
         mUnityMsg->width = width;
@@ -35,6 +35,8 @@ void UnityTransfer::transformToUnity(jbyte *yuvData, int width, int height, int 
     mUnityMsg->yPtr = yuvData;
     //旋转角度
     mUnityMsg->degree = degree;
+    //翻转控制
+//    mUnityMsg->mirror = mirror ? 1 : 0;
     //传送给Unity
     transform();
 }
