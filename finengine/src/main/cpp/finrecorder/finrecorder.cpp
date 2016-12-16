@@ -5,7 +5,7 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-#include "../utils.h"
+#include "../glslutils.h"
 #include "../log.h"
 #include <android/native_window_jni.h>
 #include "FinRecorderHolder.h"

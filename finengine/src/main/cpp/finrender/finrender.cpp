@@ -6,7 +6,7 @@
 #include "../log.h"
 #include <GLES2/gl2.h>
 #include <EGL/egl.h>
-#include "../utils.h"
+#include "../glslutils.h"
 #include <android/native_window_jni.h>
 #include <GLES2/gl2ext.h>
 
