@@ -51,7 +51,7 @@ public class UnityActivity extends UnityBaseActivity implements SurfaceHolder.Ca
 
     @Override
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean frontCurrent) {
-        UnityTransfer.onVideoBuffer(data,frameWidth,frameHeight,degree);
+        UnityTransfer.onVideoBuffer(data,frameWidth,frameHeight,degree,frontCurrent);
 
         mFrameMeter.meter();
     }
