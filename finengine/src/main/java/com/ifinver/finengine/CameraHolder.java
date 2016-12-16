@@ -241,74 +241,74 @@ public class CameraHolder {
 
                 try {
                     Camera.Parameters params = mCamera.getParameters();
+                    //格式
+                    params.setPreviewFormat(ImageFormat.NV21);
+                    //预览大小
                     List<Camera.Size> sizes = params.getSupportedPreviewSizes();
                     if (sizes != null) {
-                        //格式
-                        params.setPreviewFormat(ImageFormat.NV21);
-                        //大小
                         CameraSize frameSize = calculateCameraFrameSize(sizes, mExpectedWidth, mExpectedHeight);
                         Log.w(TAG, "预览设置为 " + frameSize.width + "x" + frameSize.height);
                         params.setPreviewSize(frameSize.width, frameSize.height);
                         mCamera.setParameters(params);
-                        //帧率
-                        Camera.Parameters localParam = mCamera.getParameters();
-                        List<int[]> support = localParam.getSupportedPreviewFpsRange();
-                        if (support.size() > 0) {
-                            int[] ints = support.get(0);
-                            int max = Math.max(ints[0], ints[1]);
-                            for (int[] size : support) {
-                                max = Math.max(max, size[1]);
-                            }
-                            localParam.setPreviewFpsRange(max, max);
+                    }
+                    //帧率
+                    Camera.Parameters localParam = mCamera.getParameters();
+                    List<int[]> support = localParam.getSupportedPreviewFpsRange();
+                    if (support.size() > 0) {
+                        int[] ints = support.get(0);
+                        int max = Math.max(ints[0], ints[1]);
+                        for (int[] size : support) {
+                            max = Math.max(max, size[1]);
+                        }
+                        localParam.setPreviewFpsRange(max, max);
+                        try {
+                            mCamera.setParameters(localParam);
+                            params = mCamera.getParameters();
+                            Log.w(TAG, "帧率设置为:[" + max + "," + max + "]");
+                        } catch (Exception e) {
+                            Log.e(TAG, "WTF,不能设置为:[" + max + "," + max + "]，尝试设置为[" + ((int)(max * 0.9)) + "," + max + "]");
+                            localParam = mCamera.getParameters();
                             try {
+                                localParam.setPreviewFpsRange((int) (max * 0.9), max);
                                 mCamera.setParameters(localParam);
                                 params = mCamera.getParameters();
-                                Log.w(TAG, "帧率设置为:[" + max + "," + max + "]");
-                            } catch (Exception e) {
-                                Log.e(TAG, "WTF,不能设置为:[" + max + "," + max + "]，尝试设置为[" + ((int)(max * 0.9)) + "," + max + "]");
-                                localParam = mCamera.getParameters();
-                                try {
-                                    localParam.setPreviewFpsRange((int) (max * 0.9), max);
-                                    mCamera.setParameters(localParam);
-                                    params = mCamera.getParameters();
-                                    Log.w(TAG, "帧率设置为[" + max * 0.9 + "," + max + "]");
-                                } catch (Exception e1) {
-                                    Log.e(TAG, "WTF,不能设置帧率");
-                                }
+                                Log.w(TAG, "帧率设置为[" + max * 0.9 + "," + max + "]");
+                            } catch (Exception e1) {
+                                Log.e(TAG, "WTF,不能设置帧率");
                             }
-                        } else {
-                            Log.e(TAG, "WTF,不能设置帧率");
                         }
-                        //优化
-                        //三星的机型也有问题，未知的问题机型较多，所以不使用
+                    } else {
+                        Log.e(TAG, "WTF,不能设置帧率");
+                    }
+                    //优化
+                    //三星的机型也有问题，未知的问题机型较多，所以不使用
 //                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH && !android.os.Build.MODEL.equals("GT-I9100")){
 //                        params.setRecordingHint(true);
 //                    }
-                        //聚焦
-                        List<String> FocusModes = params.getSupportedFocusModes();
-                        if (FocusModes != null && FocusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
-                            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
-                        }
-                        mCamera.setParameters(params);
-                        //记录宽高
-                        params = mCamera.getParameters();
-                        mFrameWidth = params.getPreviewSize().width;
-                        mFrameHeight = params.getPreviewSize().height;
-                        int size = mFrameWidth * mFrameHeight;
-                        size = size * ImageFormat.getBitsPerPixel(params.getPreviewFormat()) / 8;
-                        mVideoBuffer = new ByteBuffer[2];
-                        mVideoBuffer[0] = ByteBuffer.allocate(size);
-                        mVideoBuffer[1] = ByteBuffer.allocate(size);
-                        mSurfaceTexture = new SurfaceTexture(TEXTURE_ID);
-
-                        mCamera.addCallbackBuffer(mVideoBuffer[mVideoBufferIdx].array());
-                        mCamera.setPreviewCallbackWithBuffer(this);
-                        mCamera.setPreviewTexture(mSurfaceTexture);
-                        mCamera.startPreview();
-                        updateCameraDegree();
-                        Log.w(TAG, "开始Camera预览");
-                        init = true;
+                    //聚焦
+                    List<String> FocusModes = params.getSupportedFocusModes();
+                    if (FocusModes != null && FocusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
+                        params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
                     }
+                    mCamera.setParameters(params);
+                    //记录宽高
+                    params = mCamera.getParameters();
+                    mFrameWidth = params.getPreviewSize().width;
+                    mFrameHeight = params.getPreviewSize().height;
+                    int size = mFrameWidth * mFrameHeight;
+                    size = size * ImageFormat.getBitsPerPixel(params.getPreviewFormat()) / 8;
+                    mVideoBuffer = new ByteBuffer[2];
+                    mVideoBuffer[0] = ByteBuffer.allocate(size);
+                    mVideoBuffer[1] = ByteBuffer.allocate(size);
+                    mSurfaceTexture = new SurfaceTexture(TEXTURE_ID);
+
+                    mCamera.addCallbackBuffer(mVideoBuffer[mVideoBufferIdx].array());
+                    mCamera.setPreviewCallbackWithBuffer(this);
+                    mCamera.setPreviewTexture(mSurfaceTexture);
+                    mCamera.startPreview();
+                    updateCameraDegree();
+                    Log.w(TAG, "开始Camera预览");
+                    init = true;
                 } catch (Exception e) {
                     Log.e(TAG, "开启Camera失败！", e);
                 }
