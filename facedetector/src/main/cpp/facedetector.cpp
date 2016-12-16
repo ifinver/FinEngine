@@ -39,3 +39,19 @@ JNIEXPORT void JNICALL Java_com_ifinver_facedetect_FaceDetector_nativeRelease(JN
         mXcFaceDetector = NULL;
     }
 }
+
+JNIEXPORT void JNICALL Java_com_ifinver_facedetect_FaceDetector_nativeSetProcessModel(JNIEnv *, jclass , jlong model){
+    if(mXcFaceDetector != NULL){
+        mXcFaceDetector->setProcessModel((long) model);
+    }
+}
+JNIEXPORT void JNICALL Java_com_ifinver_facedetect_FaceDetector_nativeSetFaceBrightLevel(JNIEnv *, jclass , jint brightLevel){
+    if(mXcFaceDetector != NULL){
+        mXcFaceDetector->setFaceBrightLevel(brightLevel);
+    }
+}
+JNIEXPORT void JNICALL Java_com_ifinver_facedetect_FaceDetector_nativeSetFaceSkinSoftenLevel(JNIEnv *, jclass , jint skinSoftenLevel){
+    if(mXcFaceDetector != NULL){
+        mXcFaceDetector->setFaceSkinSoftenLevel(skinSoftenLevel);
+    }
+}

@@ -13,9 +13,12 @@ import java.io.InputStream;
  */
 
 public class FaceDetector {
+    public static int ASL_PROCESS_MODEL_FACEOUTLINE = 1;
+    public static int ASL_PROCESS_MODEL_FACEBEAUTY = 2;
     static{
         System.loadLibrary("face-detect-lib");
     }
+
     private static final String TAG = "FaceDetector";
 
     private static boolean initialized = false;
@@ -70,6 +73,23 @@ public class FaceDetector {
         Log.d(TAG,"人脸检测已释放");
     }
 
+    public static void setProcessModel(long model) {
+        if(initialized) {
+            nativeSetProcessModel(model);
+        }
+    }
+
+    public static void setFaceBrightLevel(int brightLevel) {
+        if(initialized) {
+            nativeSetFaceBrightLevel(brightLevel);
+        }
+    }
+
+    public static void setFaceSkinSoftenLevel(int skinSoftenLevel) {
+        if(initialized) {
+            nativeSetFaceSkinSoftenLevel(skinSoftenLevel);
+        }
+    }
 
 
     private static native int nativeInit(Context ctx, String absolutePath);
@@ -77,5 +97,9 @@ public class FaceDetector {
     private static native long nativeProcess(byte[] data, int width, int height);
 
     private static native void nativeRelease();
+
+    private static native void nativeSetProcessModel(long model);
+    private static native void nativeSetFaceBrightLevel(int brightLevel);
+    private static native void nativeSetFaceSkinSoftenLevel(int skinSoftenLevel);
 
 }
