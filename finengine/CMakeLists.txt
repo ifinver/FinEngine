@@ -27,6 +27,9 @@ add_library(fin-engine-lib
             ${PROJECT_SOURCE_DIR}/src/main/cpp/finrender/FinRenderHolder.cpp
             #==========open cv blew
             ${PROJECT_SOURCE_DIR}/src/main/cpp/opencv/xcv.cpp
+            ${PROJECT_SOURCE_DIR}/src/main/cpp/opencv/xcvcore.cpp
+            ${PROJECT_SOURCE_DIR}/src/main/cpp/opencv/FaceSwapper.cpp
+            ${PROJECT_SOURCE_DIR}/src/main/cpp/opencv/main.cpp
             )
 target_link_libraries(fin-engine-lib
                     lib_opencv

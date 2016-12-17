@@ -18,6 +18,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.ifinver.finengine.FinCv;
+import com.ifinver.finenginesample.opencv.XcvActivity;
 import com.ifinver.finenginesample.unity.UnityActivity;
 import com.ifinver.finenginesample.singleswitch.SingleActivity;
 
@@ -65,6 +66,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 return true;
             case R.id.menu_activity_switch:
                 startActivity(new Intent(this, SingleActivity.class));
+                return true;
+            case R.id.menu_activity_swap:
+                startActivity(new Intent(this, XcvActivity.class));
                 return true;
         }
         return super.onOptionsItemSelected(item);

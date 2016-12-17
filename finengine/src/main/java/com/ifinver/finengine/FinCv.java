@@ -11,4 +11,6 @@ public class FinCv {
     }
 
     public static native int[] BGRA2Grey(int[] data,int width,int height);
+
+    public static native void swapFace(long nativeObj);
 }

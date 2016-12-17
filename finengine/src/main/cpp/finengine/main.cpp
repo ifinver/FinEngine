@@ -3,7 +3,7 @@
 #include <android/native_window_jni.h>
 #include <sstream>
 #include <android/asset_manager_jni.h>
-#include "inc/faceresult.h"
+#include "../opencv/xcvcore.h"
 
 JNIEXPORT jlong JNICALL
 Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSurface) {
@@ -191,30 +191,9 @@ void renderFrame(GLContextHolder *engineHolder,jbyte *data, jint width, jint hei
         engineHolder->currentProgram = engineHolder->targetProgram;
         LOGI("切换滤镜成功！");
     }
-    FaceDetectResult* faceData = NULL;
-    try{
-        faceData = (FaceDetectResult *) facePtr;
-    }catch (...){
-        LOGE("%s","不能转换出face detect result");
-    }
-    if(faceData != NULL){
-        //这里拿到了数据
-        if (faceData->nFaceCountInOut > 0) {
-            for (int nFaceIndex = 0; nFaceIndex < faceData->nFaceCountInOut; nFaceIndex++) {
-                // face rect
-                MRECT rcFace = faceData->rcFaceRectOut[nFaceIndex];
-                // face orientation
-                MFloat fRoll = faceData->faceOrientOut[nFaceIndex * 3 + 0];
-                MFloat fYaw = faceData->faceOrientOut[nFaceIndex * 3 + 1];
-                MFloat fPitch = faceData->faceOrientOut[nFaceIndex * 3 + 2];
-                // face outline points
-                for (int i = 0; i < faceData->faceOutlinePointCount; i++) {
-                    MPOINT ptIndex = faceData->pFaceOutlinePointOut[nFaceIndex * faceData->faceOutlinePointCount + i];
-                }
-//                LOGE("face fRoll=%f,fYaw=%f,fPitch=%f",fRoll,fYaw,fPitch);
-            }
-        }
-    }
+
+    unsigned char *swapped = xcv_swapFace(data, width, height, (long long) facePtr);
+//    unsigned char *swapped = NULL;
 
     //输入顶点
     glEnableVertexAttribArray(engineHolder->posAttrVertices);
@@ -223,7 +202,12 @@ void renderFrame(GLContextHolder *engineHolder,jbyte *data, jint width, jint hei
     //上传纹理 Y通道
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, engineHolder->textures[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+    if(swapped == NULL){
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+    }else{
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, swapped);
+    }
+
     glUniform1i(engineHolder->posUniTextureY, 0);
 
     //上传UV通道

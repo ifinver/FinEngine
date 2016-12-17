@@ -3,14 +3,14 @@
 //
 
 #include "xcv.h"
+#include "xcvcore.h"
+#include <string>
 #include <jni.h>
 using namespace cv;
-
-
+using namespace std;
 
 JNIEXPORT jintArray JNICALL Java_com_ifinver_finengine_FinCv_BGRA2Grey(JNIEnv *env, jclass type, jintArray data_, jint w, jint h) {
     jint *pixels = env->GetIntArrayElements(data_, NULL);
-    //转换成单通道
     cv::Mat imgData(h, w, CV_8UC4, pixels);
     uchar *ptr = imgData.ptr(0);
     for (int i = 0; i < w * h; i++) {
@@ -26,4 +26,8 @@ JNIEXPORT jintArray JNICALL Java_com_ifinver_finengine_FinCv_BGRA2Grey(JNIEnv *e
     env->SetIntArrayRegion(result, 0, size, pixels);
     env->ReleaseIntArrayElements(data_, pixels, 0);
     return result;
+}
+
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinCv_swapFace(JNIEnv *env, jclass type,jlong matObj){
+    xcv_swapFace(env,matObj);
 }

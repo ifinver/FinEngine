@@ -33,3 +33,4 @@ android {
         }
     }
 }
+apply from: "dependencies.gradle"
