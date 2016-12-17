@@ -1,19 +1,20 @@
 #include "FaceSwapper.h"
 #include <opencv2/opencv.hpp>
 
-FaceSwapper::FaceSwapper(const std::string landmarks_path) {
+FaceSwapper::FaceSwapper() {
 }
 
 
 FaceSwapper::~FaceSwapper() {
 }
 
-void FaceSwapper::swapFaces(cv::Mat &frame, cv::Rect &rect_ann, cv::Rect &rect_bob) {
-    small_frame = getMinFrame(frame, rect_ann, rect_bob);
+void FaceSwapper::swapFaces(cv::Mat frame, cv::Rect2i rect_ann, cv::Rect2i rect_bob, vector<cv::Point2i> vector1, vector<cv::Point2i> vector2) {
+    small_frame = getMinFrame(frame, rect_ann, rect_bob, vector1, vector2);
 
     frame_size = cv::Size(small_frame.cols, small_frame.rows);
 
-    getFacePoints(small_frame);
+    //已经在getMainFrame中格式化好点了
+//    getFacePoints(small_frame);
 
     getTransformationMatrices();
 
@@ -37,7 +38,7 @@ void FaceSwapper::swapFaces(cv::Mat &frame, cv::Rect &rect_ann, cv::Rect &rect_b
     pasteFacesOnFrame();
 }
 
-cv::Mat FaceSwapper::getMinFrame(const cv::Mat &frame, cv::Rect &rect_ann, cv::Rect &rect_bob) {
+cv::Mat FaceSwapper::getMinFrame(cv::Mat frame, cv::Rect2i rect_ann, cv::Rect2i rect_bob, vector<cv::Point2i> vector1, vector<cv::Point2i> vector2) {
     cv::Rect bounding_rect = rect_ann | rect_bob;
 
     bounding_rect -= cv::Point(50, 50);
@@ -45,67 +46,85 @@ cv::Mat FaceSwapper::getMinFrame(const cv::Mat &frame, cv::Rect &rect_ann, cv::R
 
     bounding_rect &= cv::Rect(0, 0, frame.cols, frame.rows);
 
-    this->rect_ann = rect_ann - bounding_rect.tl();
-    this->rect_bob = rect_bob - bounding_rect.tl();
+    cv::Point2i lfPoint = bounding_rect.tl();
+    this->rect_ann = rect_ann - lfPoint;
+    this->rect_bob = rect_bob - lfPoint;
 
     big_rect_ann = ((this->rect_ann - cv::Point(rect_ann.width / 4, rect_ann.height / 4)) + cv::Size(rect_ann.width / 2, rect_ann.height / 2)) &
                    cv::Rect(0, 0, bounding_rect.width, bounding_rect.height);
     big_rect_bob = ((this->rect_bob - cv::Point(rect_bob.width / 4, rect_bob.height / 4)) + cv::Size(rect_bob.width / 2, rect_bob.height / 2)) &
                    cv::Rect(0, 0, bounding_rect.width, bounding_rect.height);
 
+    //格式化人脸坐标点
+    points_ann.clear();
+    points_bob.clear();
+    for (int i = 0; i < vector1.size(); i++) {
+        points_ann.push_back(vector1[i] - lfPoint);
+        points_bob.push_back(vector2[i] - lfPoint);
+    }
+    affine_transform_keypoints_ann[0] = points_ann[5];
+    affine_transform_keypoints_ann[1] = points_ann[10];
+    affine_transform_keypoints_ann[2] = points_ann[15];
+
+    affine_transform_keypoints_bob[0] = points_bob[5];
+    affine_transform_keypoints_bob[1] = points_bob[10];
+    affine_transform_keypoints_bob[2] = points_bob[15];
+
+    feather_amount.width = feather_amount.height = (int) cv::norm(points_ann[0] - points_ann[6]) / 8;
+
     return frame(bounding_rect);
 }
 
 void FaceSwapper::getFacePoints(const cv::Mat &frame) {
-    using namespace dlib;
-
-    dlib_rects[0] = rectangle(rect_ann.x, rect_ann.y, rect_ann.x + rect_ann.width, rect_ann.y + rect_ann.height);
-    dlib_rects[1] = rectangle(rect_bob.x, rect_bob.y, rect_bob.x + rect_bob.width, rect_bob.y + rect_bob.height);
-
-    dlib_frame = frame;
-
-    shapes[0] = pose_model(dlib_frame, dlib_rects[0]);
-    shapes[1] = pose_model(dlib_frame, dlib_rects[1]);
-
-    auto getPoint = [&](int shape_index, int part_index) -> const cv::Point2i {
-        const auto &p = shapes[shape_index].part(part_index);
-        return cv::Point2i(p.x(), p.y());
-    };
-
-    points_ann[0] = getPoint(0, 0);
-    points_ann[1] = getPoint(0, 3);
-    points_ann[2] = getPoint(0, 5);
-    points_ann[3] = getPoint(0, 8);
-    points_ann[4] = getPoint(0, 11);
-    points_ann[5] = getPoint(0, 13);
-    points_ann[6] = getPoint(0, 16);
-
-    cv::Point2i nose_length = getPoint(0, 27) - getPoint(0, 30);
-    points_ann[7] = getPoint(0, 26) + nose_length;
-    points_ann[8] = getPoint(0, 17) + nose_length;
-
-
-    points_bob[0] = getPoint(1, 0);
-    points_bob[1] = getPoint(1, 3);
-    points_bob[2] = getPoint(1, 5);
-    points_bob[3] = getPoint(1, 8);
-    points_bob[4] = getPoint(1, 11);
-    points_bob[5] = getPoint(1, 13);
-    points_bob[6] = getPoint(1, 16);
-
-    nose_length = getPoint(1, 27) - getPoint(1, 30);
-    points_bob[7] = getPoint(1, 26) + nose_length;
-    points_bob[8] = getPoint(1, 17) + nose_length;
-
-    affine_transform_keypoints_ann[0] = points_ann[3];
-    affine_transform_keypoints_ann[1] = getPoint(0, 36);
-    affine_transform_keypoints_ann[2] = getPoint(0, 45);
-
-    affine_transform_keypoints_bob[0] = points_bob[3];
-    affine_transform_keypoints_bob[1] = getPoint(1, 36);
-    affine_transform_keypoints_bob[2] = getPoint(1, 45);
-
-    feather_amount.width = feather_amount.height = (int) cv::norm(points_ann[0] - points_ann[6]) / 8;
+//    using namespace dlib;
+//
+//    dlib_rects[0] = rectangle(rect_ann.x, rect_ann.y, rect_ann.x + rect_ann.width, rect_ann.y + rect_ann.height);
+//    dlib_rects[1] = rectangle(rect_bob.x, rect_bob.y, rect_bob.x + rect_bob.width, rect_bob.y + rect_bob.height);
+//
+//    dlib_frame = frame;
+//
+//    shapes[0] = pose_model(dlib_frame, dlib_rects[0]);
+//    shapes[1] = pose_model(dlib_frame, dlib_rects[1]);
+//
+//    auto getPoint = [&](int shape_index, int part_index) -> const cv::Point2i {
+//        const auto &p = shapes[shape_index].part(part_index);
+//        return cv::Point2i(p.x(), p.y());
+//    };
+//
+//    points_ann[0] = getPoint(0, 0);
+//    points_ann[1] = getPoint(0, 3);
+//    points_ann[2] = getPoint(0, 5);
+//    points_ann[3] = getPoint(0, 8);
+//    points_ann[4] = getPoint(0, 11);
+//    points_ann[5] = getPoint(0, 13);
+//    points_ann[6] = getPoint(0, 16);
+//
+//    cv::Point2i nose_length = getPoint(0, 27) - getPoint(0, 30);
+//    points_ann[7] = getPoint(0, 26) + nose_length;
+//    points_ann[8] = getPoint(0, 17) + nose_length;
+//
+//
+//    points_bob[0] = getPoint(1, 0);
+//    points_bob[1] = getPoint(1, 3);
+//    points_bob[2] = getPoint(1, 5);
+//    points_bob[3] = getPoint(1, 8);
+//    points_bob[4] = getPoint(1, 11);
+//    points_bob[5] = getPoint(1, 13);
+//    points_bob[6] = getPoint(1, 16);
+//
+//    nose_length = getPoint(1, 27) - getPoint(1, 30);
+//    points_bob[7] = getPoint(1, 26) + nose_length;
+//    points_bob[8] = getPoint(1, 17) + nose_length;
+//
+//    affine_transform_keypoints_ann[0] = points_ann[3];
+//    affine_transform_keypoints_ann[1] = getPoint(0, 36);
+//    affine_transform_keypoints_ann[2] = getPoint(0, 45);
+//
+//    affine_transform_keypoints_bob[0] = points_bob[3];
+//    affine_transform_keypoints_bob[1] = getPoint(1, 36);
+//    affine_transform_keypoints_bob[2] = getPoint(1, 45);
+//
+//    feather_amount.width = feather_amount.height = (int) cv::norm(points_ann[0] - points_ann[6]) / 8;
 }
 
 void FaceSwapper::getTransformationMatrices() {
@@ -160,10 +179,10 @@ void FaceSwapper::colorCorrectFaces() {
 }
 
 void FaceSwapper::featherMask(const cv::Mat &refined_masks) {
-    cv::erode(refined_masks, refined_masks, getStructuringElement(cv::MORPH_RECT, feather_amount), cv::Point(-1, -1), 1, cv::BORDER_CONSTANT,
-              cv::Scalar(0));
-
-    cv::blur(refined_masks, refined_masks, feather_amount, cv::Point(-1, -1), cv::BORDER_CONSTANT);
+//    cv::erode(refined_masks, refined_masks, getStructuringElement(cv::MORPH_RECT, feather_amount), cv::Point(-1, -1), 1, cv::BORDER_CONSTANT,
+//              cv::Scalar(0));
+//
+//    cv::blur(refined_masks, refined_masks, feather_amount, cv::Point(-1, -1), cv::BORDER_CONSTANT);
 }
 
 inline void FaceSwapper::pasteFacesOnFrame() {

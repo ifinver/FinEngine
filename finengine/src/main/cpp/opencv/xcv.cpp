@@ -29,5 +29,5 @@ JNIEXPORT jintArray JNICALL Java_com_ifinver_finengine_FinCv_BGRA2Grey(JNIEnv *e
 }
 
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinCv_swapFace(JNIEnv *env, jclass type,jlong matObj){
-    xcv_swapFace(env,matObj);
+//    xcv_swapFace(env,matObj);
 }

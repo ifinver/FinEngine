@@ -52,6 +52,19 @@ public:
 
     int currentFilter;
     GLuint defaultProgram;
+
+    GLuint programRGB;
+    GLuint posRgbAttrVertices;
+    GLuint posRgbAttrTexCoords;
+    GLuint posRgbAttrScaleX;
+    GLuint posRgbAttrScaleY;
+    GLuint posRgbUniTexture;
+
+    GLuint programPoint;
+    GLuint posPointAttrVertices;
+    GLuint posPointAttrScaleX;
+    GLuint posPointAttrScaleY;
+    GLuint posPointUniColor;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

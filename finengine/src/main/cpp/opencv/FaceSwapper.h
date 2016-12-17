@@ -8,15 +8,15 @@ class FaceSwapper
 {
 public:
     // Initialize face swapped with landmarks
-    FaceSwapper(const std::string landmarks_path);
+    FaceSwapper();
     ~FaceSwapper();
 
     //Swaps faces in rects on frame
-    void swapFaces(cv::Mat &frame, cv::Rect &rect_ann, cv::Rect &rect_bob);
+    void swapFaces(cv::Mat frame, cv::Rect2i rect_ann, cv::Rect2i rect_bob, vector<cv::Point2i> vector1, vector<cv::Point2i> vector2);
 
 private:
     // Returns minimal Mat containing both faces
-    cv::Mat getMinFrame(const cv::Mat &frame, cv::Rect &rect_ann, cv::Rect &rect_bob);
+    cv::Mat getMinFrame(cv::Mat frame, cv::Rect2i rect_ann, cv::Rect2i rect_bob, vector<cv::Point2i> vector1, vector<cv::Point2i> vector2);
 
     // Finds facial landmarks on faces and extracts the useful points
     void getFacePoints(const cv::Mat &frame);

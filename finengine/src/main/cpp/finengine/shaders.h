@@ -50,7 +50,7 @@ public:
 
     ShaderBase() {
         vertexShader =
-                        "precision highp float;                                   \n"
+                "precision highp float;                                   \n"
                         "attribute highp vec2 aPosition;                          \n"
                         "attribute highp vec2 aTexCoord;                          \n"
                         "attribute highp float aScaleX;                          \n"
@@ -95,6 +95,48 @@ public:
                         "   vec4 color = getBaseColor(vTexCoord);           \n"
                         "   gl_FragColor = color;                           \n"
                         "}                                                  \n";
+    }
+};
+
+class ShaderRGB : public ShaderBase {
+public:
+    ShaderRGB() {
+        fragmentShader =
+                "#extension GL_OES_EGL_image_external : require     \n"
+                        "precision highp float;                           \n"
+                        "varying highp vec2 vTexCoord;                            \n"
+                        "uniform sampler2D sTexture;                        \n"
+                        "                                                   \n"
+                        "void main(){                                       \n"
+                        "   gl_FragColor = texture2D(sTexture,vTexCoord);  \n"
+                        "}                                                  \n";
+    }
+};
+
+class ShaderPoint {
+public:
+    const char *vertexShader;
+    const char *fragmentShader;
+
+    ShaderPoint() {
+        vertexShader =
+                "precision highp float;                                   \n"
+                        "attribute highp vec2 aPosition;                          \n"
+                        "attribute highp float aScaleX;                          \n"
+                        "attribute highp float aScaleY;                          \n"
+                        "void main(){                                       \n"
+                        "   highp mat2 aScaleMtx = mat2(aScaleX,0,0,aScaleY);                                      \n"
+                        "   gl_Position = vec4(aScaleMtx * aPosition,1.0,1.0);                        \n"
+                        "   gl_PointSize = 10.0;\n"
+                        "}                                                  \n";
+
+        fragmentShader =
+                "precision highp float;                           \n"
+                        "uniform vec4 color;                           \n"
+                        "void main(){                                       \n"
+                        "   gl_FragColor = color;  \n"
+                        "}                                                  \n";
+
     }
 };
 

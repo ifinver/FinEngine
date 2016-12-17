@@ -4,6 +4,57 @@
 #include <sstream>
 #include <android/asset_manager_jni.h>
 #include "../opencv/xcvcore.h"
+#include <opencv2/opencv.hpp>
+
+using namespace cv;
+using namespace std;
+
+jboolean initPrograms(GLContextHolder *engineHolder) {
+
+    //point program
+    ShaderPoint pShader;
+    GLuint programPoint = createProgram(pShader.vertexShader, pShader.fragmentShader);
+    if (programPoint == 0) {
+        return JNI_FALSE;
+    }
+    glUseProgram(programPoint);
+    engineHolder->programPoint = programPoint;
+    engineHolder->posPointAttrVertices = (GLuint) glGetAttribLocation(programPoint, "aPosition");
+    engineHolder->posPointAttrScaleX = (GLuint) glGetAttribLocation(programPoint, "aScaleX");
+    engineHolder->posPointAttrScaleY = (GLuint) glGetAttribLocation(programPoint, "aScaleY");
+    engineHolder->posPointUniColor = (GLuint) glGetUniformLocation(programPoint, "color");
+
+    //rgb program
+    ShaderRGB rgbShader;
+    GLuint programRGB = createProgram(rgbShader.vertexShader, rgbShader.fragmentShader);
+    if (programRGB == 0) {
+        return JNI_FALSE;
+    }
+    glUseProgram(programRGB);
+    engineHolder->programRGB = programRGB;
+    engineHolder->posRgbAttrVertices = (GLuint) glGetAttribLocation(programRGB, "aPosition");
+    engineHolder->posRgbAttrTexCoords = (GLuint) glGetAttribLocation(programRGB, "aTexCoord");
+    engineHolder->posRgbAttrScaleX = (GLuint) glGetAttribLocation(programRGB, "aScaleX");
+    engineHolder->posRgbAttrScaleY = (GLuint) glGetAttribLocation(programRGB, "aScaleY");
+    engineHolder->posRgbUniTexture = (GLuint) glGetUniformLocation(programRGB, "sTexture");
+
+    ShaderNV21 yuvShader;
+    GLuint programYUV = createProgram(yuvShader.vertexShader, yuvShader.fragmentShader);
+    if (programYUV == 0) {
+        return JNI_FALSE;
+    }
+    glUseProgram(programYUV);
+    engineHolder->defaultProgram = engineHolder->targetProgram = engineHolder->currentProgram = programYUV;
+    engineHolder->currentFilter = 0;
+
+    engineHolder->posAttrVertices = (GLuint) glGetAttribLocation(programYUV, "aPosition");
+    engineHolder->posAttrTexCoords = (GLuint) glGetAttribLocation(programYUV, "aTexCoord");
+    engineHolder->posAttrScaleX = (GLuint) glGetAttribLocation(programYUV, "aScaleX");
+    engineHolder->posAttrScaleY = (GLuint) glGetAttribLocation(programYUV, "aScaleY");
+    engineHolder->posUniTextureY = (GLuint) glGetUniformLocation(programYUV, "yTexture");
+    engineHolder->posUniTextureUV = (GLuint) glGetUniformLocation(programYUV, "uvTexture");
+    return JNI_TRUE;
+}
 
 JNIEXPORT jlong JNICALL
 Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSurface) {
@@ -61,14 +112,6 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
         return JNI_FALSE;
     }
 
-    //context create success,now create program
-    ShaderBase shader = ShaderNV21();
-    GLuint programYUV = createProgram(shader.vertexShader, shader.fragmentShader);
-//    delete shader;
-    if (programYUV == 0) {
-        return JNI_FALSE;
-    }
-
     // Use tightly packed data
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -80,16 +123,9 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
     engineHolder->eglContext = eglContext;
     engineHolder->eglSurface = eglSurface;
 
-    glUseProgram(programYUV);
-    engineHolder->defaultProgram = engineHolder->targetProgram = engineHolder->currentProgram = programYUV;
-    engineHolder->currentFilter = 0;
-
-    engineHolder->posAttrVertices = (GLuint) glGetAttribLocation(programYUV, "aPosition");
-    engineHolder->posAttrTexCoords = (GLuint) glGetAttribLocation(programYUV, "aTexCoord");
-    engineHolder->posAttrScaleX = (GLuint) glGetAttribLocation(programYUV, "aScaleX");
-    engineHolder->posAttrScaleY = (GLuint) glGetAttribLocation(programYUV, "aScaleY");
-    engineHolder->posUniTextureY = (GLuint) glGetUniformLocation(programYUV, "yTexture");
-    engineHolder->posUniTextureUV = (GLuint) glGetUniformLocation(programYUV, "uvTexture");
+    if (!initPrograms(engineHolder)) {
+        return JNI_FALSE;
+    }
 
     //tex
     GLuint *textures = new GLuint[2];
@@ -121,69 +157,177 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_finengine_FinEngine_nativeRelease(JNIEnv *, jclass,jlong engine) {
+Java_com_ifinver_finengine_FinEngine_nativeRelease(JNIEnv *, jclass, jlong engine) {
     releaseGLContext((GLContextHolder *) engine);
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *env, jclass, jlong engine,jbyteArray data_, jint frameWidth, jint frameHeight,
-                                                  jint degree, jboolean mirror, jint outWidth, jint outHeight,jlong facePtr) {
+Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *env, jclass, jlong engine, jbyteArray data_, jint frameWidth, jint frameHeight,
+                                                  jint degree, jboolean mirror, jint outWidth, jint outHeight, jlong facePtr) {
     jbyte *data = env->GetByteArrayElements(data_, 0);
     GLContextHolder *engineHolder = (GLContextHolder *) engine;
-    renderFrame(engineHolder,data, frameWidth, frameHeight, degree, mirror, outWidth, outHeight,facePtr);
+    renderFrame(engineHolder, data, frameWidth, frameHeight, degree, mirror, outWidth, outHeight, facePtr);
 
     env->ReleaseByteArrayElements(data_, data, JNI_ABORT);
 }
 
-JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(JNIEnv *env, jobject ,jlong engine,jobject mAssetManager, jint mFilterType,jstring vertex_,jstring frag_){
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(JNIEnv *env, jobject, jlong engine, jobject mAssetManager,
+                                                                               jint mFilterType, jstring vertex_, jstring frag_) {
     GLContextHolder *engineHolder = (GLContextHolder *) engine;
-    if(mFilterType == engineHolder->currentFilter){
+    if (mFilterType == engineHolder->currentFilter) {
         LOGI("选择的滤镜和上一个滤镜相同");
         return;
     }
-    if(mFilterType == 0){
+    if (mFilterType == 0) {
         LOGI("切换至空滤镜");
         engineHolder->targetProgram = engineHolder->defaultProgram;
         engineHolder->currentFilter = 0;
         return;
     }
-    AAssetManager* mgr = AAssetManager_fromJava(env, mAssetManager);
-    if(mgr == NULL){
+    AAssetManager *mgr = AAssetManager_fromJava(env, mAssetManager);
+    if (mgr == NULL) {
         LOGE("切换滤镜失败，AAssetManager不可用");
         return;
     }
     //load vertex
     const char *vertexName = env->GetStringUTFChars(vertex_, 0);
-    AAsset* vertexAsset = AAssetManager_open(mgr, vertexName, AASSET_MODE_BUFFER);
+    AAsset *vertexAsset = AAssetManager_open(mgr, vertexName, AASSET_MODE_BUFFER);
     env->ReleaseStringUTFChars(vertex_, vertexName);
     off_t length = AAsset_getLength(vertexAsset);
-    char* vertexContent = new char[length+1];
+    char *vertexContent = new char[length + 1];
     AAsset_read(vertexAsset, vertexContent, (size_t) length);
     AAsset_close(vertexAsset);
     vertexContent[length] = '\0';
 
     //load fragment
     const char *fragmentName = env->GetStringUTFChars(frag_, 0);
-    AAsset* fragAsset = AAssetManager_open(mgr, fragmentName, AASSET_MODE_BUFFER);
+    AAsset *fragAsset = AAssetManager_open(mgr, fragmentName, AASSET_MODE_BUFFER);
     env->ReleaseStringUTFChars(frag_, fragmentName);
     length = AAsset_getLength(fragAsset);
-    char* fragmentContent = new char[length+1];
+    char *fragmentContent = new char[length + 1];
     AAsset_read(fragAsset, fragmentContent, (size_t) length);
     AAsset_close(fragAsset);
     fragmentContent[length] = '\0';
 
-    GLuint targetP = createProgram(vertexContent,fragmentContent);
+    GLuint targetP = createProgram(vertexContent, fragmentContent);
     if (targetP == 0) {
         LOGE("切换滤镜失败,编译出错");
-        return ;
+        return;
     }
     engineHolder->targetProgram = targetP;
     engineHolder->currentFilter = mFilterType;
 }
 
+vector<Point2i> hull1;
+vector<Point2i> hull2;
+
 //.........................................................................................................................
-void renderFrame(GLContextHolder *engineHolder,jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight,jlong facePtr) {
-    if(engineHolder->targetProgram != engineHolder->currentProgram) {
+void renderFrame(GLContextHolder *engineHolder, jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight,
+                 jlong facePtr) {
+    unsigned char *swappedRgbaFrame = xcv_swapFace(data, width, height, (long long) facePtr, &hull1, &hull2);
+    if (swappedRgbaFrame == NULL) {
+        renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight);
+    } else {
+        renderRgb(engineHolder, swappedRgbaFrame, width, height, degree, mirror, outWidth, outHeight);
+    }
+}
+
+void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
+               jint outHeight) {
+    glUseProgram(engineHolder->programRGB);
+    engineHolder->currentProgram = engineHolder->programRGB;
+
+    //输入顶点
+    glEnableVertexAttribArray(engineHolder->posAttrVertices);
+    glVertexAttribPointer(engineHolder->posAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, VERTICES_COORD);
+
+    //输入纹理坐标，处理旋转和镜像
+    glEnableVertexAttribArray(engineHolder->posAttrTexCoords);
+    if (engineHolder->frameDegree != degree) {
+        engineHolder->frameDegree = degree;
+        degree %= 360;
+        if (degree < 0) degree += 360;
+        int idx;
+        const float *inputTextureCoord;
+        if (mirror) {
+            idx = degree / 90 * 2;
+            inputTextureCoord = TEXTURE_COORD_MIRROR + idx;
+        } else {
+            degree = 360 - degree;
+            idx = degree / 90 * 2;
+            inputTextureCoord = TEXTURE_COORD_NOR + idx;
+        }
+        engineHolder->inputTextureCorrd = inputTextureCoord;
+    }
+    glVertexAttribPointer(engineHolder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, engineHolder->inputTextureCorrd);
+
+    //上传RGB纹理
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, engineHolder->textures[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+    if (engineHolder->frameWidth != width
+        || engineHolder->frameHeight != height
+        || engineHolder->outWidth != outWidth
+        || engineHolder->outHeight != outHeight) {
+
+        engineHolder->frameWidth = width;
+        engineHolder->frameHeight = height;
+        engineHolder->outWidth = outWidth;
+        engineHolder->outHeight = outHeight;
+
+        jint odd = degree / 90;
+        if (odd == 1 || odd == 3) {
+            //如果旋转了90°，交换长和宽
+            int temp = width;
+            width = height;
+            height = temp;
+        }
+
+        float fixWidth, fixHeight;
+        if ((float) width / height >= (float) outWidth / outHeight) {
+            fixHeight = height;
+            fixWidth = (float) height / outHeight * outWidth;
+        } else {
+            fixWidth = width;
+            fixHeight = (float) width / outWidth * outHeight;
+        }
+
+        engineHolder->frameScaleX = width / fixWidth;
+        engineHolder->frameScaleY = height / fixHeight;
+    }
+
+
+    glVertexAttrib1f(engineHolder->posAttrScaleX, engineHolder->frameScaleX);
+    glVertexAttrib1f(engineHolder->posAttrScaleY, engineHolder->frameScaleY);
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+    glDisableVertexAttribArray(engineHolder->posAttrVertices);
+    glDisableVertexAttribArray(engineHolder->posAttrTexCoords);
+
+    //画点
+    if (hull1.size() > 0) {
+        glUseProgram(engineHolder->programPoint);
+//        glEnableVertexAttribArray(engineHolder->posPointAttrVertices);
+//        glVertexAttribPointer(engineHolder->posPointAttrVertices, 2, GL_INT, GL_FALSE, 0, hull1.data());
+        glVertexAttrib2f(engineHolder->posPointAttrVertices,width/2.0f,height/2.0f);
+        glVertexAttrib1f(engineHolder->posPointAttrScaleX, engineHolder->frameScaleX);
+        glVertexAttrib1f(engineHolder->posPointAttrScaleY, engineHolder->frameScaleY);
+        glUniform4f(engineHolder->posPointUniColor, 1.0f, 0.0f, 0.0f, 1.0f);
+        glDrawArrays(GL_POINTS, 0, hull1.size());
+        checkGlError("DrawPoint");
+        LOGI("%s","draw points");
+    }
+
+//    glFinish();
+    eglSwapBuffers(engineHolder->eglDisplay, engineHolder->eglSurface);
+
+}
+
+void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
+               jint outHeight) {
+    if (engineHolder->targetProgram != engineHolder->currentProgram) {
         glUseProgram(engineHolder->targetProgram);
         if (engineHolder->currentProgram != engineHolder->defaultProgram) { //默认滤镜不删
             glDeleteProgram(engineHolder->currentProgram);
@@ -192,7 +336,7 @@ void renderFrame(GLContextHolder *engineHolder,jbyte *data, jint width, jint hei
         LOGI("切换滤镜成功！");
     }
 
-    unsigned char *swapped = xcv_swapFace(data, width, height, (long long) facePtr);
+
 //    unsigned char *swapped = NULL;
 
     //输入顶点
@@ -202,11 +346,7 @@ void renderFrame(GLContextHolder *engineHolder,jbyte *data, jint width, jint hei
     //上传纹理 Y通道
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, engineHolder->textures[0]);
-    if(swapped == NULL){
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
-    }else{
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, swapped);
-    }
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
 
     glUniform1i(engineHolder->posUniTextureY, 0);
 
@@ -236,10 +376,10 @@ void renderFrame(GLContextHolder *engineHolder,jbyte *data, jint width, jint hei
     }
     glVertexAttribPointer(engineHolder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, engineHolder->inputTextureCorrd);
 
-    if(engineHolder->frameWidth != width
-            || engineHolder->frameHeight != height
-            || engineHolder->outWidth != outWidth
-            || engineHolder->outHeight != outHeight){
+    if (engineHolder->frameWidth != width
+        || engineHolder->frameHeight != height
+        || engineHolder->outWidth != outWidth
+        || engineHolder->outHeight != outHeight) {
 
         engineHolder->frameWidth = width;
         engineHolder->frameHeight = height;
@@ -285,7 +425,7 @@ void releaseGLContext(GLContextHolder *engineHolder) {
     if (engineHolder != NULL) {
         glDeleteTextures(engineHolder->textureNums, engineHolder->textures);
         glDeleteProgram(engineHolder->currentProgram);
-        if(engineHolder->currentProgram != engineHolder->targetProgram){
+        if (engineHolder->currentProgram != engineHolder->targetProgram) {
             glDeleteProgram(engineHolder->targetProgram);
         }
         eglDestroySurface(engineHolder->eglDisplay, engineHolder->eglSurface);
