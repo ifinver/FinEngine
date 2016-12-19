@@ -49,9 +49,11 @@ public:
     GLuint programRGB;
     GLuint posRgbAttrVertices;
     GLuint posRgbAttrTexCoords;
-    GLuint posRgbAttrScaleX;
-    GLuint posRgbAttrScaleY;
     GLuint posRgbUniTexture;
+    GLuint posRgbUniScaleX;
+    GLuint posRgbUniScaleY;
+    GLuint posRgbUniRotation;
+    GLuint posRgbUniMirror;
 
     GLuint programPoint;
     GLuint posPointAttrVertices;
@@ -63,6 +65,9 @@ public:
     GLuint posUniScaleY;
     GLuint posUniRotation;
     GLuint posUniMirror;
+
+
+
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

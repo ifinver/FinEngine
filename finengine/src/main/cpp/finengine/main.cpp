@@ -35,8 +35,11 @@ jboolean initPrograms(GLContextHolder *engineHolder) {
     engineHolder->programRGB = programRGB;
     engineHolder->posRgbAttrVertices = (GLuint) glGetAttribLocation(programRGB, "aPosition");
     engineHolder->posRgbAttrTexCoords = (GLuint) glGetAttribLocation(programRGB, "aTexCoord");
-    engineHolder->posRgbAttrScaleX = (GLuint) glGetAttribLocation(programRGB, "aScaleX");
-    engineHolder->posRgbAttrScaleY = (GLuint) glGetAttribLocation(programRGB, "aScaleY");
+
+    engineHolder->posRgbUniScaleX = (GLuint) glGetUniformLocation(programRGB, "uScaleX");
+    engineHolder->posRgbUniScaleY = (GLuint) glGetUniformLocation(programRGB, "uScaleY");
+    engineHolder->posRgbUniRotation = (GLuint) glGetUniformLocation(programRGB, "uRotation");
+    engineHolder->posRgbUniMirror = (GLuint) glGetUniformLocation(programRGB, "mirror");
     engineHolder->posRgbUniTexture = (GLuint) glGetUniformLocation(programRGB, "sTexture");
 
     //yuv program

@@ -33,45 +33,40 @@ public:
     ShaderBase() {
         vertexShader =
                 "precision highp float;                                   \n"
-                        "attribute highp vec2 aPosition;                          \n"
-                        "attribute highp vec2 aTexCoord;                          \n"
-                        "uniform highp int uRotation;                          \n"
-                        "uniform highp float uScaleX;                          \n"
-                        "uniform highp float uScaleY;                          \n"
-                        "varying highp vec2 vTexCoord;                            \n"
-                        "void main(){                                       \n"
-                        "   vTexCoord = aTexCoord;  \n"
-                        "   vec2 rotPos = aPosition;    \n"
-                        "   if(uRotation == 1){            \n"
-                        "       rotPos = aPosition * mat2(0,-1,1,0);                            \n"
-                        "   }else if(uRotation == 2){                                \n"
-                        "       rotPos = aPosition * mat2(-1,0,0,-1);                            \n"
-                        "   }else if(uRotation == 3){                  \n"
-                        "       rotPos = aPosition * mat2(0,1,-1,0);                            \n"
-                        "   }                              \n"
-                        "                                      \n"
-                        "   mat2 scaleMtx = mat2(uScaleX,0,0,uScaleY);                                      \n"
-                        "   gl_Position = vec4(scaleMtx * rotPos,1.0,1.0);                        \n"
-                        "}                                                  \n";
+                        "attribute highp vec2 aPosition;                  \n"
+                        "attribute highp vec2 aTexCoord;                  \n"
+                        "uniform highp int uRotation;                     \n"
+                        "uniform highp float uScaleX;                     \n"
+                        "uniform highp float uScaleY;                     \n"
+                        "varying highp vec2 vTexCoord;                    \n"
+                        "void main(){                                     \n"
+                        "   vTexCoord = aTexCoord;                        \n"
+                        "   vec2 rotPos = aPosition;                      \n"
+                        "   if(uRotation == 1){                           \n"
+                        "       rotPos = aPosition * mat2(0,-1,1,0);      \n"
+                        "   }else if(uRotation == 2){                     \n"
+                        "       rotPos = aPosition * mat2(-1,0,0,-1);     \n"
+                        "   }else if(uRotation == 3){                     \n"
+                        "       rotPos = aPosition * mat2(0,1,-1,0);      \n"
+                        "   }                                             \n"
+                        "                                                 \n"
+                        "   mat2 scaleMtx = mat2(uScaleX,0,0,uScaleY);    \n"
+                        "   gl_Position = vec4(scaleMtx * rotPos,1.0,1.0);\n"
+                        "}                                                \n";
     }
-
-//    ~ShaderBase(){
-//        delete vertexShader;
-//        delete fragmentShader;
-//    }
 };
 
 class ShaderNV21 : public ShaderBase {
 public:
     ShaderNV21() {
         fragmentShader =
-                "#extension GL_OES_EGL_image_external : require     \n"
-                        "precision highp float;                           \n"
-                        "varying highp vec2 vTexCoord;                            \n"
+                        "#extension GL_OES_EGL_image_external : require     \n"
+                        "precision highp float;                             \n"
+                        "varying highp vec2 vTexCoord;                      \n"
                         "uniform sampler2D yTexture;                        \n"
                         "uniform sampler2D uvTexture;                       \n"
-                        "uniform highp int uRotation;                          \n"
-                        "uniform int mirror;                                                   \n"
+                        "uniform highp int uRotation;                       \n"
+                        "uniform int mirror;                                \n"
                         "                                                   \n"
                         "vec4 getBaseColor(in vec2 coord){                  \n"
                         "   float r,g,b,y,u,v;                              \n"
@@ -85,32 +80,51 @@ public:
                         "   return vec4(r, g, b, 1.0);                      \n"
                         "}                                                  \n"
                         "                                                   \n"
-                        "void main(){                                       \n"
-                        "   vec2 mirrorCoord = vTexCoord;                                                \n"
-                        "   if(mirror == 1){\n"
-                        "       if(uRotation == 1 || uRotation == 3){\n"
+                        "vec2 mirrorUV(){                                   \n"
+                        "   vec2 mirrorCoord = vTexCoord;                   \n"
+                        "   if(mirror == 1){                                \n"
+                        "       if(uRotation == 1 || uRotation == 3){       \n"
                         "           mirrorCoord.y = 1.0 - mirrorCoord.y;    \n"
-                        "       }else{                                        \n"
-                        "           mirrorCoord.x = 1.0 - mirrorCoord.x;                                        \n"
-                        "       }                                                \n"
-                        "   }         \n"
-                        "   vec4 color = getBaseColor(mirrorCoord);           \n"
+                        "       }else{                                      \n"
+                        "           mirrorCoord.x = 1.0 - mirrorCoord.x;    \n"
+                        "       }                                           \n"
+                        "   }                                               \n"
+                        "   return mirrorCoord;                             \n"
+                        "}                                                  \n"
+                        "                                                   \n"
+                        "void main(){                                       \n"
+                        "   vec2 mirrorCoord = mirrorUV();                  \n"
+                        "   vec4 color = getBaseColor(mirrorCoord);         \n"
                         "   gl_FragColor = color;                           \n"
                         "}                                                  \n";
     }
 };
-
 class ShaderRGB : public ShaderBase {
 public:
     ShaderRGB() {
         fragmentShader =
-                "#extension GL_OES_EGL_image_external : require     \n"
-                        "precision highp float;                           \n"
-                        "varying highp vec2 vTexCoord;                            \n"
+                        "#extension GL_OES_EGL_image_external : require     \n"
+                        "precision highp float;                             \n"
+                        "varying highp vec2 vTexCoord;                      \n"
                         "uniform sampler2D sTexture;                        \n"
+                        "uniform highp int uRotation;                       \n"
+                        "uniform int mirror;                                \n"
+                        "                                                   \n"
+                        "vec2 mirrorUV(){                                   \n"
+                        "   vec2 mirrorCoord = vTexCoord;                   \n"
+                        "   if(mirror == 1){                                \n"
+                        "       if(uRotation == 1 || uRotation == 3){       \n"
+                        "           mirrorCoord.y = 1.0 - mirrorCoord.y;    \n"
+                        "       }else{                                      \n"
+                        "           mirrorCoord.x = 1.0 - mirrorCoord.x;    \n"
+                        "       }                                           \n"
+                        "   }                                               \n"
+                        "   return mirrorCoord;                             \n"
+                        "}                                                  \n"
                         "                                                   \n"
                         "void main(){                                       \n"
-                        "   gl_FragColor = texture2D(sTexture,vTexCoord);  \n"
+                        "   vec2 mirrorCoord = mirrorUV();                  \n"
+                        "   gl_FragColor = texture2D(sTexture,mirrorCoord); \n"
                         "}                                                  \n";
     }
 };
@@ -122,22 +136,22 @@ public:
 
     ShaderPoint() {
         vertexShader =
-                "precision highp float;                                   \n"
-                        "attribute highp vec2 aPosition;                          \n"
-                        "attribute highp float aScaleX;                          \n"
-                        "attribute highp float aScaleY;                          \n"
-                        "void main(){                                       \n"
-                        "   highp mat2 aScaleMtx = mat2(aScaleX,0,0,aScaleY);                                      \n"
-                        "   gl_Position = vec4(aScaleMtx * aPosition,1.0,1.0);                        \n"
-                        "   gl_PointSize = 10.0;\n"
-                        "}                                                  \n";
+                "precision highp float;                                         \n"
+                        "attribute highp vec2 aPosition;                        \n"
+                        "attribute highp float aScaleX;                         \n"
+                        "attribute highp float aScaleY;                         \n"
+                        "void main(){                                           \n"
+                        "   highp mat2 aScaleMtx = mat2(aScaleX,0,0,aScaleY);   \n"
+                        "   gl_Position = vec4(aScaleMtx * aPosition,1.0,1.0);  \n"
+                        "   gl_PointSize = 10.0;                                \n"
+                        "}                                                      \n";
 
         fragmentShader =
-                "precision highp float;                           \n"
-                        "uniform vec4 color;                           \n"
-                        "void main(){                                       \n"
-                        "   gl_FragColor = color;  \n"
-                        "}                                                  \n";
+                "precision highp float;                     \n"
+                        "uniform vec4 color;                \n"
+                        "void main(){                       \n"
+                        "   gl_FragColor = color;           \n"
+                        "}                                  \n";
 
     }
 };
