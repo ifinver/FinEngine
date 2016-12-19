@@ -229,15 +229,60 @@ vector<Point2i> hull2;
 
 void caculateScale(GLContextHolder *engineHolder, jint outWidth, jint outHeight, jint odd, jint &width, jint &height);
 
-GLfloat points[202];
+GLfloat points[2][202];
+
+void drawFacePoints(GLContextHolder *engineHolder,jlong facePtr,jint width,jint height){
+    FaceDetectResult *faceData = NULL;
+    try {
+        faceData = (FaceDetectResult *) facePtr;
+    } catch (...) {
+        LOGE("%s", "不能转换出face detect result");
+    }
+    if (faceData == NULL) {
+        return;
+    }
+    MInt32 localFaces = faceData->nFaceCountInOut;
+    if(localFaces > 0){
+        glUseProgram(engineHolder->programPoint);
+        engineHolder->currentProgram = engineHolder->programPoint;
+    }
+    for (int j = 0;j < localFaces ;j++) {
+        int idx = 0;
+        for (int i = 0; i < faceData->faceOutlinePointCount; i++) {
+            MPOINT ptIndex = faceData->pFaceOutlinePointOut[j * faceData->faceOutlinePointCount + i];
+            points[j][idx++] = (GLfloat)ptIndex.x / width * 2 -1;
+            points[j][idx++] = (GLfloat)ptIndex.y / height * 2 -1;
+        }
+        glEnableVertexAttribArray(engineHolder->posPointAttrVertices);
+        glVertexAttribPointer(engineHolder->posPointAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, points[j]);
+        glVertexAttrib1f(engineHolder->posPointAttrScaleX, engineHolder->frameScaleX);
+        glVertexAttrib1f(engineHolder->posPointAttrScaleY, engineHolder->frameScaleY);
+        glUniform4f(engineHolder->posPointUniColor, 0.0f, 1.0f, 0.0f, 1.0f);
+        glDrawArrays(GL_POINTS, 0, 101);
+        glDisableVertexAttribArray(engineHolder->posPointAttrVertices);
+    }
+    if(hull1.size() > 0){
+        int iii = 0;
+        for(int i = 0;i < hull1.size();i++){
+            points[0][iii++] = (GLfloat)hull1[i].x / width * 2 -1;
+            points[0][iii++] = (GLfloat)hull1[i].y / height * 2 -1;
+        }
+        glEnableVertexAttribArray(engineHolder->posPointAttrVertices);
+        glVertexAttribPointer(engineHolder->posPointAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, points[0]);
+        glVertexAttrib1f(engineHolder->posPointAttrScaleX, engineHolder->frameScaleX);
+        glVertexAttrib1f(engineHolder->posPointAttrScaleY, engineHolder->frameScaleY);
+        glUniform4f(engineHolder->posPointUniColor, 1.0f, 0.0f, 0.0f, 1.0f);
+        glDrawArrays(GL_POINTS, 0, hull1.size());
+        glDisableVertexAttribArray(engineHolder->posPointAttrVertices);
+    }
+}
 
 //.........................................................................................................................
 void renderFrame(GLContextHolder *engineHolder, jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight,
                  jlong facePtr) {
     unsigned char *swappedRgbaFrame = xcv_swapFace(data, width, height, (long long) facePtr, &hull1, &hull2);
-//    unsigned char *swappedRgbaFrame = NULL;
     if (swappedRgbaFrame == NULL) {
-        renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight);
+        renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight,facePtr);
     } else {
         renderRgb(engineHolder, swappedRgbaFrame, width, height, degree, mirror, outWidth, outHeight, facePtr);
     }
@@ -245,7 +290,6 @@ void renderFrame(GLContextHolder *engineHolder, jbyte *data, jint width, jint he
 
 void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
                jint outHeight, jlong facePtr) {
-    glViewport(0, 0, outWidth, outHeight);
     glUseProgram(engineHolder->programRGB);
     engineHolder->currentProgram = engineHolder->programRGB;
 
@@ -278,32 +322,7 @@ void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, j
     glDisableVertexAttribArray(engineHolder->posRgbAttrTexCoords);
 
     //画点
-//    FaceDetectResult *faceData = NULL;
-//    try {
-//        faceData = (FaceDetectResult *) facePtr;
-//    } catch (...) {
-//        LOGE("%s", "不能转换出face detect result");
-//    }
-//    if (faceData == NULL) {
-////        LOGE("%s", "人脸不够两张");
-//        return;
-//    }
-//    if (faceData->nFaceCountInOut > 0) {
-//        int idx = 0;
-//        for (int i = 0; i < faceData->faceOutlinePointCount; i++) {
-//            MPOINT ptIndex = faceData->pFaceOutlinePointOut[0 * faceData->faceOutlinePointCount + i];
-//            points[idx++] = (GLfloat)ptIndex.x / width;
-//            points[idx++] = (GLfloat)ptIndex.y / height;
-//        }
-//        glUseProgram(engineHolder->programPoint);
-//        glEnableVertexAttribArray(engineHolder->posPointAttrVertices);
-//        glVertexAttribPointer(engineHolder->posPointAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, points);
-////        glVertexAttrib2f(engineHolder->posPointAttrVertices,0.5f,0.5f);
-//        glVertexAttrib1f(engineHolder->posPointAttrScaleX, engineHolder->frameScaleX);
-//        glVertexAttrib1f(engineHolder->posPointAttrScaleY, engineHolder->frameScaleY);
-//        glUniform4f(engineHolder->posPointUniColor, 1.0f, 0.0f, 0.0f, 1.0f);
-//        glDrawArrays(GL_POINTS, 0, 101);
-//    }
+    drawFacePoints(engineHolder,facePtr,width,height);
 
     eglSwapBuffers(engineHolder->eglDisplay, engineHolder->eglSurface);
 
@@ -342,7 +361,7 @@ void caculateScale(GLContextHolder *engineHolder, jint outWidth, jint outHeight,
 }
 
 void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
-               jint outHeight) {
+               jint outHeight,jlong facePtr) {
     if (engineHolder->targetProgram != engineHolder->currentProgram) {
         glUseProgram(engineHolder->targetProgram);
         if (engineHolder->currentProgram != engineHolder->defaultProgram) { //默认滤镜不删
@@ -385,6 +404,9 @@ void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jin
 
     glDisableVertexAttribArray(engineHolder->posAttrVertices);
     glDisableVertexAttribArray(engineHolder->posAttrTexCoords);
+
+    drawFacePoints(engineHolder,facePtr,width,height);
+
 //    glFinish();
     eglSwapBuffers(engineHolder->eglDisplay, engineHolder->eglSurface);
 }

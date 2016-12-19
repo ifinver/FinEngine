@@ -29,7 +29,7 @@ void releaseGLContext(GLContextHolder *engineHolder);
 void renderFrame(GLContextHolder *engineHolder,jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight,jlong facePtr);
 
 void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
-               jint outHeight);
+               jint outHeight,jlong facePtr);
 
 void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
                jint outHeight, jlong i);

@@ -142,7 +142,8 @@ public:
                         "attribute highp float aScaleY;                         \n"
                         "void main(){                                           \n"
                         "   highp mat2 aScaleMtx = mat2(aScaleX,0,0,aScaleY);   \n"
-                        "   gl_Position = vec4(aScaleMtx * aPosition,1.0,1.0);  \n"
+                        "   vec2 rotPos = aPosition * mat2(0,-1,1,0);           \n"
+                        "   gl_Position = vec4(aScaleMtx * rotPos,1.0,1.0);     \n"
                         "   gl_PointSize = 10.0;                                \n"
                         "}                                                      \n";
 
