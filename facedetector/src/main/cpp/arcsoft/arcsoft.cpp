@@ -91,12 +91,12 @@ jlong ArcSoftSpotlight::process(jbyte *data, jint width, jint height) {
     OffScreenIn.ppu8Plane[0] = (MUInt8 *) data;
     OffScreenIn.ppu8Plane[1] = (MUInt8 *) (data + width * height);
 
-    faceDetectResult->nFaceCountInOut = ASL_MAX_FACE_NUM;
+    int faceInOut = ASL_MAX_FACE_NUM;
 
     MRESULT hr = ASL_Process(m_hEngine,
                              &OffScreenIn,
                              MNull,
-                             &faceDetectResult->nFaceCountInOut,
+                             &faceInOut,
                              faceDetectResult->pFaceOutlinePointOut,
                              faceDetectResult->rcFaceRectOut,
                              faceDetectResult->faceOrientOut);
@@ -104,8 +104,10 @@ jlong ArcSoftSpotlight::process(jbyte *data, jint width, jint height) {
     faceDetectResult->faceOutlinePointCount = ASL_GetFaceOutlinePointCount();
 
     if (hr == MOK) {
+        faceDetectResult->nFaceCountInOut = faceInOut;
         return (jlong) faceDetectResult;
     } else {
+        faceDetectResult->nFaceCountInOut = 0;
         return 0;
     }
 

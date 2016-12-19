@@ -13,26 +13,13 @@
 class GLContextHolder{
 public:
     EGLContext eglContext;
-
     EGLSurface eglSurface;
-
     EGLDisplay eglDisplay;
 
-    GLuint posAttrVertices;
-
-    GLuint posAttrTexCoords;
-
-    GLuint posUniTextureY;
-
-    GLuint posUniTextureUV;
-
+    GLuint *textures;
     int textureNums;
 
-    GLuint *textures;
-
-
     jint frameWidth;
-
     jint frameHeight;
     jint outWidth;
     jint outHeight;
@@ -40,11 +27,18 @@ public:
     float frameScaleY;
 
     GLuint targetProgram;
-
     GLuint currentProgram;
-
     int currentFilter;
+
     GLuint defaultProgram;
+    GLuint posUniScaleX;
+    GLuint posUniScaleY;
+    GLuint posUniRotation;
+    GLuint posUniMirror;
+    GLuint posAttrVertices;
+    GLuint posAttrTexCoords;
+    GLuint posUniTextureY;
+    GLuint posUniTextureUV;
 
     GLuint programRGB;
     GLuint posRgbAttrVertices;
@@ -60,14 +54,6 @@ public:
     GLuint posPointAttrScaleX;
     GLuint posPointAttrScaleY;
     GLuint posPointUniColor;
-
-    GLuint posUniScaleX;
-    GLuint posUniScaleY;
-    GLuint posUniRotation;
-    GLuint posUniMirror;
-
-
-
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

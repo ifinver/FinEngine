@@ -39,12 +39,13 @@ unsigned char *xcv_swapFace(signed char *data, int width, int height, long long 
     } catch (...) {
         LOGE("%s", "不能转换出face detect result");
     }
-    if (faceData == NULL) {
+    if (faceData == NULL ) {
 //        LOGE("%s", "人脸不够两张");
         return NULL;
     }
+    MInt32 faces = faceData->nFaceCountInOut;
 
-    if (faceData->nFaceCountInOut > 0) {
+    if (faces > 0) {
         // ann face rect
         MRECT rcFace = faceData->rcFaceRectOut[0];
         faceRectAnn->x = rcFace.left;
@@ -52,7 +53,7 @@ unsigned char *xcv_swapFace(signed char *data, int width, int height, long long 
         faceRectAnn->width = rcFace.right - rcFace.left;
         faceRectAnn->height = rcFace.bottom - rcFace.top;
     }
-    if (faceData->nFaceCountInOut > 1) {
+    if (faces > 1) {
         // ann face rect
         MRECT rcFace = faceData->rcFaceRectOut[1];
         faceRectBob->x = rcFace.left;
@@ -63,11 +64,11 @@ unsigned char *xcv_swapFace(signed char *data, int width, int height, long long 
     // face outline points
     facePointAnn.clear();
     facePointBob.clear();
-    if (faceData->nFaceCountInOut > 0) {
+    if (faces > 0) {
         for (int i = 0; i < faceData->faceOutlinePointCount; i++) {
             MPOINT ptIndex = faceData->pFaceOutlinePointOut[0 * faceData->faceOutlinePointCount + i];
             facePointAnn.push_back(Point2i(ptIndex.x, ptIndex.y));
-            if (faceData->nFaceCountInOut > 1) {
+            if (faces > 1) {
                 ptIndex = faceData->pFaceOutlinePointOut[1 * faceData->faceOutlinePointCount + i];
                 facePointBob.push_back(Point2i(ptIndex.x, ptIndex.y));
             }
@@ -76,19 +77,19 @@ unsigned char *xcv_swapFace(signed char *data, int width, int height, long long 
     //计算凸包
     (*hull1).clear();
     (*hull2).clear();
-    if (faceData->nFaceCountInOut > 0) {
+    if (facePointAnn.size() > 0) {
         hullIndex.clear();
         convexHull(facePointAnn, hullIndex, false, false);
 
         for (int i = 0; i < hullIndex.size(); i++) {
             (*hull1).push_back(facePointAnn[hullIndex[i]]);
-            if (faceData->nFaceCountInOut > 1) {
+            if (faces > 1) {
                 (*hull2).push_back(facePointBob[hullIndex[i]]);
             }
         }
     }
     cvtColor(*yuvFrame, *rgbFrame, CV_YUV2RGB_NV21);
-    if (faceData->nFaceCountInOut > 1) {
+    if (faces > 1) {
         try {
             face_swapper->swapFaces(*rgbFrame, *faceRectAnn, *faceRectBob, *hull1, *hull2);
         } catch (...) {
