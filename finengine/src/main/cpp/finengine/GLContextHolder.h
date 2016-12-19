@@ -30,13 +30,6 @@ public:
 
     GLuint *textures;
 
-    GLuint posAttrScaleX;
-
-    GLuint posAttrScaleY;
-
-    jint frameDegree;
-
-    const float *inputTextureCorrd;
 
     jint frameWidth;
 
@@ -65,6 +58,11 @@ public:
     GLuint posPointAttrScaleX;
     GLuint posPointAttrScaleY;
     GLuint posPointUniColor;
+
+    GLuint posUniScaleX;
+    GLuint posUniScaleY;
+    GLuint posUniRotation;
+    GLuint posUniMirror;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

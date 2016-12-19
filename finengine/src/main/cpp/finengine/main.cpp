@@ -4,6 +4,7 @@
 #include <sstream>
 #include <android/asset_manager_jni.h>
 #include "../opencv/xcvcore.h"
+#include "../opencv/inc/faceresult.h"
 #include <opencv2/opencv.hpp>
 
 using namespace cv;
@@ -38,6 +39,7 @@ jboolean initPrograms(GLContextHolder *engineHolder) {
     engineHolder->posRgbAttrScaleY = (GLuint) glGetAttribLocation(programRGB, "aScaleY");
     engineHolder->posRgbUniTexture = (GLuint) glGetUniformLocation(programRGB, "sTexture");
 
+    //yuv program
     ShaderNV21 yuvShader;
     GLuint programYUV = createProgram(yuvShader.vertexShader, yuvShader.fragmentShader);
     if (programYUV == 0) {
@@ -49,8 +51,10 @@ jboolean initPrograms(GLContextHolder *engineHolder) {
 
     engineHolder->posAttrVertices = (GLuint) glGetAttribLocation(programYUV, "aPosition");
     engineHolder->posAttrTexCoords = (GLuint) glGetAttribLocation(programYUV, "aTexCoord");
-    engineHolder->posAttrScaleX = (GLuint) glGetAttribLocation(programYUV, "aScaleX");
-    engineHolder->posAttrScaleY = (GLuint) glGetAttribLocation(programYUV, "aScaleY");
+    engineHolder->posUniScaleX = (GLuint) glGetUniformLocation(programYUV, "uScaleX");
+    engineHolder->posUniScaleY = (GLuint) glGetUniformLocation(programYUV, "uScaleY");
+    engineHolder->posUniRotation = (GLuint) glGetUniformLocation(programYUV, "uRotation");
+    engineHolder->posUniMirror = (GLuint) glGetUniformLocation(programYUV, "mirror");
     engineHolder->posUniTextureY = (GLuint) glGetUniformLocation(programYUV, "yTexture");
     engineHolder->posUniTextureUV = (GLuint) glGetUniformLocation(programYUV, "uvTexture");
     return JNI_TRUE;
@@ -221,19 +225,23 @@ JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(J
 vector<Point2i> hull1;
 vector<Point2i> hull2;
 
+GLfloat points[202];
+
 //.........................................................................................................................
 void renderFrame(GLContextHolder *engineHolder, jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight,
                  jlong facePtr) {
-    unsigned char *swappedRgbaFrame = xcv_swapFace(data, width, height, (long long) facePtr, &hull1, &hull2);
+//    unsigned char *swappedRgbaFrame = xcv_swapFace(data, width, height, (long long) facePtr, &hull1, &hull2);
+    unsigned char *swappedRgbaFrame = NULL;
     if (swappedRgbaFrame == NULL) {
         renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight);
     } else {
-        renderRgb(engineHolder, swappedRgbaFrame, width, height, degree, mirror, outWidth, outHeight);
+        renderRgb(engineHolder, swappedRgbaFrame, width, height, degree, mirror, outWidth, outHeight, facePtr);
     }
 }
 
 void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
-               jint outHeight) {
+               jint outHeight, jlong facePtr) {
+    glViewport(0, 0, outWidth, outHeight);
     glUseProgram(engineHolder->programRGB);
     engineHolder->currentProgram = engineHolder->programRGB;
 
@@ -241,25 +249,25 @@ void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, j
     glEnableVertexAttribArray(engineHolder->posAttrVertices);
     glVertexAttribPointer(engineHolder->posAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, VERTICES_COORD);
 
-    //输入纹理坐标，处理旋转和镜像
-    glEnableVertexAttribArray(engineHolder->posAttrTexCoords);
-    if (engineHolder->frameDegree != degree) {
-        engineHolder->frameDegree = degree;
-        degree %= 360;
-        if (degree < 0) degree += 360;
-        int idx;
-        const float *inputTextureCoord;
-        if (mirror) {
-            idx = degree / 90 * 2;
-            inputTextureCoord = TEXTURE_COORD_MIRROR + idx;
-        } else {
-            degree = 360 - degree;
-            idx = degree / 90 * 2;
-            inputTextureCoord = TEXTURE_COORD_NOR + idx;
-        }
-        engineHolder->inputTextureCorrd = inputTextureCoord;
-    }
-    glVertexAttribPointer(engineHolder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, engineHolder->inputTextureCorrd);
+//    //输入纹理坐标，处理旋转和镜像
+//    glEnableVertexAttribArray(engineHolder->posAttrTexCoords);
+//    if (engineHolder->frameDegree != degree) {
+//        engineHolder->frameDegree = degree;
+//        degree %= 360;
+//        if (degree < 0) degree += 360;
+//        int idx;
+//        const float *inputTextureCoord;
+//        if (mirror) {
+//            idx = degree / 90 * 2;
+//            inputTextureCoord = TEXTURE_COORD_MIRROR + idx;
+//        } else {
+//            degree = 360 - degree;
+//            idx = degree / 90 * 2;
+//            inputTextureCoord = TEXTURE_COORD_NOR + idx;
+//        }
+//        engineHolder->inputTextureCorrd = inputTextureCoord;
+//    }
+//    glVertexAttribPointer(engineHolder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, engineHolder->inputTextureCorrd);
 
     //上传RGB纹理
     glActiveTexture(GL_TEXTURE0);
@@ -298,8 +306,8 @@ void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, j
     }
 
 
-    glVertexAttrib1f(engineHolder->posAttrScaleX, engineHolder->frameScaleX);
-    glVertexAttrib1f(engineHolder->posAttrScaleY, engineHolder->frameScaleY);
+//    glVertexAttrib1f(engineHolder->posAttrScaleX, engineHolder->frameScaleX);
+//    glVertexAttrib1f(engineHolder->posAttrScaleY, engineHolder->frameScaleY);
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -307,17 +315,31 @@ void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, j
     glDisableVertexAttribArray(engineHolder->posAttrTexCoords);
 
     //画点
-    if (hull1.size() > 0) {
+    FaceDetectResult *faceData = NULL;
+    try {
+        faceData = (FaceDetectResult *) facePtr;
+    } catch (...) {
+        LOGE("%s", "不能转换出face detect result");
+    }
+    if (faceData == NULL) {
+//        LOGE("%s", "人脸不够两张");
+        return;
+    }
+    if (faceData->nFaceCountInOut > 0) {
+        int idx = 0;
+        for (int i = 0; i < faceData->faceOutlinePointCount; i++) {
+            MPOINT ptIndex = faceData->pFaceOutlinePointOut[0 * faceData->faceOutlinePointCount + i];
+            points[idx++] = (GLfloat)ptIndex.x / width;
+            points[idx++] = (GLfloat)ptIndex.y / height;
+        }
         glUseProgram(engineHolder->programPoint);
-//        glEnableVertexAttribArray(engineHolder->posPointAttrVertices);
-//        glVertexAttribPointer(engineHolder->posPointAttrVertices, 2, GL_INT, GL_FALSE, 0, hull1.data());
-        glVertexAttrib2f(engineHolder->posPointAttrVertices,width/2.0f,height/2.0f);
+        glEnableVertexAttribArray(engineHolder->posPointAttrVertices);
+        glVertexAttribPointer(engineHolder->posPointAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, points);
+//        glVertexAttrib2f(engineHolder->posPointAttrVertices,0.5f,0.5f);
         glVertexAttrib1f(engineHolder->posPointAttrScaleX, engineHolder->frameScaleX);
         glVertexAttrib1f(engineHolder->posPointAttrScaleY, engineHolder->frameScaleY);
         glUniform4f(engineHolder->posPointUniColor, 1.0f, 0.0f, 0.0f, 1.0f);
-        glDrawArrays(GL_POINTS, 0, hull1.size());
-        checkGlError("DrawPoint");
-        LOGI("%s","draw points");
+        glDrawArrays(GL_POINTS, 0, 101);
     }
 
 //    glFinish();
@@ -336,18 +358,18 @@ void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jin
         LOGI("切换滤镜成功！");
     }
 
-
-//    unsigned char *swapped = NULL;
-
     //输入顶点
     glEnableVertexAttribArray(engineHolder->posAttrVertices);
     glVertexAttribPointer(engineHolder->posAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, VERTICES_COORD);
+    //输入纹理
+    glEnableVertexAttribArray(engineHolder->posAttrTexCoords);
+    glVertexAttribPointer(engineHolder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD);
+
 
     //上传纹理 Y通道
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, engineHolder->textures[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
-
     glUniform1i(engineHolder->posUniTextureY, 0);
 
     //上传UV通道
@@ -356,26 +378,12 @@ void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jin
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, width / 2, height / 2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, data + (width * height));
     glUniform1i(engineHolder->posUniTextureUV, 1);
 
-    //输入纹理坐标，处理旋转和镜像
-    glEnableVertexAttribArray(engineHolder->posAttrTexCoords);
-    if (engineHolder->frameDegree != degree) {
-        engineHolder->frameDegree = degree;
-        degree %= 360;
-        if (degree < 0) degree += 360;
-        int idx;
-        const float *inputTextureCoord;
-        if (mirror) {
-            idx = degree / 90 * 2;
-            inputTextureCoord = TEXTURE_COORD_MIRROR + idx;
-        } else {
-            degree = 360 - degree;
-            idx = degree / 90 * 2;
-            inputTextureCoord = TEXTURE_COORD_NOR + idx;
-        }
-        engineHolder->inputTextureCorrd = inputTextureCoord;
-    }
-    glVertexAttribPointer(engineHolder->posAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, engineHolder->inputTextureCorrd);
-
+    //处理旋转和镜像
+    degree %= 360;
+    if (degree < 0) degree += 360;
+    jint odd = degree / 90;
+    glUniform1i(engineHolder->posUniRotation, odd);
+    glUniform1i(engineHolder->posUniMirror,mirror ? 1: 0);
     if (engineHolder->frameWidth != width
         || engineHolder->frameHeight != height
         || engineHolder->outWidth != outWidth
@@ -386,7 +394,6 @@ void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jin
         engineHolder->outWidth = outWidth;
         engineHolder->outHeight = outHeight;
 
-        jint odd = degree / 90;
         if (odd == 1 || odd == 3) {
             //如果旋转了90°，交换长和宽
             int temp = width;
@@ -408,14 +415,13 @@ void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jin
     }
 
 
-    glVertexAttrib1f(engineHolder->posAttrScaleX, engineHolder->frameScaleX);
-    glVertexAttrib1f(engineHolder->posAttrScaleY, engineHolder->frameScaleY);
+    glUniform1f(engineHolder->posUniScaleX, engineHolder->frameScaleX);
+    glUniform1f(engineHolder->posUniScaleY, engineHolder->frameScaleY);
 
     glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
     glDisableVertexAttribArray(engineHolder->posAttrVertices);
     glDisableVertexAttribArray(engineHolder->posAttrTexCoords);
-
 //    glFinish();
     eglSwapBuffers(engineHolder->eglDisplay, engineHolder->eglSurface);
 }

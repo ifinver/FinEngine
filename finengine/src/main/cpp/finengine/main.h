@@ -31,7 +31,7 @@ void renderFrame(GLContextHolder *engineHolder,jbyte *data, jint width, jint hei
 void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
                jint outHeight);
 
-void renderRgb(GLContextHolder *engineHolder, unsigned char*data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
-               jint outHeight);
+void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
+               jint outHeight, jlong i);
 
 #endif //MYOPENGLES_GL_NATIVE_LIB_H

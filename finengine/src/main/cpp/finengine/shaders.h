@@ -17,30 +17,12 @@ const GLfloat VERTICES_COORD[] =
 
 //无镜像，左上-左下-右下-右上  左上-左下-右下-右上
 //循环一次是为了处理旋转问题，
-const GLfloat TEXTURE_COORD_NOR[] =
+const GLfloat TEXTURE_COORD[] =
         {
                 0.0f, 0.0f,
                 0.0f, 1.0f,
                 1.0f, 1.0f,
                 1.0f, 0.0f,
-                0.0f, 0.0f, // new loop for rotate
-                0.0f, 1.0f,
-                1.0f, 1.0f,
-                1.0f, 0.0f,
-        };
-
-//镜像，左上-左下-右下-右上  左上-左下-右下-右上
-//循环一次是为了处理旋转问题，
-const GLfloat TEXTURE_COORD_MIRROR[] =
-        {
-                1.0f, 0.0f,
-                1.0f, 1.0f,
-                0.0f, 1.0f,
-                0.0f, 0.0f,
-                1.0f, 0.0f,// new loop for rotate
-                1.0f, 1.0f,
-                0.0f, 1.0f,
-                0.0f, 0.0f,
         };
 
 class ShaderBase {
@@ -53,13 +35,23 @@ public:
                 "precision highp float;                                   \n"
                         "attribute highp vec2 aPosition;                          \n"
                         "attribute highp vec2 aTexCoord;                          \n"
-                        "attribute highp float aScaleX;                          \n"
-                        "attribute highp float aScaleY;                          \n"
+                        "uniform highp int uRotation;                          \n"
+                        "uniform highp float uScaleX;                          \n"
+                        "uniform highp float uScaleY;                          \n"
                         "varying highp vec2 vTexCoord;                            \n"
                         "void main(){                                       \n"
-                        "   vTexCoord = aTexCoord;               \n"
-                        "   highp mat2 aScaleMtx = mat2(aScaleX,0,0,aScaleY);                                      \n"
-                        "   gl_Position = vec4(aScaleMtx * aPosition,1.0,1.0);                        \n"
+                        "   vTexCoord = aTexCoord;  \n"
+                        "   vec2 rotPos = aPosition;    \n"
+                        "   if(uRotation == 1){            \n"
+                        "       rotPos = aPosition * mat2(0,-1,1,0);                            \n"
+                        "   }else if(uRotation == 2){                                \n"
+                        "       rotPos = aPosition * mat2(-1,0,0,-1);                            \n"
+                        "   }else if(uRotation == 3){                  \n"
+                        "       rotPos = aPosition * mat2(0,1,-1,0);                            \n"
+                        "   }                              \n"
+                        "                                      \n"
+                        "   mat2 scaleMtx = mat2(uScaleX,0,0,uScaleY);                                      \n"
+                        "   gl_Position = vec4(scaleMtx * rotPos,1.0,1.0);                        \n"
                         "}                                                  \n";
     }
 
@@ -78,6 +70,8 @@ public:
                         "varying highp vec2 vTexCoord;                            \n"
                         "uniform sampler2D yTexture;                        \n"
                         "uniform sampler2D uvTexture;                       \n"
+                        "uniform highp int uRotation;                          \n"
+                        "uniform int mirror;                                                   \n"
                         "                                                   \n"
                         "vec4 getBaseColor(in vec2 coord){                  \n"
                         "   float r,g,b,y,u,v;                              \n"
@@ -92,7 +86,15 @@ public:
                         "}                                                  \n"
                         "                                                   \n"
                         "void main(){                                       \n"
-                        "   vec4 color = getBaseColor(vTexCoord);           \n"
+                        "   vec2 mirrorCoord = vTexCoord;                                                \n"
+                        "   if(mirror == 1){\n"
+                        "       if(uRotation == 1 || uRotation == 3){\n"
+                        "           mirrorCoord.y = 1.0 - mirrorCoord.y;    \n"
+                        "       }else{                                        \n"
+                        "           mirrorCoord.x = 1.0 - mirrorCoord.x;                                        \n"
+                        "       }                                                \n"
+                        "   }         \n"
+                        "   vec4 color = getBaseColor(mirrorCoord);           \n"
                         "   gl_FragColor = color;                           \n"
                         "}                                                  \n";
     }
