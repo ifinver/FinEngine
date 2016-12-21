@@ -34,7 +34,9 @@ unsigned char *xcv_swapFace(jbyte *data, jint width, jint height, long long int 
 
     FaceDetectResult *faceData = NULL;
     try {
-        faceData = (FaceDetectResult *) faceDataPtr;
+        if(faceDataPtr != 0) {
+            faceData = (FaceDetectResult *) faceDataPtr;
+        }
     } catch (...) {
         LOGE("%s", "不能转换出face detect result");
     }

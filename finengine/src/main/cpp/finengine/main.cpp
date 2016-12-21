@@ -232,7 +232,9 @@ GLfloat points[202];
 void drawFacePoints(GLContextHolder *engineHolder, jlong facePtr, jint width, jint height, jint rot) {
     FaceDetectResult *faceData = NULL;
     try {
-        faceData = (FaceDetectResult *) facePtr;
+        if(facePtr != 0) {
+            faceData = (FaceDetectResult *) facePtr;
+        }
     } catch (...) {
         LOGE("%s", "不能转换出face detect result");
     }
