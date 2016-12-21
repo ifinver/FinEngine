@@ -24,6 +24,7 @@ jboolean initPrograms(GLContextHolder *engineHolder) {
     engineHolder->posPointAttrScaleX = (GLuint) glGetAttribLocation(programPoint, "aScaleX");
     engineHolder->posPointAttrScaleY = (GLuint) glGetAttribLocation(programPoint, "aScaleY");
     engineHolder->posPointUniColor = (GLuint) glGetUniformLocation(programPoint, "color");
+    engineHolder->posPointUniRotation = (GLuint) glGetUniformLocation(programPoint, "uRotation");
 
     //rgb program
     ShaderRGB rgbShader;
@@ -224,14 +225,11 @@ JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(J
     engineHolder->currentFilter = mFilterType;
 }
 
-vector<Point2i> hull1;
-vector<Point2i> hull2;
-
 void caculateScale(GLContextHolder *engineHolder, jint outWidth, jint outHeight, jint odd, jint &width, jint &height);
 
-GLfloat points[2][202];
+GLfloat points[202];
 
-void drawFacePoints(GLContextHolder *engineHolder,jlong facePtr,jint width,jint height){
+void drawFacePoints(GLContextHolder *engineHolder, jlong facePtr, jint width, jint height, jint rot) {
     FaceDetectResult *faceData = NULL;
     try {
         faceData = (FaceDetectResult *) facePtr;
@@ -250,29 +248,16 @@ void drawFacePoints(GLContextHolder *engineHolder,jlong facePtr,jint width,jint 
         int idx = 0;
         for (int i = 0; i < faceData->faceOutlinePointCount; i++) {
             MPOINT ptIndex = faceData->pFaceOutlinePointOut[j * faceData->faceOutlinePointCount + i];
-            points[j][idx++] = (GLfloat)ptIndex.x / width * 2 -1;
-            points[j][idx++] = (GLfloat)ptIndex.y / height * 2 -1;
+            points[idx++] = (GLfloat)ptIndex.x / width * 2 -1;
+            points[idx++] = (GLfloat)ptIndex.y / height * 2 -1;
         }
         glEnableVertexAttribArray(engineHolder->posPointAttrVertices);
-        glVertexAttribPointer(engineHolder->posPointAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, points[j]);
+        glVertexAttribPointer(engineHolder->posPointAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, points);
         glVertexAttrib1f(engineHolder->posPointAttrScaleX, engineHolder->frameScaleX);
         glVertexAttrib1f(engineHolder->posPointAttrScaleY, engineHolder->frameScaleY);
+        glUniform1i(engineHolder->posPointUniRotation, rot);
         glUniform4f(engineHolder->posPointUniColor, 0.0f, 1.0f, 0.0f, 1.0f);
         glDrawArrays(GL_POINTS, 0, 101);
-        glDisableVertexAttribArray(engineHolder->posPointAttrVertices);
-    }
-    if(hull1.size() > 0){
-        int iii = 0;
-        for(int i = 0;i < hull1.size();i++){
-            points[0][iii++] = (GLfloat)hull1[i].x / width * 2 -1;
-            points[0][iii++] = (GLfloat)hull1[i].y / height * 2 -1;
-        }
-        glEnableVertexAttribArray(engineHolder->posPointAttrVertices);
-        glVertexAttribPointer(engineHolder->posPointAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, points[0]);
-        glVertexAttrib1f(engineHolder->posPointAttrScaleX, engineHolder->frameScaleX);
-        glVertexAttrib1f(engineHolder->posPointAttrScaleY, engineHolder->frameScaleY);
-        glUniform4f(engineHolder->posPointUniColor, 1.0f, 0.0f, 0.0f, 1.0f);
-        glDrawArrays(GL_POINTS, 0, hull1.size());
         glDisableVertexAttribArray(engineHolder->posPointAttrVertices);
     }
 }
@@ -280,7 +265,7 @@ void drawFacePoints(GLContextHolder *engineHolder,jlong facePtr,jint width,jint 
 //.........................................................................................................................
 void renderFrame(GLContextHolder *engineHolder, jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight,
                  jlong facePtr) {
-    unsigned char *swappedRgbaFrame = xcv_swapFace(data, width, height, (long long) facePtr, &hull1, &hull2);
+    unsigned char *swappedRgbaFrame = xcv_swapFace(data, width, height, (long long) facePtr);
     if (swappedRgbaFrame == NULL) {
         renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight,facePtr);
     } else {
@@ -322,7 +307,7 @@ void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, j
     glDisableVertexAttribArray(engineHolder->posRgbAttrTexCoords);
 
     //画点
-    drawFacePoints(engineHolder,facePtr,width,height);
+    drawFacePoints(engineHolder, facePtr, width, height, odd);
 
     eglSwapBuffers(engineHolder->eglDisplay, engineHolder->eglSurface);
 
@@ -405,7 +390,7 @@ void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jin
     glDisableVertexAttribArray(engineHolder->posAttrVertices);
     glDisableVertexAttribArray(engineHolder->posAttrTexCoords);
 
-    drawFacePoints(engineHolder,facePtr,width,height);
+    drawFacePoints(engineHolder, facePtr, width, height, 0);
 
 //    glFinish();
     eglSwapBuffers(engineHolder->eglDisplay, engineHolder->eglSurface);

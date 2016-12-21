@@ -20,9 +20,8 @@ Mat *rgbFrame = NULL;
 FaceSwapper *face_swapper = NULL;
 Rect2i *faceRectAnn, *faceRectBob;
 vector<Point2i> facePointAnn, facePointBob;
-vector<int> hullIndex;
 
-unsigned char *xcv_swapFace(signed char *data, int width, int height, long long faceDataPtr, vector<Point2i> *hull1, vector<Point2i> *hull2) {
+unsigned char *xcv_swapFace(jbyte *data, jint width, jint height, long long int faceDataPtr) {
 
     if (yuvFrame == NULL) {
         yuvFrame = new Mat(height * 3 / 2, width, CV_8UC1);
@@ -65,7 +64,8 @@ unsigned char *xcv_swapFace(signed char *data, int width, int height, long long 
     facePointAnn.clear();
     facePointBob.clear();
     if (faces > 0) {
-        for (int i = 0; i < faceData->faceOutlinePointCount; i++) {
+        for (int i = 0; i <= 34; i++) {
+            if(i > 24 && i < 29) continue;
             MPOINT ptIndex = faceData->pFaceOutlinePointOut[0 * faceData->faceOutlinePointCount + i];
             facePointAnn.push_back(Point2i(ptIndex.x, ptIndex.y));
             if (faces > 1) {
@@ -74,24 +74,10 @@ unsigned char *xcv_swapFace(signed char *data, int width, int height, long long 
             }
         }
     }
-    //计算凸包
-    (*hull1).clear();
-    (*hull2).clear();
-    if (facePointAnn.size() > 0) {
-        hullIndex.clear();
-        convexHull(facePointAnn, hullIndex, false, false);
-
-        for (int i = 0; i < hullIndex.size(); i++) {
-            (*hull1).push_back(facePointAnn[hullIndex[i]]);
-            if (faces > 1) {
-                (*hull2).push_back(facePointBob[hullIndex[i]]);
-            }
-        }
-    }
     cvtColor(*yuvFrame, *rgbFrame, CV_YUV2RGB_NV21);
     if (faces > 1) {
         try {
-            face_swapper->swapFaces(*rgbFrame, *faceRectAnn, *faceRectBob, *hull1, *hull2);
+            face_swapper->swapFaces(*rgbFrame, *faceRectAnn, *faceRectBob, facePointAnn, facePointBob);
         } catch (...) {
             return NULL;
         }

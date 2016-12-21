@@ -13,7 +13,7 @@ using namespace cv;
 
 using namespace std;
 
-unsigned char* xcv_swapFace(signed char* data, int width, int height, long long faceData,vector<Point2i> *hull1,vector<Point2i> *hull2);
+unsigned char *xcv_swapFace(jbyte *data, jint width, jint height, long long int faceData);
 
 void xcv_swapFace(JNIEnv *env,jlong matObj);
 

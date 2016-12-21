@@ -1,6 +1,7 @@
 #include "FaceSwapper.h"
 #include <opencv2/opencv.hpp>
-
+#include "../log.h"
+#define LOG_TAG "Face Swap"
 FaceSwapper::FaceSwapper() {
 }
 
@@ -62,13 +63,13 @@ cv::Mat FaceSwapper::getMinFrame(cv::Mat frame, cv::Rect2i rect_ann, cv::Rect2i 
         points_ann.push_back(vector1[i] - lfPoint);
         points_bob.push_back(vector2[i] - lfPoint);
     }
-    affine_transform_keypoints_ann[0] = points_ann[5];
-    affine_transform_keypoints_ann[1] = points_ann[10];
-    affine_transform_keypoints_ann[2] = points_ann[15];
+    affine_transform_keypoints_ann[0] = points_ann[9];
+    affine_transform_keypoints_ann[1] = points_ann[21];
+    affine_transform_keypoints_ann[2] = points_ann[32];
 
-    affine_transform_keypoints_bob[0] = points_bob[5];
-    affine_transform_keypoints_bob[1] = points_bob[10];
-    affine_transform_keypoints_bob[2] = points_bob[15];
+    affine_transform_keypoints_bob[0] = points_bob[9];
+    affine_transform_keypoints_bob[1] = points_bob[21];
+    affine_transform_keypoints_bob[2] = points_bob[32];
 
     feather_amount.width = feather_amount.height = (int) cv::norm(points_ann[0] - points_ann[6]) / 8;
 
