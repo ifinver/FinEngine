@@ -3,6 +3,8 @@ precision highp float;
 varying highp vec2 vTexCoord;
 uniform sampler2D yTexture;
 uniform sampler2D uvTexture;
+uniform highp int uRotation;
+uniform int mirror;
 
 const float PI = 3.1415926535;
 const float aperture = 180.0;
@@ -21,8 +23,21 @@ vec4 getBaseColor(in vec2 coord){
     return vec4(r, g, b, 1.0);
 }
 
+vec2 mirrorUV(){
+    vec2 mirrorCoord = vTexCoord;
+    if(mirror == 1){
+        if(uRotation == 1 || uRotation == 3){
+            mirrorCoord.y = 1.0 - mirrorCoord.y;
+        }else{
+            mirrorCoord.x = 1.0 - mirrorCoord.x;
+        }
+    }
+    return mirrorCoord;
+}
+
 void main(){
-    vec2 pos = 2.0 * vTexCoord.st - 1.0;
+    vec2 mirrorCoord = mirrorUV();
+    vec2 pos = 2.0 * mirrorCoord.st - 1.0;
     float l = length(pos);
 
     if (l > 1.0) {

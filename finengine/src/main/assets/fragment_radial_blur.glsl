@@ -3,6 +3,8 @@ precision highp float;
 varying highp vec2 vTexCoord;
 uniform sampler2D yTexture;
 uniform sampler2D uvTexture;
+uniform highp int uRotation;
+uniform int mirror;
 
 //微调
 const float sampleDist = 0.6;
@@ -20,11 +22,24 @@ vec4 getBaseColor(in vec2 coord){
     return vec4(r, g, b, 1.0);
 }
 
+vec2 mirrorUV(){
+    vec2 mirrorCoord = vTexCoord;
+    if(mirror == 1){
+        if(uRotation == 1 || uRotation == 3){
+            mirrorCoord.y = 1.0 - mirrorCoord.y;
+        }else{
+            mirrorCoord.x = 1.0 - mirrorCoord.x;
+        }
+    }
+    return mirrorCoord;
+}
+
 void main(){
-    vec4 color = getBaseColor(vTexCoord);
+    vec2 mirrorCoord = mirrorUV();
+    vec4 color = getBaseColor(mirrorCoord);
 
     //指向屏幕中间的向量
-    vec2 dir = 0.5 - vTexCoord;
+    vec2 dir = 0.5 - mirrorCoord;
     //距离
     float dist = sqrt(dir.x*dir.x + dir.y*dir.y);
     //归一化为单位向量
@@ -33,7 +48,7 @@ void main(){
     vec4 sum = color;
     float pos = -0.08;//取样位置
     for (int i = 0; i < 5; i++){
-        sum += getBaseColor(vTexCoord + dir * pos * sampleDist );
+        sum += getBaseColor(mirrorCoord + dir * pos * sampleDist );
         pos += 0.04;
     }
     sum *= 1.0/6.0;
