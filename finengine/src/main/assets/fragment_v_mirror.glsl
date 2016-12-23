@@ -3,6 +3,8 @@ precision highp float;
 varying highp vec2 vTexCoord;
 uniform sampler2D yTexture;
 uniform sampler2D uvTexture;
+uniform highp int uRotation;
+uniform int mirror;
 
 vec4 getBaseColor(in vec2 coord){
     float r,g,b,y,u,v;
