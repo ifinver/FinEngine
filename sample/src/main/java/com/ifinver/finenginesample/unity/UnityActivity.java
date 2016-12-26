@@ -10,6 +10,7 @@ import android.view.SurfaceView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ifinver.facedetect.FaceDetector;
 import com.ifinver.finengine.CameraHolder;
 import com.ifinver.finenginesample.FrameMeter;
 import com.ifinver.finenginesample.R;
@@ -51,14 +52,15 @@ public class UnityActivity extends UnityBaseActivity implements SurfaceHolder.Ca
 
     @Override
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean frontCurrent) {
-        UnityTransfer.onVideoBuffer(data,frameWidth,frameHeight,degree,frontCurrent);
+        long facePtr = FaceDetector.process(data, frameWidth, frameHeight);
+        UnityTransfer.onVideoBuffer(data,frameWidth,frameHeight,degree,frontCurrent,facePtr);
 
         mFrameMeter.meter();
     }
 
     @Override
     public void onCameraStart(boolean success) {
-
+        FaceDetector.init(this);
     }
 
     @Override
@@ -81,6 +83,7 @@ public class UnityActivity extends UnityBaseActivity implements SurfaceHolder.Ca
     @Override
     protected void onPause() {
         CameraHolder.getInstance().stopCamera();
+        FaceDetector.release();
         super.onPause();
     }
 
