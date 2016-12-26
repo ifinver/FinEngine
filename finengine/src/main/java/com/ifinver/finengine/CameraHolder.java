@@ -301,7 +301,7 @@ public class CameraHolder {
                     mVideoBuffer[0] = ByteBuffer.allocate(size);
                     mVideoBuffer[1] = ByteBuffer.allocate(size);
                     mSurfaceTexture = new SurfaceTexture(TEXTURE_ID);
-
+                    exited = false;
                     mCamera.addCallbackBuffer(mVideoBuffer[mVideoBufferIdx].array());
                     mCamera.setPreviewCallbackWithBuffer(this);
                     mCamera.setPreviewTexture(mSurfaceTexture);
@@ -336,13 +336,8 @@ public class CameraHolder {
                     @Override
                     public void run() {
                         mListener.onCameraStart(finalInit);
-                        if (finalInit) {
-                            exited = false;
-                        }
                     }
                 });
-            } else if (init) {
-                exited = false;
             }
             return init;
         }
