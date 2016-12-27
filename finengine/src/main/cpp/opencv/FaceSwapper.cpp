@@ -20,12 +20,15 @@ void FaceSwapper::swapFaces(cv::Mat frame, cv::Rect2i rect_ann, cv::Rect2i rect_
     getTransformationMatrices();
 
     mask_ann.create(frame_size, CV_8UC1);
+    mask_ann.setTo(cv::Scalar::all(0));
     mask_bob.create(frame_size, CV_8UC1);
+    mask_bob.setTo(cv::Scalar::all(0));
+
     getMasks();
 
     getWarppedMasks();
 
-    refined_masks = getRefinedMasks();
+    getRefinedMasks();
 
     extractFaces();
 
@@ -65,13 +68,13 @@ cv::Mat FaceSwapper::getMinFrame(cv::Mat frame, cv::Rect2i rect_ann, cv::Rect2i 
     }
     affine_transform_keypoints_ann[0] = points_ann[9];
     affine_transform_keypoints_ann[1] = points_ann[21];
-    affine_transform_keypoints_ann[2] = points_ann[32];
+    affine_transform_keypoints_ann[2] = points_ann[28];
 
     affine_transform_keypoints_bob[0] = points_bob[9];
     affine_transform_keypoints_bob[1] = points_bob[21];
-    affine_transform_keypoints_bob[2] = points_bob[32];
+    affine_transform_keypoints_bob[2] = points_bob[28];
 
-    feather_amount.width = feather_amount.height = (int) cv::norm(points_ann[0] - points_ann[6]) / 8;
+    feather_amount.width = feather_amount.height = (int) cv::norm(points_ann[1] - points_ann[17]) / 8;
 
     return frame(bounding_rect);
 }
@@ -134,23 +137,19 @@ void FaceSwapper::getTransformationMatrices() {
 }
 
 void FaceSwapper::getMasks() {
-    mask_ann.setTo(cv::Scalar::all(0));
-    mask_bob.setTo(cv::Scalar::all(0));
-
-    cv::fillConvexPoly(mask_ann, &points_ann[0], 9, cv::Scalar(255));
-    cv::fillConvexPoly(mask_bob, &points_bob[0], 9, cv::Scalar(255));
+    cv::fillConvexPoly(mask_ann, points_ann, cv::Scalar(255));
+    cv::fillConvexPoly(mask_bob, points_bob, cv::Scalar(255));
 }
 
 void FaceSwapper::getWarppedMasks() {
-    cv::warpAffine(mask_ann, warpped_mask_ann, trans_ann_to_bob, frame_size, cv::INTER_NEAREST, cv::BORDER_CONSTANT, cv::Scalar(0));
-    cv::warpAffine(mask_bob, warpped_mask_bob, trans_bob_to_ann, frame_size, cv::INTER_NEAREST, cv::BORDER_CONSTANT, cv::Scalar(0));
+    cv::warpAffine(mask_ann, warpped_mask_ann, trans_ann_to_bob, frame_size, cv::INTER_NEAREST, cv::BORDER_CONSTANT);
+    cv::warpAffine(mask_bob, warpped_mask_bob, trans_bob_to_ann, frame_size, cv::INTER_NEAREST, cv::BORDER_CONSTANT);
 }
 
 cv::Mat FaceSwapper::getRefinedMasks() {
     cv::bitwise_and(mask_ann, warpped_mask_bob, refined_ann_and_bob_warpped);
     cv::bitwise_and(mask_bob, warpped_mask_ann, refined_bob_and_ann_warpped);
 
-    cv::Mat refined_masks(frame_size, CV_8UC1, cv::Scalar(0));
     refined_ann_and_bob_warpped.copyTo(refined_masks, refined_ann_and_bob_warpped);
     refined_bob_and_ann_warpped.copyTo(refined_masks, refined_bob_and_ann_warpped);
 
@@ -180,10 +179,10 @@ void FaceSwapper::colorCorrectFaces() {
 }
 
 void FaceSwapper::featherMask(const cv::Mat &refined_masks) {
-//    cv::erode(refined_masks, refined_masks, getStructuringElement(cv::MORPH_RECT, feather_amount), cv::Point(-1, -1), 1, cv::BORDER_CONSTANT,
-//              cv::Scalar(0));
-//
-//    cv::blur(refined_masks, refined_masks, feather_amount, cv::Point(-1, -1), cv::BORDER_CONSTANT);
+    cv::erode(refined_masks, refined_masks, getStructuringElement(cv::MORPH_RECT, feather_amount), cv::Point(-1, -1), 1, cv::BORDER_CONSTANT,
+              cv::Scalar(0));
+
+    cv::blur(refined_masks, refined_masks, feather_amount, cv::Point(-1, -1), cv::BORDER_CONSTANT);
 }
 
 inline void FaceSwapper::pasteFacesOnFrame() {

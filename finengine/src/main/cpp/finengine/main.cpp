@@ -309,7 +309,7 @@ void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, j
     glDisableVertexAttribArray(engineHolder->posRgbAttrTexCoords);
 
     //画点
-    drawFacePoints(engineHolder, facePtr, width, height, odd);
+//    drawFacePoints(engineHolder, facePtr, width, height, odd);
 
     eglSwapBuffers(engineHolder->eglDisplay, engineHolder->eglSurface);
 
