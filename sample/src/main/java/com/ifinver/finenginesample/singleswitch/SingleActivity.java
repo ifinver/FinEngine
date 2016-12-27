@@ -16,8 +16,8 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ifinver.facedetect.FaceDetector;
 import com.ifinver.finengine.CameraHolder;
+import com.ifinver.finengine.FaceDetector;
 import com.ifinver.finengine.FinRecorder;
 import com.ifinver.finengine.Renderer;
 import com.ifinver.finenginesample.FrameMeter;

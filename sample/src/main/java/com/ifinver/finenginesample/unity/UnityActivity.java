@@ -10,8 +10,8 @@ import android.view.SurfaceView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ifinver.facedetect.FaceDetector;
 import com.ifinver.finengine.CameraHolder;
+import com.ifinver.finengine.FaceDetector;
 import com.ifinver.finenginesample.FrameMeter;
 import com.ifinver.finenginesample.R;
 import com.ifinver.unitytransfer.UnityTransfer;

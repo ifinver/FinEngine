@@ -4,5 +4,5 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:25.0.0'
     compile project(':finengine')
     compile project(':unitytransfer')
-    compile project(':facedetector')
+//    compile project(':facedetector')
 }

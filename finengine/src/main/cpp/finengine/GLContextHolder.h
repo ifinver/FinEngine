@@ -8,6 +8,7 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 #include <jni.h>
+#include <string>
 #include "shaders.h"
 
 class GLContextHolder{
@@ -55,6 +56,9 @@ public:
     GLuint posPointAttrScaleY;
     GLuint posPointUniColor;
     GLuint posPointUniRotation;
+
+    int engineMode;
+    std::string monaFilePath;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

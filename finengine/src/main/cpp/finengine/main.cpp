@@ -160,6 +160,9 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
+    //mode
+    engineHolder->engineMode = ENGINE_MODE_NORMAL;
+
     return (jlong) engineHolder;
 }
 
@@ -223,6 +226,24 @@ JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(J
     }
     engineHolder->targetProgram = targetP;
     engineHolder->currentFilter = mFilterType;
+}
+
+JNIEXPORT void JNICALL
+Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeMonaLisa(JNIEnv *env, jobject , jlong engine,jstring filePath_) {
+    const char *filePath = env->GetStringUTFChars(filePath_, 0);
+    GLContextHolder *engineHolder = (GLContextHolder *) engine;
+    engineHolder->engineMode = ENGINE_MODE_MONA_LISA;
+    if(engineHolder->monaFilePath.compare(filePath)){
+        //不相等才会走进来
+        const Mat &monaMat = imread(filePath);
+
+
+
+        engineHolder->monaFilePath = filePath;
+    }
+
+
+    env->ReleaseStringUTFChars(filePath_, filePath);
 }
 
 void caculateScale(GLContextHolder *engineHolder, jint outWidth, jint outHeight, jint odd, jint &width, jint &height);

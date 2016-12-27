@@ -16,20 +16,25 @@
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
+static const int ENGINE_MODE_NORMAL = 100;
+static const int ENGINE_MODE_FACE_SWAP = 101;
+static const int ENGINE_MODE_MONA_LISA = 102;
+
 extern "C" {
 JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass type, jobject jSurface);
-JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeRelease(JNIEnv *env, jclass type,jlong engine);
-JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *env, jclass,jlong engine,jbyteArray data_, jint frameWidth, jint frameHeight,
-                                                    jint degree, jboolean mirror,jint outWidth,jint outHeight,jlong facePtr);
-JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(JNIEnv *env, jobject instance,jlong engine,jobject mAssetManager, jint mFilterType,jstring vert,jstring frag);
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeRelease(JNIEnv *env, jclass type, jlong engine);
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *, jclass, jlong, jbyteArray, jint, jint, jint, jboolean, jint, jint,jlong);
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(JNIEnv *env, jobject, jlong, jobject, jint, jstring, jstring);
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeMonaLisa(JNIEnv *env, jobject instance, jlong,jstring filePath_);
 }
 
 void releaseGLContext(GLContextHolder *engineHolder);
 
-void renderFrame(GLContextHolder *engineHolder,jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight,jlong facePtr);
+void renderFrame(GLContextHolder *engineHolder, jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight,
+                 jlong facePtr);
 
 void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
-               jint outHeight,jlong facePtr);
+               jint outHeight, jlong facePtr);
 
 void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
                jint outHeight, jlong i);
