@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
@@ -63,9 +62,9 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
         mRenderer = new Renderer(this);
         tvRender.setSurfaceTextureListener(mRenderer);
 
-        rvFilter.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        rvFilter.addItemDecoration(new SpaceItemDecoration(10));
-        rvFilter.setAdapter(new FilterAdapter(this, this));
+//        rvFilter.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+//        rvFilter.addItemDecoration(new SpaceItemDecoration(10));
+//        rvFilter.setAdapter(new FilterAdapter(this, this));
 
         //fps
         initFPS();
