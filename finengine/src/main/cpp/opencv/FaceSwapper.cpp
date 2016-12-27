@@ -68,11 +68,11 @@ cv::Mat FaceSwapper::getMinFrame(cv::Mat frame, cv::Rect2i rect_ann, cv::Rect2i 
     }
     affine_transform_keypoints_ann[0] = points_ann[9];
     affine_transform_keypoints_ann[1] = points_ann[21];
-    affine_transform_keypoints_ann[2] = points_ann[28];
+    affine_transform_keypoints_ann[2] = points_ann[22];
 
     affine_transform_keypoints_bob[0] = points_bob[9];
     affine_transform_keypoints_bob[1] = points_bob[21];
-    affine_transform_keypoints_bob[2] = points_bob[28];
+    affine_transform_keypoints_bob[2] = points_bob[22];
 
     feather_amount.width = feather_amount.height = (int) cv::norm(points_ann[1] - points_ann[17]) / 8;
 

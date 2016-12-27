@@ -67,7 +67,7 @@ unsigned char *xcv_swapFace(jbyte *data, jint width, jint height, long long int 
     facePointBob.clear();
     if (faces > 0) {
         for (int i = 0; i <= 34; i++) {
-            if(i > 24 && i < 29) continue;
+            if(i > 21 && i < 32) continue;
             MPOINT ptIndex = faceData->pFaceOutlinePointOut[0 * faceData->faceOutlinePointCount + i];
             facePointAnn.push_back(Point2i(ptIndex.x, ptIndex.y));
             if (faces > 1) {
