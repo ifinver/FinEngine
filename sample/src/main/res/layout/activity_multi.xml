@@ -6,6 +6,7 @@
     android:layout_height="match_parent">
 
     <SurfaceView
+        android:keepScreenOn="true"
         android:id="@+id/surface_unity"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
