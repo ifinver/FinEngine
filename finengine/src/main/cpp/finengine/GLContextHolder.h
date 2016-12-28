@@ -10,7 +10,6 @@
 #include <jni.h>
 #include <string>
 #include <amcomdef.h>
-#include <opencv2/core/mat.hpp>
 #include "shaders.h"
 
 class GLContextHolder{
@@ -60,11 +59,6 @@ public:
     GLuint posPointUniRotation;
 
     int engineMode;
-    std::string monaFilePath;
-    MPOINT *pFaceOutlinePointOut = nullptr;
-    MRECT *rcFaceRectOut;
-    MFloat *faceOrientOut;
-    cv::Mat monaMat;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

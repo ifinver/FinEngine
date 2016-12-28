@@ -3,9 +3,9 @@
 #include <android/native_window_jni.h>
 #include <android/asset_manager_jni.h>
 #include "../effects/faceswap/faceswap.h"
+#include "../effects/monalisa/monalisa.h"
 #include "../effects/inc/faceresult.h"
 #include "../facedetect/facedetector.h"
-#include "../effects/monalisa/monalisa.h"
 
 using namespace std;
 
@@ -240,30 +240,21 @@ JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeFa
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeMonaLisa(JNIEnv *env, jobject, jlong engine, jstring filePath_) {
+Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeMonaLisa(JNIEnv *env, jobject, jlong engine, jstring filePath_, jobject ctx,
+                                                                jstring trackPath) {
     const char *filePath = env->GetStringUTFChars(filePath_, 0);
     LOGI("%s", "switching mode to mona lisa ..");
     GLContextHolder *engineHolder = (GLContextHolder *) engine;
-    if (engineHolder->monaFilePath.compare(filePath)) {
-        //不相等才会走进来
-        engineHolder->monaMat = imread(filePath);
-        if (engineHolder->pFaceOutlinePointOut == nullptr) {
-            engineHolder->pFaceOutlinePointOut = new MPOINT[101];
-            engineHolder->rcFaceRectOut = new MRECT[1];
-            engineHolder->faceOrientOut = new MFloat[3];
-        }
-        LOGE("mona width:%d,height:%d,channels:%d,is continuous:%s", engineHolder->monaMat.cols, engineHolder->monaMat.rows,
-             engineHolder->monaMat.channels(), engineHolder->monaMat.isContinuous() ? "continuous" : "no-continuous");
-        int rc = face_processSingleFrame(engineHolder->monaMat.data, engineHolder->monaMat.cols, engineHolder->monaMat.rows,
-                                         engineHolder->pFaceOutlinePointOut, engineHolder->rcFaceRectOut,
-                                         engineHolder->faceOrientOut);
-        if (rc == 0) {
+    if (initMonalisa(env, ctx, trackPath) == 0) {
+        //初始化成功
+        jlong faceData = detectMonaFace(filePath);
+        if (faceData > 0) {
             LOGE("%s", "检测图片成功！");
-
-            engineHolder->monaFilePath = filePath;
+            engineHolder->engineMode = ENGINE_MODE_MONA_LISA;
+        } else {
+            LOGE("图片人脸检测失败！");
         }
     }
-    engineHolder->engineMode = ENGINE_MODE_MONA_LISA;
 
     env->ReleaseStringUTFChars(filePath_, filePath);
 }
@@ -328,12 +319,8 @@ void renderFrame(GLContextHolder *engineHolder, jbyte *data, jint width, jint he
             break;
         }
         case ENGINE_MODE_MONA_LISA: {
-//            unsigned char *monaLisaFrame = effect_monaLisa(data, width, height);
-//            if (monaLisaFrame == NULL) {
-//                renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight, facePtr);
-//            } else {
-                renderRgb(engineHolder, engineHolder->monaMat.data, engineHolder->monaMat.cols, engineHolder->monaMat.rows, 0, 0, outWidth, outHeight, facePtr);
-//            }
+            cv::Mat *monaLisaMat = effect_monaLisa(data, width, height);
+            renderRgb(engineHolder, monaLisaMat->data, monaLisaMat->cols, monaLisaMat->rows, 0, JNI_FALSE, outWidth, outHeight, 0);
             break;
         }
     }

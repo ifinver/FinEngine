@@ -17,9 +17,5 @@ JNIEXPORT void JNICALL Java_com_ifinver_finengine_FaceDetector_nativeSetFaceBrig
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FaceDetector_nativeSetFaceSkinSoftenLevel(JNIEnv *env, jclass type, jint skinSoftenLevel);
 }
 
-/**
- * 返回值 -1 means 人脸检测未初始化； -2 means 检测出错； 1 means 未检测出人脸； 0 success；
- */
-int face_processSingleFrame(void *data, int width, int height, MPOINT *faceOutlinePointOut, MRECT *faceRectOut, MFloat *faceOrientOut);
 
 #endif //FINENGINE_FACEDETECT_H

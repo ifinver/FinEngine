@@ -4,4 +4,5 @@
     <string name="toggle_camera">Toggle camera</string>
     <string name="tip_choose_filter">选择一个滤镜试试吧：</string>
     <string name="tip_fps">FPS:%s</string>
+    <string name="tools">tools</string>
 </resources>

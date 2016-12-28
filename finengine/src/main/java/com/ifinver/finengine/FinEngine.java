@@ -93,7 +93,7 @@ public class FinEngine {
                     Log.e(TAG, "切换引擎模式失败！", ignored);
                 }
             }
-            mEngineThread.switchModeToMonaLisa(monaFile.getAbsolutePath());
+            mEngineThread.switchModeToMonaLisa(ctx,monaFile.getAbsolutePath());
         }
     }
 
@@ -126,6 +126,8 @@ public class FinEngine {
         private long mEngine;
         private long mFacePtr;
         private String mMonaLisaFilePath;
+        private Context mAppCtx;
+        private String mTrackDataFilePath;
 
         FinEngineThread(Surface output, int width, int height) {
             super("FinEngineThread", Process.THREAD_PRIORITY_URGENT_DISPLAY);
@@ -161,9 +163,30 @@ public class FinEngine {
             mSelfHandler.sendEmptyMessage(MSG_SWITCH_MODE_SWAP_FACE);
         }
 
-        public void switchModeToMonaLisa(String path) {
+        public void switchModeToMonaLisa(Context ctx,String path) {
+            this.mAppCtx = ctx.getApplicationContext();
             synchronized (FinEngineThread.class) {
+                //检查文件
+                File trackFile = new File(ctx.getFilesDir()+"/track_data.dat");
+                if(!trackFile.exists()){
+                    //不存在了
+                    try {
+                        InputStream in = ctx.getAssets().open("track_data.dat");
+                        FileOutputStream fos = new FileOutputStream(trackFile);
+                        byte[] buffer = new byte[1024];
+                        int readCount;
+                        while ((readCount = in.read(buffer)) != -1){
+                            fos.write(buffer,0,readCount);
+                        }
+                        in.close();
+                        fos.close();
+                    }catch (Exception ignored){
+                        Log.e(TAG, "图片人脸检测初始化失败!无法操作track_data文件");
+                        return ;
+                    }
+                }
                 this.mMonaLisaFilePath = path;
+                this.mTrackDataFilePath = trackFile.getAbsolutePath();
                 mSelfHandler.removeCallbacksAndMessages(null);
                 mSelfHandler.sendEmptyMessage(MSG_SWITCH_MODE_MONALISA);
             }
@@ -217,7 +240,7 @@ public class FinEngine {
         private void switchToMonaLisaInternal() {
             if (isPrepared) {
                 synchronized (FinEngineThread.class) {
-                    nativeSwitchToModeMonaLisa(mEngine, mMonaLisaFilePath);
+                    nativeSwitchToModeMonaLisa(mEngine, mMonaLisaFilePath,mAppCtx,mTrackDataFilePath);
                 }
             }
         }
@@ -283,7 +306,7 @@ public class FinEngine {
 
     private native void nativeSwitchFilter(long engine, AssetManager mAssetManager, int mFilterType, String mVertexName, String mFragmentName);
 
-    private native void nativeSwitchToModeMonaLisa(long engine, String filePath);
+    private native void nativeSwitchToModeMonaLisa(long engine, String filePath,Context ctx,String trackDataPath);
     private native void nativeSwitchToModeNormal(long engine);
     private native void nativeSwitchToModeFaceSwap(long engine);
 

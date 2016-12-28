@@ -12,8 +12,15 @@
 ArcSoftSpotlight::ArcSoftSpotlight() {
     m_hEngine = MNull;
     skinFaceLevel = 100;
-    brightLevel = 49;
+    brightLevel = 55;
     processModel = ASL_PROCESS_MODEL_FACEOUTLINE | ASL_PROCESS_MODEL_FACEBEAUTY;
+}
+
+ArcSoftSpotlight::ArcSoftSpotlight(int mode) {
+    m_hEngine = MNull;
+    skinFaceLevel = 100;
+    brightLevel = 55;
+    processModel = ASL_PROCESS_MODEL_FACEOUTLINE;
 }
 
 ArcSoftSpotlight::~ArcSoftSpotlight() {
@@ -54,8 +61,6 @@ int ArcSoftSpotlight::init(JNIEnv *env, jobject context,
     }
 
     //变量初始化
-    OffScreenIn.u32PixelArrayFormat = ASVL_PAF_NV21;
-
     faceDetectResult = new FaceDetectResult();
     faceDetectResult->pFaceOutlinePointOut = new MPOINT[ASL_MAX_FACE_NUM * ASL_GetFaceOutlinePointCount()];
     faceDetectResult->rcFaceRectOut = new MRECT[ASL_MAX_FACE_NUM];
@@ -79,57 +84,27 @@ void ArcSoftSpotlight::setFaceBrightLevel(long _brightLevel) {
     ASL_SetFaceBrightLevel(m_hEngine, brightLevel);
 }
 
-int ArcSoftSpotlight::processSingleFrame(void *data, int width, int height, MPOINT *faceOutlinePointOut, MRECT *faceRectOut, MFloat *faceOrientOut) {
-    if (m_hEngine == MNull) {
-        LOGE("%s","人脸引擎未初始化.ArcSoftSpotlight::processSingleFrame");
-        return -1;
-    }
 
-    ASL_SetProcessModel(m_hEngine, ASL_PROCESS_MODEL_FACEOUTLINE);
-
-    ASVLOFFSCREEN offScreenIn = {0};
-    offScreenIn.u32PixelArrayFormat = ASVL_PAF_RGB24_B8G8R8;
-    offScreenIn.i32Width = width;
-    offScreenIn.i32Height = height;
-    offScreenIn.pi32Pitch[0] = width * 3;
-    offScreenIn.ppu8Plane[0] = (MUInt8 *) data;
-
-    MInt32 faceInOut = 1;
-    LOGE("%s","here we go 1");
-    MRESULT hr = ASL_Process(m_hEngine,
-                             &offScreenIn,
-                             MNull,
-                             &faceInOut,
-                             faceOutlinePointOut,
-                             faceRectOut,
-                             faceOrientOut);
-    LOGE("%s","here we go 2");
-
-    ASL_SetProcessModel(m_hEngine, processModel);
-
-    if (hr == MOK) {
-        if(faceInOut == 1){
-            LOGE("%s", "检测成功..");
-            return 0;
-        }
-        LOGE("%s", "没有识别出人脸..");
-        return 1;
-    }
-    LOGE("%s", "检测出错");
-    return -2;
-}
-
-jlong ArcSoftSpotlight::process(void *data, int width, int height) {
+jlong ArcSoftSpotlight::process(void *data, int width, int height, int format) {
     if (m_hEngine == MNull) {
         return 0;
     }
-
-    OffScreenIn.i32Width = width;
-    OffScreenIn.i32Height = height;
-    OffScreenIn.pi32Pitch[0] = width;
-    OffScreenIn.pi32Pitch[1] = width;
-    OffScreenIn.ppu8Plane[0] = (MUInt8 *) data;
-    OffScreenIn.ppu8Plane[1] = (MUInt8 *) data + width * height;
+    ASVLOFFSCREEN OffScreenIn = {0};
+    if (format == 0) {
+        OffScreenIn.u32PixelArrayFormat = ASVL_PAF_NV21;
+        OffScreenIn.i32Width = width;
+        OffScreenIn.i32Height = height;
+        OffScreenIn.pi32Pitch[0] = width;
+        OffScreenIn.pi32Pitch[1] = width;
+        OffScreenIn.ppu8Plane[0] = (MUInt8 *) data;
+        OffScreenIn.ppu8Plane[1] = (MUInt8 *) data + width * height;
+    } else {
+        OffScreenIn.u32PixelArrayFormat = ASVL_PAF_RGB24_B8G8R8;
+        OffScreenIn.i32Width = width;
+        OffScreenIn.i32Height = height;
+        OffScreenIn.pi32Pitch[0] = width * 3;
+        OffScreenIn.ppu8Plane[0] = (MUInt8 *) data;
+    }
 
     int faceInOut = ASL_MAX_FACE_NUM;
 
@@ -168,3 +143,8 @@ jlong ArcSoftSpotlight::process(void *data, int width, int height) {
 //        }
 //    }
 }
+
+jlong ArcSoftSpotlight::getFaceDataPtr() {
+    return (jlong) faceDetectResult;
+}
+

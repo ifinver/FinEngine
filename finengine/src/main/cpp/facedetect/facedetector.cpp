@@ -27,20 +27,10 @@ Java_com_ifinver_finengine_FaceDetector_nativeProcess(JNIEnv *env, jclass, jbyte
     jlong result = 0;
     if (mXcFaceDetector != NULL) {
         jbyte *data = env->GetByteArrayElements(data_, NULL);
-        result = mXcFaceDetector->process(data, width, height);
+        result = mXcFaceDetector->process(data, width, height,0);
         env->ReleaseByteArrayElements(data_, data, 0);
     }
     return result;
-}
-
-int face_processSingleFrame(void *data, int width, int height, MPOINT *faceOutlinePointOut, MRECT *faceRectOut, MFloat *faceOrientOut){
-    if(mXcFaceDetector != NULL){
-        return mXcFaceDetector->processSingleFrame(data,width,height,faceOutlinePointOut,faceRectOut,faceOrientOut);
-    }else{
-        LOGE("%s","人脸引擎未初始化");
-    }
-
-    return -1;
 }
 
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FaceDetector_nativeRelease(JNIEnv *, jclass ) {

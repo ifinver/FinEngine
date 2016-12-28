@@ -48,6 +48,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
     private TextureView tvRender;
     private RecyclerView rvFilter;
     private RecyclerView rvMode;
+    private boolean isToolsShown = true;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -149,6 +150,11 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
                 } else {
                     Toast.makeText(this, "can't switch", Toast.LENGTH_SHORT).show();
                 }
+                return true;
+            case R.id.toggle_tools:
+                isToolsShown = !isToolsShown;
+                rvMode.setVisibility(isToolsShown ? View.VISIBLE : View.INVISIBLE);
+                rvFilter.setVisibility(isToolsShown ? View.VISIBLE : View.INVISIBLE);
                 return true;
         }
         return super.onOptionsItemSelected(item);

@@ -15,11 +15,13 @@ class ArcSoftSpotlight {
 public:
     ArcSoftSpotlight();
 
+    ArcSoftSpotlight(int);
+
     ~ArcSoftSpotlight();
 
     int init(JNIEnv *env, jobject context, const char *trackDataPath);
 
-    jlong process(void *data, int width, int height);
+    jlong process(void *data, int width, int height,int format);
 
     void setProcessModel(long model);
 
@@ -27,10 +29,7 @@ public:
 
     void setFaceBrightLevel(long brightLevel);
 
-    /**
-     * 返回值  -1 means 未初始化；-2 means 人脸检测出错； 1 means 未检测出人脸； 0 success
-     */
-    int processSingleFrame(void *data, int width, int height, MPOINT *faceOutlinePointOut, MRECT *faceRectOut, MFloat *faceOrientOut);
+    jlong getFaceDataPtr();
 
 private:
     MHandle m_hEngine;
@@ -38,6 +37,5 @@ private:
     int brightLevel;
     MUInt32 processModel;
     FaceDetectResult *faceDetectResult;
-    ASVLOFFSCREEN OffScreenIn;
 };
 #endif //FINENGINE_ARCSOFTSPOTLIGHT_H
