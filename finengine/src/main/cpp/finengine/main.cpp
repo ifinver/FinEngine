@@ -5,7 +5,6 @@
 #include "../effects/faceswap/faceswap.h"
 #include "../effects/monalisa/monalisa.h"
 #include "../effects/inc/faceresult.h"
-#include "../facedetect/facedetector.h"
 
 using namespace std;
 
