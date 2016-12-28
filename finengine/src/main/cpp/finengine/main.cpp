@@ -318,7 +318,7 @@ void renderFrame(GLContextHolder *engineHolder, jbyte *data, jint width, jint he
             break;
         }
         case ENGINE_MODE_MONA_LISA: {
-            cv::Mat *monaLisaMat = effect_monaLisa(data, width, height);
+            cv::Mat *monaLisaMat = effect_monaLisa(data, width, height, facePtr);
             renderRgb(engineHolder, monaLisaMat->data, monaLisaMat->cols, monaLisaMat->rows, 0, JNI_FALSE, outWidth, outHeight, 0);
             break;
         }

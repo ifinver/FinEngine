@@ -42,15 +42,7 @@ jlong detectMonaFace(const char *monaPath) {
     return result;
 }
 
-void releaseMonalisa() {
-    if (mMonaDetector != NULL) {
-        delete mMonaDetector;
-        mMonaDetector = NULL;
-    }
-}
-
-
-cv::Mat *effect_monaLisa(jbyte *data, jint width, jint height) {
+cv::Mat *effect_monaLisa(jbyte *data, jint width, jint height, jlong facePtr) {
 
     FaceDetectResult *faceData = (FaceDetectResult *) mMonaDetector->getFaceDataPtr();
     MInt32 localFaces = faceData->nFaceCountInOut;
@@ -66,4 +58,11 @@ cv::Mat *effect_monaLisa(jbyte *data, jint width, jint height) {
 
     }
     return &gMonaLisaMat;
+}
+
+void releaseMonalisa() {
+    if (mMonaDetector != NULL) {
+        delete mMonaDetector;
+        mMonaDetector = NULL;
+    }
 }

@@ -40,6 +40,7 @@ add_library(fin-engine-lib
             ${PROJECT_SOURCE_DIR}/cpp/effects/faceswap/faceswap.cpp
             ${PROJECT_SOURCE_DIR}/cpp/effects/faceswap/FaceSwapper.cpp
             ${PROJECT_SOURCE_DIR}/cpp/effects/monalisa/monalisa.cpp
+            ${PROJECT_SOURCE_DIR}/cpp/effects/monalisa/MonaLisaEffect.cpp
             )
 target_link_libraries(fin-engine-lib
                     lib_opencv
