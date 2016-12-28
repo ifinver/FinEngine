@@ -32,13 +32,11 @@ jlong detectMonaFace(const char *monaPath) {
     jlong result = 1;
     if(gMonaPath != monaPath){
         gMonaLisaMat = cv::imread(monaPath);
-//        LOGI("mona width:%d,height:%d,channels:%d,is continuous:%s", gMonaLisaMat.cols, gMonaLisaMat.rows, gMonaLisaMat.channels(),
-//             gMonaLisaMat.isContinuous() ? "continuous" : "no-continuous");
-    }
-    if(mMonaDetector != NULL){
-        result = mMonaDetector->process(gMonaLisaMat.data,gMonaLisaMat.cols,gMonaLisaMat.rows,1);
-        if(result != 0) {
-            gMonaPath = monaPath;
+        if(mMonaDetector != NULL){
+            result = mMonaDetector->process(gMonaLisaMat.data,gMonaLisaMat.cols,gMonaLisaMat.rows,1);
+            if(result != 0) {
+                gMonaPath = monaPath;
+            }
         }
     }
     return result;

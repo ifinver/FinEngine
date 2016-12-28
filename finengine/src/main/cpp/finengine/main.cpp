@@ -247,8 +247,8 @@ Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeMonaLisa(JNIEnv *env, job
     GLContextHolder *engineHolder = (GLContextHolder *) engine;
     if (initMonalisa(env, ctx, trackPath) == 0) {
         //初始化成功
-        jlong faceData = detectMonaFace(filePath);
-        if (faceData > 0) {
+        jlong result = detectMonaFace(filePath);
+        if (result > 0) {
             LOGE("%s", "检测图片成功！");
             engineHolder->engineMode = ENGINE_MODE_MONA_LISA;
         } else {
