@@ -9,6 +9,7 @@
 #include <GLES2/gl2.h>
 #include <jni.h>
 #include <string>
+#include <amcomdef.h>
 #include "shaders.h"
 
 class GLContextHolder{
@@ -59,6 +60,9 @@ public:
 
     int engineMode;
     std::string monaFilePath;
+    MPOINT *pFaceOutlinePointOut;
+    MRECT *rcFaceRectOut;
+    MFloat *faceOrientOut;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

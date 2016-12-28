@@ -35,10 +35,11 @@ add_library(fin-engine-lib
             #===============face detect blew=============================
             ${PROJECT_SOURCE_DIR}/cpp/facedetect/facedetector.cpp
             ${PROJECT_SOURCE_DIR}/cpp/facedetect/arcsoft/arcsoft.cpp
-            #===============open cv blew=================================
-            ${PROJECT_SOURCE_DIR}/cpp/opencv/xcv.cpp
-            ${PROJECT_SOURCE_DIR}/cpp/opencv/xcvcore.cpp
-            ${PROJECT_SOURCE_DIR}/cpp/opencv/FaceSwapper.cpp
+            #===============effects blew=================================
+            ${PROJECT_SOURCE_DIR}/cpp/effects/effects.cpp
+            ${PROJECT_SOURCE_DIR}/cpp/effects/faceswap/faceswap.cpp
+            ${PROJECT_SOURCE_DIR}/cpp/effects/faceswap/FaceSwapper.cpp
+            ${PROJECT_SOURCE_DIR}/cpp/effects/monalisa/monalisa.cpp
             )
 target_link_libraries(fin-engine-lib
                     lib_opencv

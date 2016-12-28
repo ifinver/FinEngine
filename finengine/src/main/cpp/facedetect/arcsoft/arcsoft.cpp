@@ -79,7 +79,37 @@ void ArcSoftSpotlight::setFaceBrightLevel(long _brightLevel) {
     ASL_SetFaceBrightLevel(m_hEngine, brightLevel);
 }
 
-jlong ArcSoftSpotlight::process(jbyte *data, jint width, jint height) {
+int ArcSoftSpotlight::processSingleFrame(void *data, int width, int height, MPOINT *faceOutlinePointOut, MRECT *faceRectOut, MFloat *faceOrientOut) {
+    if (m_hEngine == MNull) {
+        LOGE("%s","人脸引擎未初始化.ArcSoftSpotlight::processSingleFrame");
+        return -1;
+    }
+
+    ASVLOFFSCREEN offScreenIn;
+    offScreenIn.u32PixelArrayFormat = ASVL_PAF_RGB24_B8G8R8;
+    offScreenIn.i32Width = width;
+    offScreenIn.i32Height = height;
+    offScreenIn.pi32Pitch[0] = width * 3;
+    offScreenIn.ppu8Plane[0] = (MUInt8 *) data;
+
+    int faceInOut = 1;
+    MRESULT hr = ASL_Process(m_hEngine,
+                             &offScreenIn,
+                             MNull,
+                             &faceInOut,
+                             faceOutlinePointOut,
+                             faceRectOut,
+                             faceOrientOut);
+    if (hr == MOK) {
+        if(faceInOut == 1){
+            return 0;
+        }
+        return 1;
+    }
+    return -2;
+}
+
+jlong ArcSoftSpotlight::process(void *data, int width, int height) {
     if (m_hEngine == MNull) {
         return 0;
     }

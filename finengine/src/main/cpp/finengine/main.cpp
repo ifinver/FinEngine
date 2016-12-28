@@ -1,13 +1,12 @@
 #include "main.h"
 #include "../glslutils.h"
 #include <android/native_window_jni.h>
-#include <sstream>
 #include <android/asset_manager_jni.h>
-#include "../opencv/xcvcore.h"
-#include "../opencv/inc/faceresult.h"
-#include <opencv2/opencv.hpp>
+#include "../effects/faceswap/faceswap.h"
+#include "../effects/inc/faceresult.h"
+#include "../facedetect/facedetector.h"
+#include "../effects/monalisa/monalisa.h"
 
-using namespace cv;
 using namespace std;
 
 jboolean initPrograms(GLContextHolder *engineHolder) {
@@ -229,17 +228,32 @@ JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(J
 }
 
 JNIEXPORT void JNICALL
-Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeMonaLisa(JNIEnv *env, jobject , jlong engine,jstring filePath_) {
+Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeMonaLisa(JNIEnv *env, jobject, jlong engine, jstring filePath_) {
     const char *filePath = env->GetStringUTFChars(filePath_, 0);
     GLContextHolder *engineHolder = (GLContextHolder *) engine;
-    engineHolder->engineMode = ENGINE_MODE_MONA_LISA;
-    if(engineHolder->monaFilePath.compare(filePath)){
+    if (engineHolder->monaFilePath.compare(filePath)) {
         //不相等才会走进来
         const Mat &monaMat = imread(filePath);
+        if(engineHolder->pFaceOutlinePointOut == nullptr){
+            engineHolder->pFaceOutlinePointOut = new MPOINT[101];
+            engineHolder->rcFaceRectOut = new MRECT();
+            engineHolder->faceOrientOut = new MFloat[3];
+        }
 
+        int rc = face_processSingleFrame(monaMat.data, monaMat.cols, monaMat.rows, engineHolder->pFaceOutlinePointOut, engineHolder->rcFaceRectOut,
+                                         engineHolder->faceOrientOut);
+        if (rc == 0) {
+            LOGE("%s", "检测图片成功！");
 
-
-        engineHolder->monaFilePath = filePath;
+            engineHolder->monaFilePath = filePath;
+//            engineHolder->engineMode = ENGINE_MODE_MONA_LISA;
+        } else if(rc == 1){
+            LOGE("%s", "没有识别出人脸..");
+        }else if(rc == -1){
+            LOGE("%s","检测引擎未初始化");
+        }else if(rc == -2){
+            LOGE("%s","检测出错");
+        }
     }
 
 
@@ -253,7 +267,7 @@ GLfloat points[202];
 void drawFacePoints(GLContextHolder *engineHolder, jlong facePtr, jint width, jint height, jint rot) {
     FaceDetectResult *faceData = NULL;
     try {
-        if(facePtr != 0) {
+        if (facePtr != 0) {
             faceData = (FaceDetectResult *) facePtr;
         }
     } catch (...) {
@@ -263,16 +277,16 @@ void drawFacePoints(GLContextHolder *engineHolder, jlong facePtr, jint width, ji
         return;
     }
     MInt32 localFaces = faceData->nFaceCountInOut;
-    if(localFaces > 0){
+    if (localFaces > 0) {
         glUseProgram(engineHolder->programPoint);
         engineHolder->currentProgram = engineHolder->programPoint;
     }
-    for (int j = 0;j < localFaces ;j++) {
+    for (int j = 0; j < localFaces; j++) {
         int idx = 0;
         for (int i = 0; i < faceData->faceOutlinePointCount; i++) {
             MPOINT ptIndex = faceData->pFaceOutlinePointOut[j * faceData->faceOutlinePointCount + i];
-            points[idx++] = (GLfloat)ptIndex.x / width * 2 -1;
-            points[idx++] = (GLfloat)ptIndex.y / height * 2 -1;
+            points[idx++] = (GLfloat) ptIndex.x / width * 2 - 1;
+            points[idx++] = (GLfloat) ptIndex.y / height * 2 - 1;
         }
         glEnableVertexAttribArray(engineHolder->posPointAttrVertices);
         glVertexAttribPointer(engineHolder->posPointAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, points);
@@ -288,11 +302,27 @@ void drawFacePoints(GLContextHolder *engineHolder, jlong facePtr, jint width, ji
 //.........................................................................................................................
 void renderFrame(GLContextHolder *engineHolder, jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight,
                  jlong facePtr) {
-    unsigned char *swappedRgbaFrame = xcv_swapFace(data, width, height, (long long) facePtr);
-    if (swappedRgbaFrame == NULL) {
-        renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight,facePtr);
-    } else {
-        renderRgb(engineHolder, swappedRgbaFrame, width, height, degree, mirror, outWidth, outHeight, facePtr);
+    switch (engineHolder->engineMode){
+        default:
+        case ENGINE_MODE_NORMAL:
+            renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight, facePtr);
+            break;
+        case ENGINE_MODE_FACE_SWAP:
+            unsigned char *swappedRgbaFrame = effect_swapFace(data, width, height, (long long) facePtr);
+            if (swappedRgbaFrame == NULL) {
+                renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight, facePtr);
+            } else {
+                renderRgb(engineHolder, swappedRgbaFrame, width, height, degree, mirror, outWidth, outHeight, facePtr);
+            }
+            break;
+        case ENGINE_MODE_MONA_LISA:
+            unsigned char *monaLisaFrame =effect_monaLisa(data,width,height);
+            if(monaLisaFrame == NULL){
+                renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight, facePtr);
+            } else{
+                renderRgb(engineHolder, monaLisaFrame, width, height, degree, mirror, outWidth, outHeight, facePtr);
+            }
+            break;
     }
 }
 
@@ -319,7 +349,7 @@ void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, j
     if (degree < 0) degree += 360;
     jint odd = degree / 90;
     glUniform1i(engineHolder->posRgbUniRotation, odd);
-    glUniform1i(engineHolder->posRgbUniMirror,mirror ? 1: 0);
+    glUniform1i(engineHolder->posRgbUniMirror, mirror ? 1 : 0);
     caculateScale(engineHolder, outWidth, outHeight, odd, width, height);
     glUniform1f(engineHolder->posRgbUniScaleX, engineHolder->frameScaleX);
     glUniform1f(engineHolder->posRgbUniScaleY, engineHolder->frameScaleY);
@@ -369,7 +399,7 @@ void caculateScale(GLContextHolder *engineHolder, jint outWidth, jint outHeight,
 }
 
 void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
-               jint outHeight,jlong facePtr) {
+               jint outHeight, jlong facePtr) {
     if (engineHolder->targetProgram != engineHolder->currentProgram) {
         glUseProgram(engineHolder->targetProgram);
         if (engineHolder->currentProgram != engineHolder->defaultProgram) { //默认滤镜不删
@@ -403,7 +433,7 @@ void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jin
     if (degree < 0) degree += 360;
     jint odd = degree / 90;
     glUniform1i(engineHolder->posUniRotation, odd);
-    glUniform1i(engineHolder->posUniMirror,mirror ? 1: 0);
+    glUniform1i(engineHolder->posUniMirror, mirror ? 1 : 0);
     caculateScale(engineHolder, outWidth, outHeight, odd, width, height);
     glUniform1f(engineHolder->posUniScaleX, engineHolder->frameScaleX);
     glUniform1f(engineHolder->posUniScaleY, engineHolder->frameScaleY);

@@ -1,6 +1,6 @@
 #include "FaceSwapper.h"
 #include <opencv2/opencv.hpp>
-#include "../log.h"
+#include "../../log.h"
 #define LOG_TAG "Face Swap"
 FaceSwapper::FaceSwapper() {
 }

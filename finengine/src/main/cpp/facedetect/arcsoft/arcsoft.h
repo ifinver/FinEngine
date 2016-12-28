@@ -19,13 +19,18 @@ public:
 
     int init(JNIEnv *env, jobject context, const char *trackDataPath);
 
-    jlong process(jbyte *data, jint width, jint height);
+    jlong process(void *data, int width, int height);
 
     void setProcessModel(long model);
 
     void setFaceSkinSoftenLevel(long skinLevel);
 
     void setFaceBrightLevel(long brightLevel);
+
+    /**
+     * 返回值  -1 means 未初始化；-2 means 人脸检测出错； 1 means 未检测出人脸； 0 success
+     */
+    int processSingleFrame(void *data, int width, int height, MPOINT *faceOutlinePointOut, MRECT *faceRectOut, MFloat *faceOrientOut);
 
 private:
     MHandle m_hEngine;

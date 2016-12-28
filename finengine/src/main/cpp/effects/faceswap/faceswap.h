@@ -13,8 +13,6 @@ using namespace cv;
 
 using namespace std;
 
-unsigned char *xcv_swapFace(jbyte *data, jint width, jint height, long long int faceData);
-
-void xcv_swapFace(JNIEnv *env,jlong matObj);
+unsigned char *effect_swapFace(jbyte *data, jint width, jint height, long long int faceData);
 
 #endif //FINENGINE_XCVCORE_H
