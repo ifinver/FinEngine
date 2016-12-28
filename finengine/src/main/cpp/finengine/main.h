@@ -26,6 +26,8 @@ JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeRelease(JNIEnv
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *, jclass, jlong, jbyteArray, jint, jint, jint, jboolean, jint, jint,jlong);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(JNIEnv *env, jobject, jlong, jobject, jint, jstring, jstring);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeMonaLisa(JNIEnv *env, jobject instance, jlong,jstring filePath_);
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeNormal(JNIEnv *env, jobject instance, jlong);
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeFaceSwap(JNIEnv *env, jobject instance, jlong);
 }
 
 void releaseGLContext(GLContextHolder *engineHolder);

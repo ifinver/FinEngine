@@ -101,6 +101,24 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
         }
     }
 
+    public void switchModeToNormal() {
+        if(mFinEngine != null){
+            mFinEngine.switchModeToNormal();
+        }
+    }
+
+    public void switchModeToSwapFace() {
+        if(mFinEngine != null){
+            mFinEngine.switchModeToSwapFace();
+        }
+    }
+
+    public void switchModeToMonaLisa(Context ctx) {
+        if(mFinEngine != null){
+            mFinEngine.switchModeToMonaLisa(ctx);
+        }
+    }
+
     public interface RenderListener{
         void onRenderPrepared(int outputWidth,int outputHeight);
         void onFrameRendered();

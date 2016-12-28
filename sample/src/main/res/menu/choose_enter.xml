@@ -2,18 +2,13 @@
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
       xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:title="多屏同时渲染"
-          android:id="@+id/menu_activity_multi"
+    <item android:title="使用Unity引擎"
+          android:id="@+id/menu_activity_unity"
           android:icon="@mipmap/ic_launcher"
           android:visible="true"
           android:enabled="true"/>
     <item android:title="实时滤镜切换"
           android:id="@+id/menu_activity_switch"
-          android:icon="@mipmap/ic_launcher"
-          android:enabled="true"
-          android:visible="true"/>
-    <item android:title="人脸交换"
-          android:id="@+id/menu_activity_swap"
           android:icon="@mipmap/ic_launcher"
           android:enabled="true"
           android:visible="true"/>

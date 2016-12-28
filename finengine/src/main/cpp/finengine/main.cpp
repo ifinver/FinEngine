@@ -227,9 +227,22 @@ JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(J
     engineHolder->currentFilter = mFilterType;
 }
 
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeNormal(JNIEnv *env, jobject instance, jlong engine){
+    GLContextHolder *engineHolder = (GLContextHolder *) engine;
+    engineHolder->engineMode = ENGINE_MODE_NORMAL;
+    LOGI("%s","switched mode to normal!");
+}
+
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeFaceSwap(JNIEnv *env, jobject instance, jlong engine){
+    GLContextHolder *engineHolder = (GLContextHolder *) engine;
+    engineHolder->engineMode = ENGINE_MODE_FACE_SWAP;
+    LOGI("%s","switched mode to swap face!");
+}
+
 JNIEXPORT void JNICALL
 Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeMonaLisa(JNIEnv *env, jobject, jlong engine, jstring filePath_) {
     const char *filePath = env->GetStringUTFChars(filePath_, 0);
+    LOGI("%s","switching mode to mona lisa ..");
     GLContextHolder *engineHolder = (GLContextHolder *) engine;
     if (engineHolder->monaFilePath.compare(filePath)) {
         //不相等才会走进来
@@ -335,7 +348,6 @@ void renderFrame(GLContextHolder *engineHolder, jbyte *data, jint width, jint he
 void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
                jint outHeight, jlong facePtr) {
     glUseProgram(engineHolder->programRGB);
-    engineHolder->currentProgram = engineHolder->programRGB;
 
     //输入顶点
     glEnableVertexAttribArray(engineHolder->posRgbAttrVertices);
@@ -364,6 +376,8 @@ void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, j
 
     glDisableVertexAttribArray(engineHolder->posRgbAttrVertices);
     glDisableVertexAttribArray(engineHolder->posRgbAttrTexCoords);
+
+    glUseProgram(engineHolder->currentProgram);
 
     //画点
 //    drawFacePoints(engineHolder, facePtr, width, height, odd);

@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
@@ -32,7 +33,7 @@ import java.util.TimerTask;
  */
 
 @SuppressWarnings({"FieldCanBeLocal", "deprecation"})
-public class SingleActivity extends AppCompatActivity implements FilterAdapter.OnItemClickListener, CameraHolder.CameraListener, View.OnTouchListener, Renderer.RenderListener {
+public class SingleActivity extends AppCompatActivity implements FilterAdapter.OnItemClickListener, CameraHolder.CameraListener, View.OnTouchListener, Renderer.RenderListener, ModeAdapter.OnItemClickListener {
 
     private static final String TAG = "SingleActivity";
 
@@ -46,6 +47,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
     private FrameLayout flContainer;
     private TextureView tvRender;
     private RecyclerView rvFilter;
+    private RecyclerView rvMode;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -58,13 +60,18 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
         flContainer = (FrameLayout) findViewById(R.id.tv_container);
         tvRender = (TextureView) findViewById(R.id.tex);
         rvFilter = (RecyclerView) findViewById(R.id.rv_filter);
+        rvMode = (RecyclerView) findViewById(R.id.rv_mode);
 
         mRenderer = new Renderer(this);
         tvRender.setSurfaceTextureListener(mRenderer);
 
-//        rvFilter.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-//        rvFilter.addItemDecoration(new SpaceItemDecoration(10));
-//        rvFilter.setAdapter(new FilterAdapter(this, this));
+        rvFilter.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvFilter.addItemDecoration(new SpaceItemDecoration(10));
+        rvFilter.setAdapter(new FilterAdapter(this, this));
+
+        rvMode.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        rvMode.addItemDecoration(new SpaceItemDecoration(10));
+        rvMode.setAdapter(new ModeAdapter(this, this));
 
         //fps
         initFPS();
@@ -104,6 +111,22 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onModeClicked(int position) {
+        switch (position){
+            default:
+            case 0:
+                mRenderer.switchModeToNormal();
+                break;
+            case 1:
+                mRenderer.switchModeToSwapFace();
+                break;
+            case 2:
+                mRenderer.switchModeToMonaLisa(this);
+                break;
+        }
     }
 
     @Override
@@ -180,7 +203,6 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
     @Override
     public void onRenderPrepared(int outputWidth, int outputHeight) {
-
     }
 
     @Override

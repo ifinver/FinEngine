@@ -16,7 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.ifinver.finenginesample.opencv.XcvActivity;
 import com.ifinver.finenginesample.singleswitch.SingleActivity;
 import com.ifinver.finenginesample.unity.UnityActivity;
 
@@ -59,14 +58,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_activity_multi:
+            case R.id.menu_activity_unity:
                 startActivity(new Intent(this, UnityActivity.class));
                 return true;
             case R.id.menu_activity_switch:
                 startActivity(new Intent(this, SingleActivity.class));
-                return true;
-            case R.id.menu_activity_swap:
-                startActivity(new Intent(this, XcvActivity.class));
                 return true;
         }
         return super.onOptionsItemSelected(item);

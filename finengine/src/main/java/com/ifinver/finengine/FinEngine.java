@@ -37,10 +37,6 @@ public class FinEngine {
     public static final int FILTER_TYPE_H_MIRROR = 7;
     public static final int FILTER_TYPE_FISH_EYE = 8;
 
-    public static final int ENGINE_MODE_NORMAL = 100;
-    public static final int ENGINE_MODE_FACE_SWAP = 101;
-    public static final int ENGINE_MODE_MONA_LISA = 102;
-
     private final FinEngineThread mEngineThread;
     private final int mEngineId;
 
@@ -70,6 +66,13 @@ public class FinEngine {
         mEngineThread.switchFilter(ctx, filterType);
     }
 
+    public void switchModeToNormal(){
+        mEngineThread.switchModeToNormal();
+    }
+
+    public void switchModeToSwapFace(){
+        mEngineThread.switchModeToSwapFace();
+    }
 
     public void switchModeToMonaLisa(Context ctx) {
         synchronized (this) {
@@ -103,7 +106,9 @@ public class FinEngine {
         private final int MSG_RELEASE = 0x104;
         private final int MSG_PROCESS = 0x105;
         private final int MSG_SWITCH_FILTER = 0x106;
-        private final int MSG_SWITCH_MODE = 0x107;
+        private final int MSG_SWITCH_MODE_NORMAL = 0x107;
+        private final int MSG_SWITCH_MODE_MONALISA = 0x108;
+        private final int MSG_SWITCH_MODE_SWAP_FACE = 0x109;
 
         private Handler mSelfHandler;
         private boolean delayStart = false;
@@ -118,7 +123,6 @@ public class FinEngine {
         private int mOutHeight;
         private AssetManager mAssetManager;
         private int mFilterType;
-        private int mEngineMode;
         private long mEngine;
         private long mFacePtr;
         private String mMonaLisaFilePath;
@@ -126,7 +130,6 @@ public class FinEngine {
         FinEngineThread(Surface output, int width, int height) {
             super("FinEngineThread", Process.THREAD_PRIORITY_URGENT_DISPLAY);
             this.mFilterType = FILTER_TYPE_NORMAL;
-            mEngineMode = ENGINE_MODE_NORMAL;
             this.mOutputSurface = output;
             this.mOutWidth = width;
             this.mOutHeight = height;
@@ -144,14 +147,25 @@ public class FinEngine {
                 this.mAssetManager = ctx.getApplicationContext().getAssets();
                 this.mFilterType = filterType;
             }
+            mSelfHandler.removeCallbacksAndMessages(null);
             mSelfHandler.sendEmptyMessage(MSG_SWITCH_FILTER);
+        }
+
+        public void switchModeToNormal(){
+            mSelfHandler.removeCallbacksAndMessages(null);
+            mSelfHandler.sendEmptyMessage(MSG_SWITCH_MODE_NORMAL);
+        }
+
+        public void switchModeToSwapFace() {
+            mSelfHandler.removeCallbacksAndMessages(null);
+            mSelfHandler.sendEmptyMessage(MSG_SWITCH_MODE_SWAP_FACE);
         }
 
         public void switchModeToMonaLisa(String path) {
             synchronized (FinEngineThread.class) {
                 this.mMonaLisaFilePath = path;
-                this.mEngineMode = ENGINE_MODE_MONA_LISA;
-                mSelfHandler.sendEmptyMessage(MSG_SWITCH_MODE);
+                mSelfHandler.removeCallbacksAndMessages(null);
+                mSelfHandler.sendEmptyMessage(MSG_SWITCH_MODE_MONALISA);
             }
         }
 
@@ -182,8 +196,14 @@ public class FinEngine {
                 case MSG_SWITCH_FILTER:
                     switchFilterInternal();
                     return true;
-                case MSG_SWITCH_MODE:
+                case MSG_SWITCH_MODE_MONALISA:
                     switchToMonaLisaInternal();
+                    return true;
+                case MSG_SWITCH_MODE_NORMAL:
+                    switchToNormalModeInternal();
+                    return true;
+                case MSG_SWITCH_MODE_SWAP_FACE:
+                    switchToFaceSwapModeInternal();
                     return true;
                 case MSG_PROCESS:
                     if (isPrepared && mData != null) {
@@ -198,6 +218,20 @@ public class FinEngine {
             if (isPrepared) {
                 synchronized (FinEngineThread.class) {
                     nativeSwitchToModeMonaLisa(mEngine, mMonaLisaFilePath);
+                }
+            }
+        }
+        private void switchToFaceSwapModeInternal() {
+            if (isPrepared) {
+                synchronized (FinEngineThread.class) {
+                    nativeSwitchToModeFaceSwap(mEngine);
+                }
+            }
+        }
+        private void switchToNormalModeInternal() {
+            if (isPrepared) {
+                synchronized (FinEngineThread.class) {
+                    nativeSwitchToModeNormal(mEngine);
                 }
             }
         }
@@ -225,6 +259,7 @@ public class FinEngine {
 
         private void sendReleaseMsg() {
             isPrepared = false;
+            mSelfHandler.removeCallbacksAndMessages(null);
             mSelfHandler.sendEmptyMessage(MSG_RELEASE);
         }
 
@@ -239,7 +274,6 @@ public class FinEngine {
         }
     }
 
-
     /**
      * @return 0 means failed
      */
@@ -250,6 +284,8 @@ public class FinEngine {
     private native void nativeSwitchFilter(long engine, AssetManager mAssetManager, int mFilterType, String mVertexName, String mFragmentName);
 
     private native void nativeSwitchToModeMonaLisa(long engine, String filePath);
+    private native void nativeSwitchToModeNormal(long engine);
+    private native void nativeSwitchToModeFaceSwap(long engine);
 
     private native void nativeRender(long engine, byte[] data, int frameWidth, int frameHeight, int degree, boolean mirror, int mOutWidth, int mOutHeight, long mFacePtr);
 }

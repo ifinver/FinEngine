@@ -33,9 +33,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".singleswitch.SingleActivity"/>
-        <activity android:name=".opencv.XcvActivity"/>
-        <activity android:process=":unity" android:name=".unity.UnityActivity"/>
+        <activity android:process=":face" android:name=".singleswitch.SingleActivity"/>
+        <activity android:process=":face" android:name=".unity.UnityActivity"/>
     </application>
 
 </manifest>
