@@ -73,7 +73,7 @@ unsigned char *effect_swapFace(jbyte *data, jint width, jint height, long long i
         facePointBob.push_back(Point2i(ptIndex.x, ptIndex.y));
     }
 
-    cvtColor(*yuvFrame, *rgbFrame, CV_YUV2RGB_NV21);
+    cvtColor(*yuvFrame, *rgbFrame, CV_YUV2BGR_NV21);
 
     try {
         face_swapper->swapFaces(*rgbFrame, *faceRectAnn, *faceRectBob, facePointAnn, facePointBob);

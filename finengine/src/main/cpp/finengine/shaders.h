@@ -124,7 +124,7 @@ public:
                         "                                                   \n"
                         "void main(){                                       \n"
                         "   vec2 mirrorCoord = mirrorUV();                  \n"
-                        "   gl_FragColor = texture2D(sTexture,mirrorCoord); \n"
+                        "   gl_FragColor = vec4(texture2D(sTexture,mirrorCoord).bgr,1.0); \n"
                         "}                                                  \n";
     }
 };

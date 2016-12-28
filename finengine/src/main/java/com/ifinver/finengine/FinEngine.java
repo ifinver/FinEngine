@@ -76,11 +76,11 @@ public class FinEngine {
 
     public void switchModeToMonaLisa(Context ctx) {
         synchronized (this) {
-            File monaFile = new File(ctx.getFilesDir() + "/mona.png");
+            File monaFile = new File(ctx.getFilesDir() + "/monalisa.jpg");
             if (!monaFile.exists()) {
                 //不存在了
                 try {
-                    InputStream in = ctx.getAssets().open("mona.png");
+                    InputStream in = ctx.getAssets().open("monalisa.jpg");
                     FileOutputStream fos = new FileOutputStream(monaFile);
                     byte[] buffer = new byte[1024];
                     int readCount;

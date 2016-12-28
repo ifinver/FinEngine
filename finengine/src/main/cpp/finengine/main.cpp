@@ -227,48 +227,43 @@ JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(J
     engineHolder->currentFilter = mFilterType;
 }
 
-JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeNormal(JNIEnv *env, jobject instance, jlong engine){
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeNormal(JNIEnv *env, jobject instance, jlong engine) {
     GLContextHolder *engineHolder = (GLContextHolder *) engine;
     engineHolder->engineMode = ENGINE_MODE_NORMAL;
-    LOGI("%s","switched mode to normal!");
+    LOGI("%s", "switched mode to normal!");
 }
 
-JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeFaceSwap(JNIEnv *env, jobject instance, jlong engine){
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeFaceSwap(JNIEnv *env, jobject instance, jlong engine) {
     GLContextHolder *engineHolder = (GLContextHolder *) engine;
     engineHolder->engineMode = ENGINE_MODE_FACE_SWAP;
-    LOGI("%s","switched mode to swap face!");
+    LOGI("%s", "switched mode to swap face!");
 }
 
 JNIEXPORT void JNICALL
 Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeMonaLisa(JNIEnv *env, jobject, jlong engine, jstring filePath_) {
     const char *filePath = env->GetStringUTFChars(filePath_, 0);
-    LOGI("%s","switching mode to mona lisa ..");
+    LOGI("%s", "switching mode to mona lisa ..");
     GLContextHolder *engineHolder = (GLContextHolder *) engine;
     if (engineHolder->monaFilePath.compare(filePath)) {
         //不相等才会走进来
-        const Mat &monaMat = imread(filePath);
+        engineHolder->monaMat = imread(filePath);
         if (engineHolder->pFaceOutlinePointOut == nullptr) {
             engineHolder->pFaceOutlinePointOut = new MPOINT[101];
-            engineHolder->rcFaceRectOut = new MRECT();
+            engineHolder->rcFaceRectOut = new MRECT[1];
             engineHolder->faceOrientOut = new MFloat[3];
         }
-
-        int rc = face_processSingleFrame(monaMat.data, monaMat.cols, monaMat.rows, engineHolder->pFaceOutlinePointOut, engineHolder->rcFaceRectOut,
+        LOGE("mona width:%d,height:%d,channels:%d,is continuous:%s", engineHolder->monaMat.cols, engineHolder->monaMat.rows,
+             engineHolder->monaMat.channels(), engineHolder->monaMat.isContinuous() ? "continuous" : "no-continuous");
+        int rc = face_processSingleFrame(engineHolder->monaMat.data, engineHolder->monaMat.cols, engineHolder->monaMat.rows,
+                                         engineHolder->pFaceOutlinePointOut, engineHolder->rcFaceRectOut,
                                          engineHolder->faceOrientOut);
         if (rc == 0) {
             LOGE("%s", "检测图片成功！");
 
             engineHolder->monaFilePath = filePath;
-//            engineHolder->engineMode = ENGINE_MODE_MONA_LISA;
-        } else if (rc == 1) {
-            LOGE("%s", "没有识别出人脸..");
-        } else if (rc == -1) {
-            LOGE("%s", "检测引擎未初始化");
-        } else if (rc == -2) {
-            LOGE("%s", "检测出错");
         }
     }
-
+    engineHolder->engineMode = ENGINE_MODE_MONA_LISA;
 
     env->ReleaseStringUTFChars(filePath_, filePath);
 }
@@ -333,12 +328,12 @@ void renderFrame(GLContextHolder *engineHolder, jbyte *data, jint width, jint he
             break;
         }
         case ENGINE_MODE_MONA_LISA: {
-            unsigned char *monaLisaFrame = effect_monaLisa(data, width, height);
-            if (monaLisaFrame == NULL) {
-                renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight, facePtr);
-            } else {
-                renderRgb(engineHolder, monaLisaFrame, width, height, degree, mirror, outWidth, outHeight, facePtr);
-            }
+//            unsigned char *monaLisaFrame = effect_monaLisa(data, width, height);
+//            if (monaLisaFrame == NULL) {
+//                renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight, facePtr);
+//            } else {
+                renderRgb(engineHolder, engineHolder->monaMat.data, engineHolder->monaMat.cols, engineHolder->monaMat.rows, 0, 0, outWidth, outHeight, facePtr);
+//            }
             break;
         }
     }
@@ -481,5 +476,4 @@ void releaseGLContext(GLContextHolder *engineHolder) {
         eglDestroyContext(engineHolder->eglDisplay, engineHolder->eglContext);
         delete (engineHolder);
     }
-
 }

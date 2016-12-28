@@ -85,14 +85,17 @@ int ArcSoftSpotlight::processSingleFrame(void *data, int width, int height, MPOI
         return -1;
     }
 
-    ASVLOFFSCREEN offScreenIn;
+    ASL_SetProcessModel(m_hEngine, ASL_PROCESS_MODEL_FACEOUTLINE);
+
+    ASVLOFFSCREEN offScreenIn = {0};
     offScreenIn.u32PixelArrayFormat = ASVL_PAF_RGB24_B8G8R8;
     offScreenIn.i32Width = width;
     offScreenIn.i32Height = height;
     offScreenIn.pi32Pitch[0] = width * 3;
     offScreenIn.ppu8Plane[0] = (MUInt8 *) data;
 
-    int faceInOut = 1;
+    MInt32 faceInOut = 1;
+    LOGE("%s","here we go 1");
     MRESULT hr = ASL_Process(m_hEngine,
                              &offScreenIn,
                              MNull,
@@ -100,12 +103,19 @@ int ArcSoftSpotlight::processSingleFrame(void *data, int width, int height, MPOI
                              faceOutlinePointOut,
                              faceRectOut,
                              faceOrientOut);
+    LOGE("%s","here we go 2");
+
+    ASL_SetProcessModel(m_hEngine, processModel);
+
     if (hr == MOK) {
         if(faceInOut == 1){
+            LOGE("%s", "检测成功..");
             return 0;
         }
+        LOGE("%s", "没有识别出人脸..");
         return 1;
     }
+    LOGE("%s", "检测出错");
     return -2;
 }
 
