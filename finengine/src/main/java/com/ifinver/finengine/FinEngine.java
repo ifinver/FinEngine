@@ -70,6 +70,7 @@ public class FinEngine {
         mEngineThread.switchFilter(ctx, filterType);
     }
 
+
     public void switchModeToMonaLisa(Context ctx) {
         synchronized (this) {
             File monaFile = new File(ctx.getFilesDir() + "/mona.png");

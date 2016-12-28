@@ -119,7 +119,7 @@ jlong ArcSoftSpotlight::process(void *data, int width, int height) {
     OffScreenIn.pi32Pitch[0] = width;
     OffScreenIn.pi32Pitch[1] = width;
     OffScreenIn.ppu8Plane[0] = (MUInt8 *) data;
-    OffScreenIn.ppu8Plane[1] = (MUInt8 *) (data + width * height);
+    OffScreenIn.ppu8Plane[1] = (MUInt8 *) data + width * height;
 
     int faceInOut = ASL_MAX_FACE_NUM;
 

@@ -5,7 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -17,10 +16,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.ifinver.finengine.FinCv;
 import com.ifinver.finenginesample.opencv.XcvActivity;
-import com.ifinver.finenginesample.unity.UnityActivity;
 import com.ifinver.finenginesample.singleswitch.SingleActivity;
+import com.ifinver.finenginesample.unity.UnityActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -93,20 +91,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private Bitmap generateGreyBmp(int res) {
-        try {
-            Bitmap resultImg;
-            Bitmap bmp = BitmapFactory.decodeResource(getResources(), res);
-            int width = bmp.getWidth();
-            int height = bmp.getHeight();
-            int[] pixels = new int[width * height];
-            bmp.getPixels(pixels,0, width,0,0, width, height);
-            int[] resultPixels = FinCv.BGRA2Grey(pixels, width, height);
-            resultImg = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
-            resultImg.setPixels(resultPixels,0,width,0,0,width,height);
-            return resultImg;
-        }catch (Throwable ignored){
-            return null;
-        }
+//        try {
+//            Bitmap resultImg;
+//            Bitmap bmp = BitmapFactory.decodeResource(getResources(), res);
+//            int width = bmp.getWidth();
+//            int height = bmp.getHeight();
+//            int[] pixels = new int[width * height];
+//            bmp.getPixels(pixels,0, width,0,0, width, height);
+////            int[] resultPixels = FinCv.BGRA2Grey(pixels, width, height);
+//            resultImg = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
+//            resultImg.setPixels(resultPixels,0,width,0,0,width,height);
+//            return resultImg;
+//        }catch (Throwable ignored){
+//            return null;
+//        }
+        return null;
     }
 
     @Override

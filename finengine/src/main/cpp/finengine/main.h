@@ -16,9 +16,9 @@
 #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
-static const int ENGINE_MODE_NORMAL = 100;
-static const int ENGINE_MODE_FACE_SWAP = 101;
-static const int ENGINE_MODE_MONA_LISA = 102;
+const int ENGINE_MODE_NORMAL = 100;
+const int ENGINE_MODE_FACE_SWAP = 101;
+const int ENGINE_MODE_MONA_LISA = 102;
 
 extern "C" {
 JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass type, jobject jSurface);

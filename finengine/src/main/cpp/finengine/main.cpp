@@ -11,27 +11,13 @@ using namespace std;
 
 jboolean initPrograms(GLContextHolder *engineHolder) {
 
-    //point program
-    ShaderPoint pShader;
-    GLuint programPoint = createProgram(pShader.vertexShader, pShader.fragmentShader);
-    if (programPoint == 0) {
-        return JNI_FALSE;
-    }
-    glUseProgram(programPoint);
-    engineHolder->programPoint = programPoint;
-    engineHolder->posPointAttrVertices = (GLuint) glGetAttribLocation(programPoint, "aPosition");
-    engineHolder->posPointAttrScaleX = (GLuint) glGetAttribLocation(programPoint, "aScaleX");
-    engineHolder->posPointAttrScaleY = (GLuint) glGetAttribLocation(programPoint, "aScaleY");
-    engineHolder->posPointUniColor = (GLuint) glGetUniformLocation(programPoint, "color");
-    engineHolder->posPointUniRotation = (GLuint) glGetUniformLocation(programPoint, "uRotation");
-
     //rgb program
     ShaderRGB rgbShader;
     GLuint programRGB = createProgram(rgbShader.vertexShader, rgbShader.fragmentShader);
     if (programRGB == 0) {
         return JNI_FALSE;
     }
-    glUseProgram(programRGB);
+//    glUseProgram(programRGB);
     engineHolder->programRGB = programRGB;
     engineHolder->posRgbAttrVertices = (GLuint) glGetAttribLocation(programRGB, "aPosition");
     engineHolder->posRgbAttrTexCoords = (GLuint) glGetAttribLocation(programRGB, "aTexCoord");
@@ -59,6 +45,20 @@ jboolean initPrograms(GLContextHolder *engineHolder) {
     engineHolder->posUniMirror = (GLuint) glGetUniformLocation(programYUV, "mirror");
     engineHolder->posUniTextureY = (GLuint) glGetUniformLocation(programYUV, "yTexture");
     engineHolder->posUniTextureUV = (GLuint) glGetUniformLocation(programYUV, "uvTexture");
+
+    //point program
+    ShaderPoint pShader;
+    GLuint programPoint = createProgram(pShader.vertexShader, pShader.fragmentShader);
+    if (programPoint == 0) {
+        return JNI_FALSE;
+    }
+//    glUseProgram(programPoint);
+    engineHolder->programPoint = programPoint;
+    engineHolder->posPointAttrVertices = (GLuint) glGetAttribLocation(programPoint, "aPosition");
+    engineHolder->posPointAttrScaleX = (GLuint) glGetAttribLocation(programPoint, "aScaleX");
+    engineHolder->posPointAttrScaleY = (GLuint) glGetAttribLocation(programPoint, "aScaleY");
+    engineHolder->posPointUniColor = (GLuint) glGetUniformLocation(programPoint, "color");
+    engineHolder->posPointUniRotation = (GLuint) glGetUniformLocation(programPoint, "uRotation");
     return JNI_TRUE;
 }
 
@@ -234,7 +234,7 @@ Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeMonaLisa(JNIEnv *env, job
     if (engineHolder->monaFilePath.compare(filePath)) {
         //不相等才会走进来
         const Mat &monaMat = imread(filePath);
-        if(engineHolder->pFaceOutlinePointOut == nullptr){
+        if (engineHolder->pFaceOutlinePointOut == nullptr) {
             engineHolder->pFaceOutlinePointOut = new MPOINT[101];
             engineHolder->rcFaceRectOut = new MRECT();
             engineHolder->faceOrientOut = new MFloat[3];
@@ -247,12 +247,12 @@ Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeMonaLisa(JNIEnv *env, job
 
             engineHolder->monaFilePath = filePath;
 //            engineHolder->engineMode = ENGINE_MODE_MONA_LISA;
-        } else if(rc == 1){
+        } else if (rc == 1) {
             LOGE("%s", "没有识别出人脸..");
-        }else if(rc == -1){
-            LOGE("%s","检测引擎未初始化");
-        }else if(rc == -2){
-            LOGE("%s","检测出错");
+        } else if (rc == -1) {
+            LOGE("%s", "检测引擎未初始化");
+        } else if (rc == -2) {
+            LOGE("%s", "检测出错");
         }
     }
 
@@ -279,35 +279,38 @@ void drawFacePoints(GLContextHolder *engineHolder, jlong facePtr, jint width, ji
     MInt32 localFaces = faceData->nFaceCountInOut;
     if (localFaces > 0) {
         glUseProgram(engineHolder->programPoint);
-        engineHolder->currentProgram = engineHolder->programPoint;
-    }
-    for (int j = 0; j < localFaces; j++) {
-        int idx = 0;
-        for (int i = 0; i < faceData->faceOutlinePointCount; i++) {
-            MPOINT ptIndex = faceData->pFaceOutlinePointOut[j * faceData->faceOutlinePointCount + i];
-            points[idx++] = (GLfloat) ptIndex.x / width * 2 - 1;
-            points[idx++] = (GLfloat) ptIndex.y / height * 2 - 1;
+
+        for (int j = 0; j < localFaces; j++) {
+            int idx = 0;
+            for (int i = 0; i < faceData->faceOutlinePointCount; i++) {
+                MPOINT ptIndex = faceData->pFaceOutlinePointOut[j * faceData->faceOutlinePointCount + i];
+                points[idx++] = (GLfloat) ptIndex.x / width * 2 - 1;
+                points[idx++] = (GLfloat) ptIndex.y / height * 2 - 1;
+            }
+            glEnableVertexAttribArray(engineHolder->posPointAttrVertices);
+            glVertexAttribPointer(engineHolder->posPointAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, points);
+            glVertexAttrib1f(engineHolder->posPointAttrScaleX, engineHolder->frameScaleX);
+            glVertexAttrib1f(engineHolder->posPointAttrScaleY, engineHolder->frameScaleY);
+            glUniform1i(engineHolder->posPointUniRotation, rot);
+            glUniform4f(engineHolder->posPointUniColor, 0.0f, 1.0f, 0.0f, 1.0f);
+            glDrawArrays(GL_POINTS, 0, 101);
+            glDisableVertexAttribArray(engineHolder->posPointAttrVertices);
         }
-        glEnableVertexAttribArray(engineHolder->posPointAttrVertices);
-        glVertexAttribPointer(engineHolder->posPointAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, points);
-        glVertexAttrib1f(engineHolder->posPointAttrScaleX, engineHolder->frameScaleX);
-        glVertexAttrib1f(engineHolder->posPointAttrScaleY, engineHolder->frameScaleY);
-        glUniform1i(engineHolder->posPointUniRotation, rot);
-        glUniform4f(engineHolder->posPointUniColor, 0.0f, 1.0f, 0.0f, 1.0f);
-        glDrawArrays(GL_POINTS, 0, 101);
-        glDisableVertexAttribArray(engineHolder->posPointAttrVertices);
+
+        glUseProgram(engineHolder->currentProgram);
     }
 }
 
 //.........................................................................................................................
 void renderFrame(GLContextHolder *engineHolder, jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight,
                  jlong facePtr) {
-    switch (engineHolder->engineMode){
+    switch (engineHolder->engineMode) {
         default:
-        case ENGINE_MODE_NORMAL:
+        case ENGINE_MODE_NORMAL: {
             renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight, facePtr);
             break;
-        case ENGINE_MODE_FACE_SWAP:
+        }
+        case ENGINE_MODE_FACE_SWAP: {
             unsigned char *swappedRgbaFrame = effect_swapFace(data, width, height, (long long) facePtr);
             if (swappedRgbaFrame == NULL) {
                 renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight, facePtr);
@@ -315,15 +318,18 @@ void renderFrame(GLContextHolder *engineHolder, jbyte *data, jint width, jint he
                 renderRgb(engineHolder, swappedRgbaFrame, width, height, degree, mirror, outWidth, outHeight, facePtr);
             }
             break;
-        case ENGINE_MODE_MONA_LISA:
-            unsigned char *monaLisaFrame =effect_monaLisa(data,width,height);
-            if(monaLisaFrame == NULL){
+        }
+        case ENGINE_MODE_MONA_LISA: {
+            unsigned char *monaLisaFrame = effect_monaLisa(data, width, height);
+            if (monaLisaFrame == NULL) {
                 renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight, facePtr);
-            } else{
+            } else {
                 renderRgb(engineHolder, monaLisaFrame, width, height, degree, mirror, outWidth, outHeight, facePtr);
             }
             break;
+        }
     }
+
 }
 
 void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
@@ -443,7 +449,7 @@ void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jin
     glDisableVertexAttribArray(engineHolder->posAttrVertices);
     glDisableVertexAttribArray(engineHolder->posAttrTexCoords);
 
-    drawFacePoints(engineHolder, facePtr, width, height, 0);
+    drawFacePoints(engineHolder, facePtr, width, height, odd);
 
 //    glFinish();
     eglSwapBuffers(engineHolder->eglDisplay, engineHolder->eglSurface);
