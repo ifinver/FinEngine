@@ -3,31 +3,47 @@
 //
 
 #include "MonaLisaEffect.h"
+#include "../../log.h"
+#include <sstream>
+
+#define LOG_TAG "Mona Lisa"
 
 void MonaLisaEffect::monaLisa(Mat lisaFrame, Rect2i lisaRect, vector<cv::Point2i> lisaPoints, Mat vinciFrame, Rect2i vinciRect,
                               vector<cv::Point2i> vinciPoints) {
     //lisa face roi
-    Rect lisaBorder;
-    lisaBorder = lisaRect - cv::Point(50, 50);
-    lisaBorder += cv::Size(100, 100);
-    lisaBorder &= cv::Rect(0, 0, lisaFrame.cols, lisaFrame.rows);
-    mSmallLisaFrame = lisaFrame(lisaBorder);
-    //vinci face roi
-    Rect vinciBorder;
-    vinciBorder = vinciRect - cv::Point(50, 50);
-    vinciBorder += cv::Size(100,100);
-    vinciBorder &= cv::Rect(0,0,vinciFrame.cols,vinciFrame.rows);
-    mSmallVinciFrame = vinciFrame(vinciBorder);
-    //vinci face rect
-    Point2i vinciTlPoint = vinciBorder.tl();
-    mVinciRect = vinciRect - vinciTlPoint;
+    mFrameSize.width = (lisaRect.width > vinciRect.width ? lisaRect.width : vinciRect.width);
+    mFrameSize.height = (lisaRect.height > vinciRect.height ? lisaRect.height : vinciRect.height);
+
+    Rect lisaBorder = lisaRect - Point((mFrameSize.width - lisaRect.width) / 2, (mFrameSize.height - lisaRect.height) / 2);
+    lisaBorder.width = mFrameSize.width;
+    lisaBorder.height = mFrameSize.height;
+    Rect temp = lisaBorder & cv::Rect(0, 0, lisaFrame.cols, lisaFrame.rows);
+    if(temp != lisaBorder){
+        //mFrameSize和mSmallFrameLisa和mSmallFrameVinci必须相等，不相等不处理
+        return;
+    }
+    mSmallFrameLisa = lisaFrame(lisaBorder);
+
+    Rect vinciBorder = vinciRect - Point((mFrameSize.width - vinciRect.width) / 2, (mFrameSize.height - vinciRect.height) / 2);
+    vinciBorder.width = mFrameSize.width;
+    vinciBorder.height = mFrameSize.height;
+    Rect temp2 = vinciBorder & cv::Rect(0, 0, vinciFrame.cols, vinciFrame.rows);
+    if(temp2 != vinciBorder){
+        //mFrameSize和mSmallFrameLisa和mSmallFrameVinci必须相等，不相等不处理
+        return;
+    }
+    mSmallFrameVinci = vinciFrame(vinciBorder);
+
+
+    Point2i vinciPointTl = vinciBorder.tl();
+    mVinciRect = vinciRect - vinciPointTl;
     //format face points to face rect
     mPointsLisa.clear();
     mPointsVinci.clear();
-    Point2i lisaTlPoint = lisaBorder.tl();
-    for(int i = 0;i < lisaPoints.size();i++){
-        mPointsLisa.push_back(Point2i(lisaPoints[i] - lisaTlPoint));
-        mPointsVinci.push_back(Point2i(vinciPoints[i] - vinciTlPoint));
+    Point2i lisaPointTl = lisaBorder.tl();
+    for (int i = 0; i < lisaPoints.size(); i++) {
+        mPointsLisa.push_back(Point2i(lisaPoints[i] - lisaPointTl));
+        mPointsVinci.push_back(Point2i(vinciPoints[i] - vinciPointTl));
     }
     //calculate affine transform mat
     mTransformKeyPointsLisa[0] = mPointsLisa[9];
@@ -36,39 +52,34 @@ void MonaLisaEffect::monaLisa(Mat lisaFrame, Rect2i lisaRect, vector<cv::Point2i
     mTransformKeyPointsVinci[0] = mPointsVinci[9];
     mTransformKeyPointsVinci[1] = mPointsVinci[21];
     mTransformKeyPointsVinci[2] = mPointsVinci[22];
-    mTransformVinciToLisa = getAffineTransform(mTransformKeyPointsVinci,mTransformKeyPointsLisa);
+    mTransformVinciToLisa = getAffineTransform(mTransformKeyPointsVinci, mTransformKeyPointsLisa);
     //calculate mask
-    mFrameSizeLisa.width = mSmallLisaFrame.cols;
-    mFrameSizeLisa.height = mSmallLisaFrame.rows;
-    mFrameSizeVinci.width = mSmallVinciFrame.cols;
-    mFrameSizeVinci.height = mSmallVinciFrame.rows;
-    mMask.create(mFrameSizeVinci,CV_8UC1);
+    mMask.create(mFrameSize, CV_8UC1);
     mMask.setTo(cv::Scalar::all(0));
-    fillConvexPoly(mMask,mPointsVinci,cv::Scalar(255));
-    warpAffine(mMask,mWarpedMask,mTransformVinciToLisa,mFrameSizeLisa,INTER_NEAREST,BORDER_CONSTANT);
-    bitwise_and(mMask,mWarpedMask,mRefineMask);
+    fillConvexPoly(mMask, mPointsVinci, cv::Scalar(255));
+//    outputMat("mMask",mMask);
+    warpAffine(mMask, mWarpedMask, mTransformVinciToLisa, mFrameSize, INTER_NEAREST, BORDER_CONSTANT);
+//    bitwise_and(mMask, mWarpedMask, mRefineMask);
     //extract Vinci's face, and warp it
-    mSmallVinciFrame.copyTo(mFaceVinci,mMask);
-    warpAffine(mFaceVinci,mWarpedFaceVinci,mTransformVinciToLisa,mFrameSizeLisa,INTER_NEAREST,BORDER_CONSTANT);
+    mSmallFrameVinci.copyTo(mFaceVinci, mMask);
+    warpAffine(mFaceVinci, mWarpedFaceVinci, mTransformVinciToLisa, mFrameSize, INTER_NEAREST, BORDER_CONSTANT);
     //specify color
-    specifyHistogram(mSmallVinciFrame(mBigVinciRect), mWarpedFaceVinci(mBigVinciRect), mWarpedMask(mBigVinciRect));
-    //feather border
-    mBigVinciRect = ((this->mVinciRect - cv::Point(vinciRect.width / 4, vinciRect.height / 4)) + cv::Size(vinciRect.width / 2, vinciRect.height / 2)) &
-                    cv::Rect(0, 0, vinciBorder.width, vinciBorder.height);
-    mFeatherSize.width = mFeatherSize.height = (int) cv::norm(mPointsVinci[1] - mPointsVinci[17]) / 8;
+    specifyHistogram(mSmallFrameLisa, mWarpedFaceVinci, mWarpedMask);
+    mFeatherSize = Size(5,5);
     //feather
-    featherMask(mRefineMask(mBigVinciRect));
+    featherMask(mWarpedMask);
     //blend pixels
-    for (size_t i = 0; i < mSmallLisaFrame.rows; i++) {
-        auto frame_pixel = mSmallLisaFrame.row(i).data;
+    for (size_t i = 0; i < mSmallFrameLisa.rows; i++) {
+        auto frame_pixel = mSmallFrameLisa.row(i).data;
         auto faces_pixel = mWarpedFaceVinci.row(i).data;
-        auto masks_pixel = mRefineMask.row(i).data;
+        auto masks_pixel = mWarpedMask.row(i).data;
 
-        for (size_t j = 0; j < mSmallLisaFrame.cols; j++) {
+        for (size_t j = 0; j < mSmallFrameLisa.cols; j++) {
             if (*masks_pixel != 0) {
                 *frame_pixel = (uchar) (((255 - *masks_pixel) * (*frame_pixel) + (*masks_pixel) * (*faces_pixel)) >> 8); // divide by 256
                 *(frame_pixel + 1) = (uchar) (((255 - *(masks_pixel + 1)) * (*(frame_pixel + 1)) + (*(masks_pixel + 1)) * (*(faces_pixel + 1))) >> 8);
                 *(frame_pixel + 2) = (uchar) (((255 - *(masks_pixel + 2)) * (*(frame_pixel + 2)) + (*(masks_pixel + 2)) * (*(faces_pixel + 2))) >> 8);
+            }else{
             }
 
             frame_pixel += 3;
@@ -167,11 +178,19 @@ void MonaLisaEffect::specifyHistogram(const cv::Mat source_image, cv::Mat target
 }
 
 void MonaLisaEffect::featherMask(const cv::Mat &mask) {
-    cv::erode(mask, mask, getStructuringElement(cv::MORPH_RECT, mFeatherSize), cv::Point(-1, -1), 1, cv::BORDER_CONSTANT,
+    const Mat &kernel = getStructuringElement(cv::MORPH_RECT, mFeatherSize);
+    cv::erode(mask, mask, kernel, cv::Point(-1, -1), 1, cv::BORDER_CONSTANT,
               cv::Scalar(0));
-
     cv::blur(mask, mask, mFeatherSize, cv::Point(-1, -1), cv::BORDER_CONSTANT);
 }
+
+void MonaLisaEffect::outputMat(const char *matName, Mat mat) {
+    std::ostringstream cout;
+    cout << mat;
+    LOGI("%s\n%s",matName,cout.str().c_str());
+}
+
+
 
 
 

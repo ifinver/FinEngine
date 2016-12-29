@@ -78,8 +78,7 @@ cv::Mat *effect_monaLisa(jbyte *data, jint width, jint height, jlong facePtr) {
     } catch (...) {
         LOGE("%s", "不能转换出face detect result");
     }
-    if (faceData == NULL || faceData->nFaceCountInOut < 2) {
-//        LOGE("%s", "人脸不够两张");
+    if (faceData == NULL || faceData->nFaceCountInOut < 1) {
         return &gMonaLisaMat;
     }
 
@@ -101,12 +100,10 @@ cv::Mat *effect_monaLisa(jbyte *data, jint width, jint height, jlong facePtr) {
     gVinciPoints.clear();
     for (int i = 0; i <= 34; i++) {
         if (i > 21 && i < 32) continue;
-        MPOINT ptIndex = faceData->pFaceOutlinePointOut[1 * faceData->faceOutlinePointCount + i];
+        MPOINT ptIndex = faceData->pFaceOutlinePointOut[i];
         gVinciPoints.push_back(Point2i(ptIndex.x, ptIndex.y));
     }
-
     gMonaLisaEffect->monaLisa(gMonaLisaMat,gLisaRect,gLisaPoints,*gVinciRGBMat,gVinciRect,gVinciPoints);
-
     return &gMonaLisaMat;
 }
 

@@ -16,19 +16,21 @@ public:
      */
     void monaLisa(Mat lisaFrame,Rect2i lisaRect,vector<cv::Point2i> lisaPoints,Mat vinciFrame,Rect2i vinciRect,vector<cv::Point2i> vinciPoints);
 
+    void outputMat(const char* matName,Mat mat);
+
 private:
     // Calculates source image histogram and changes target_image to match source hist
     void specifyHistogram(const cv::Mat source_image, cv::Mat target_image, cv::Mat mask);
     // Blurs edges of mask
     void featherMask(const cv::Mat &mask);
 
-    Mat mSmallLisaFrame,mSmallVinciFrame;
-    Rect mVinciRect,mBigVinciRect;
+    Mat mSmallFrameLisa,mSmallFrameVinci;
+    Rect mVinciRect;
     vector<Point2i> mPointsLisa,mPointsVinci;
     Point2f mTransformKeyPointsLisa[3],mTransformKeyPointsVinci[3];
-    Size mFeatherSize,mFrameSizeLisa,mFrameSizeVinci;
+    Size mFeatherSize,mFrameSize;
     Mat mTransformVinciToLisa;
-    Mat mMask,mWarpedMask,mRefineMask;
+    Mat mMask,mWarpedMask;
     Mat mFaceVinci,mWarpedFaceVinci;
 
     //used to specify color
