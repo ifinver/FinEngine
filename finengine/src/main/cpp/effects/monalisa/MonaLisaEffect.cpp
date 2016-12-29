@@ -4,7 +4,6 @@
 
 #include "MonaLisaEffect.h"
 #include "../../log.h"
-#include <sstream>
 
 #define LOG_TAG "Mona Lisa"
 
@@ -142,7 +141,7 @@ void MonaLisaEffect::specifyHistogram(const cv::Mat source_image, cv::Mat target
     // Create lookup table
 
     auto binary_search = [&](const float needle, const float haystack[]) -> uint8_t {
-        uint8_t l = 0, r = 255, m;
+        uint8_t l = 0, r = 255, m = 0;
         while (l < r) {
             m = (uint8_t) ((l + r) / 2);
             if (needle > haystack[m])
