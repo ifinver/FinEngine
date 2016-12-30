@@ -20,10 +20,10 @@ public:
     typedef void (*Transfer)(void * intPtr);
 
     typedef struct UnityFaceMessage{
-//        int degree;
-//        int width;
-//        int height;
-//        int mirror;
+        int degree;
+        int width;
+        int height;
+        int mirror;
         int faceCount;
         void* faceOutlinePoint;
         void* faceDetectRect;

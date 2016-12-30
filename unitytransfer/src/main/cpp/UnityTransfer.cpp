@@ -55,17 +55,17 @@ void UnityTransfer::transformToUnity(jbyte *yuvData, int width, int height, int 
     } catch (...) {
     }
     if (faceData != nullptr) {
-//        mFaceMsg->degree = degree;
-//        mFaceMsg->width = width;
-//        mFaceMsg->height = height;
-//        mFaceMsg->mirror = mirror ? 1 : 0;
+        mFaceMsg->degree = degree;
+        mFaceMsg->width = width;
+        mFaceMsg->height = height;
+        mFaceMsg->mirror = mirror ? 1 : 0;
         mFaceMsg->faceCount = faceData->nFaceCountInOut;
         mFaceMsg->faceOutlinePoint = faceData->pFaceOutlinePointOut;
         mFaceMsg->faceDetectRect = faceData->rcFaceRectOut;
         mFaceMsg->faceOrientation = faceData->faceOrientOut;
-        if(faceData->nFaceCountInOut > 0){
-            LOGE("fRoll:%f,fYaw:%f,fPitch:%f",faceData->faceOrientOut[0],faceData->faceOrientOut[1],faceData->faceOrientOut[2]);
-        }
+//        if(faceData->nFaceCountInOut > 0){
+//            LOGE("fRoll:%f,fYaw:%f,fPitch:%f",faceData->faceOrientOut[0],faceData->faceOrientOut[1],faceData->faceOrientOut[2]);
+//        }
     }else{
         mFaceMsg->faceCount = 0;
     }
