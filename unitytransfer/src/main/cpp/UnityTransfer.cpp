@@ -64,7 +64,12 @@ void UnityTransfer::transformToUnity(jbyte *yuvData, int width, int height, int 
         mFaceMsg->faceDetectRect = faceData->rcFaceRectOut;
         mFaceMsg->faceOrientation = faceData->faceOrientOut;
 //        if(faceData->nFaceCountInOut > 0){
-//            LOGE("fRoll:%f,fYaw:%f,fPitch:%f",faceData->faceOrientOut[0],faceData->faceOrientOut[1],faceData->faceOrientOut[2]);
+//            MPOINT &pointOri = faceData->pFaceOutlinePointOut[0];
+//            LOGE("before trans [0]=(%d,%d),[18]=(%d,%d),width=%d,height=%d",
+//                 faceData->pFaceOutlinePointOut[0].x,faceData->pFaceOutlinePointOut[0].y,
+//                 faceData->pFaceOutlinePointOut[18].x,faceData->pFaceOutlinePointOut[18].y,
+//                 width,height
+//            );
 //        }
     }else{
         mFaceMsg->faceCount = 0;
