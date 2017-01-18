@@ -14,6 +14,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +39,8 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
     private static final String TAG = "SingleActivity";
 
     private TextView tvFps;
+    private TextView tvBrightness;
+    private TextView tvContrast;
     private Timer mFpsTimer;
     private Handler mHandler;
     private Renderer mRenderer;
@@ -49,6 +52,10 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
     private RecyclerView rvFilter;
     private RecyclerView rvMode;
     private boolean isToolsShown = true;
+    private SeekBar mSbFaceSkin;
+    private SeekBar mSbBright;
+    private SeekBar mSbBrightSelf;
+    private SeekBar mSbContrast;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -57,13 +64,19 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
         // init views
         tvFps = (TextView) findViewById(R.id.tv_fps);
+        tvBrightness = (TextView) findViewById(R.id.tv_brightness);
+        tvContrast = (TextView) findViewById(R.id.tv_contrast);
         tvLittle = (TextureView) findViewById(R.id.tex_l);
         flContainer = (FrameLayout) findViewById(R.id.tv_container);
         tvRender = (TextureView) findViewById(R.id.tex);
         rvFilter = (RecyclerView) findViewById(R.id.rv_filter);
         rvMode = (RecyclerView) findViewById(R.id.rv_mode);
+        mSbFaceSkin = (SeekBar) findViewById(R.id.seek_face_skin);
+        mSbBright = (SeekBar) findViewById(R.id.seek_bright);
+        mSbBrightSelf = (SeekBar) findViewById(R.id.seek_self_brightness);
+        mSbContrast = (SeekBar) findViewById(R.id.seek_self_contrast);
 
-        mRenderer = new Renderer(this);
+        mRenderer = new Renderer(this.getApplicationContext(),this);
         tvRender.setSurfaceTextureListener(mRenderer);
 
         rvFilter.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -78,7 +91,90 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
         initFPS();
         //touch event
         tvRender.setOnTouchListener(this);
+
+        mSbFaceSkin.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                FaceDetector.setFaceSkinSoftenLevel(progress);
+                Log.w("Face","FaceSkin="+progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        mSbBright.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                FaceDetector.setFaceBrightLevel(progress);
+                Log.w("Face","Bright="+progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        mSbBrightSelf.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                float brightness = (float)(progress - 100 ) / 100;
+                mRenderer.setBrightness(brightness);
+                tvBrightness.setText("亮度:"+progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        mSbContrast.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                float contrast = (float)progress /100;
+                mRenderer.setContrast(contrast);
+                tvContrast.setText("对比度:"+progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+        findViewById(R.id.btn_toggle).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggle = !toggle;
+                Log.w("face",toggle?"open face beauty":"close face beauty");
+            }
+        });
     }
+
+    boolean toggle = true;
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
@@ -132,13 +228,15 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
     @Override
     public void onFilterItemClick(int filter) {
-        mRenderer.switchFilter(this,filter);
+        mRenderer.switchFilter(filter);
     }
 
     @Override
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean frontCurrent) {
-        long facePtr = FaceDetector.process(data,frameWidth,frameHeight);
-        mRenderer.onVideoBuffer(data, frameWidth, frameHeight, degree, frontCurrent,facePtr);
+        if(toggle) {
+            long facePtr = FaceDetector.process(data, frameWidth, frameHeight);
+        }
+        mRenderer.onVideoBuffer(data, frameWidth, frameHeight, degree, frontCurrent,0);
     }
 
     @Override

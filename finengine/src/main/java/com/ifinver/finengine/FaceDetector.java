@@ -102,4 +102,6 @@ public class FaceDetector {
     private static native void nativeSetFaceBrightLevel(int brightLevel);
     private static native void nativeSetFaceSkinSoftenLevel(int skinSoftenLevel);
 
+    public static native void decodePNGData(String filePath);
+
 }

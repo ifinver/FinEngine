@@ -15,6 +15,7 @@ JNIEXPORT void JNICALL Java_com_ifinver_finengine_FaceDetector_nativeRelease(JNI
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FaceDetector_nativeSetProcessModel(JNIEnv *env, jclass type, jlong model);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FaceDetector_nativeSetFaceBrightLevel(JNIEnv *env, jclass type, jint brightLevel);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FaceDetector_nativeSetFaceSkinSoftenLevel(JNIEnv *env, jclass type, jint skinSoftenLevel);
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FaceDetector_decodePNGData(JNIEnv *env, jclass type, jstring filePath);
 }
 
 

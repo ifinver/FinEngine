@@ -6,6 +6,12 @@
 #include "facedetector.h"
 #include "../log.h"
 #include "arcsoft/arcsoft.h"
+#include <opencv2/opencv.hpp>
+#include <fstream>
+
+using namespace cv;
+using namespace std;
+
 
 #define LOG_TAG "facedetector"
 
@@ -54,4 +60,21 @@ JNIEXPORT void JNICALL Java_com_ifinver_finengine_FaceDetector_nativeSetFaceSkin
     if(mXcFaceDetector != NULL){
         mXcFaceDetector->setFaceSkinSoftenLevel(skinSoftenLevel);
     }
+}
+
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FaceDetector_decodePNGData(JNIEnv *env, jclass type, jstring filePath){
+    const char *path = env->GetStringUTFChars(filePath, 0);
+    Mat ori = imread(path,1);
+    LOGI("ori.cols=%d,rows=%d,channels=%d",ori.cols,ori.rows,ori.channels());
+    cvtColor(ori,ori,CV_BGR2RGB);
+    env->ReleaseStringUTFChars(filePath, path);
+    ofstream out("/sdcard/encoded.fil",ios_base::out | ios_base::binary);
+    //写width
+    out.write(reinterpret_cast<char*>(&ori.cols), sizeof(int));
+    //写height
+    out.write(reinterpret_cast<char*>(&ori.rows), sizeof(int));
+    //写data
+    out.write((const char *) ori.data, ori.cols * ori.rows * 3);
+    out.close();
+    LOGI("%s","滤镜文件encode成功！");
 }

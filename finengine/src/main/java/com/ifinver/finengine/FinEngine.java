@@ -40,14 +40,14 @@ public class FinEngine {
     private final FinEngineThread mEngineThread;
     private final int mEngineId;
 
-    private FinEngine(Surface output, int width, int height) {
-        mEngineThread = new FinEngineThread(output, width, height);
+    private FinEngine(Context ctx, Surface output, int width, int height) {
+        mEngineThread = new FinEngineThread(ctx,output, width, height);
         mEngineThread.start();
         mEngineId = ++sFinEngineCount;
     }
 
-    public static FinEngine prepare(Surface output, int width, int height) {
-        return new FinEngine(output, width, height);
+    public static FinEngine prepare(Context ctx,Surface output, int width, int height) {
+        return new FinEngine(ctx,output, width, height);
     }
 
     public void process(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera, long facePtr) {
@@ -62,8 +62,8 @@ public class FinEngine {
         mEngineThread.resizeInput(surfaceWidth, surfaceHeight);
     }
 
-    public void switchFilter(Context ctx, int filterType) {
-        mEngineThread.switchFilter(ctx, filterType);
+    public void switchFilter(int filterType) {
+        mEngineThread.switchFilter(filterType);
     }
 
     public void switchModeToNormal(){
@@ -97,6 +97,14 @@ public class FinEngine {
         }
     }
 
+    public void setBrightness(float brightness){
+        mEngineThread.setBrightness(brightness);
+    }
+
+    public void setContrast(float contrast){
+        mEngineThread.setContrast(contrast);
+    }
+
     public int getCurrentFilter() {
         return mEngineThread.mFilterType;
     }
@@ -109,6 +117,8 @@ public class FinEngine {
         private final int MSG_SWITCH_MODE_NORMAL = 0x107;
         private final int MSG_SWITCH_MODE_MONALISA = 0x108;
         private final int MSG_SWITCH_MODE_SWAP_FACE = 0x109;
+        private final int MSG_SET_BRIGHTNESS = 0x110;
+        private final int MSG_SET_CONTRAST = 0x111;
 
         private Handler mSelfHandler;
         private boolean delayStart = false;
@@ -128,13 +138,38 @@ public class FinEngine {
         private String mMonaLisaFilePath;
         private Context mAppCtx;
         private String mTrackDataFilePath;
+        private final String mCleanFilePath;
+        private float mBrightness = 0.0f;
+        private float mContrast = 1.0f;
 
-        FinEngineThread(Surface output, int width, int height) {
+        FinEngineThread(Context ctx, Surface output, int width, int height) {
             super("FinEngineThread", Process.THREAD_PRIORITY_URGENT_DISPLAY);
+            this.mAssetManager = ctx.getApplicationContext().getAssets();
             this.mFilterType = FILTER_TYPE_NORMAL;
             this.mOutputSurface = output;
             this.mOutWidth = width;
             this.mOutHeight = height;
+
+            synchronized (this) {
+                File cleanFile = new File(ctx.getFilesDir() + "/nature.png");
+                if (!cleanFile.exists()) {
+                    //不存在了
+                    try {
+                        InputStream in = ctx.getAssets().open("nature.png");
+                        FileOutputStream fos = new FileOutputStream(cleanFile);
+                        byte[] buffer = new byte[1024];
+                        int readCount;
+                        while ((readCount = in.read(buffer)) != -1) {
+                            fos.write(buffer, 0, readCount);
+                        }
+                        in.close();
+                        fos.close();
+                    } catch (Exception ignored) {
+                        Log.e(TAG, "切换引擎模式失败！", ignored);
+                    }
+                }
+                this.mCleanFilePath = cleanFile.getAbsolutePath();
+            }
         }
 
         @Override
@@ -144,9 +179,8 @@ public class FinEngine {
             mSelfHandler.sendEmptyMessage(MSG_INIT);
         }
 
-        public void switchFilter(Context ctx, int filterType) {
+        public void switchFilter(int filterType) {
             synchronized (FinEngineThread.class) {
-                this.mAssetManager = ctx.getApplicationContext().getAssets();
                 this.mFilterType = filterType;
             }
             mSelfHandler.removeCallbacksAndMessages(null);
@@ -204,6 +238,16 @@ public class FinEngine {
             }
         }
 
+        public void setBrightness(float brightness) {
+            this.mBrightness = brightness;
+            mSelfHandler.sendEmptyMessage(MSG_SET_BRIGHTNESS);
+        }
+
+        public void setContrast(float contrast) {
+            this.mContrast = contrast;
+            mSelfHandler.sendEmptyMessage(MSG_SET_CONTRAST);
+        }
+
         @Override
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
@@ -232,6 +276,12 @@ public class FinEngine {
                     if (isPrepared && mData != null) {
                         nativeRender(mEngine, mData, mFrameWidth, mFrameHeight, mDegree, isFrontCamera, mOutWidth, mOutHeight, mFacePtr);
                     }
+                    return true;
+                case MSG_SET_BRIGHTNESS:
+                    nativeSetBrightness(mEngine,mBrightness);
+                    return true;
+                case MSG_SET_CONTRAST:
+                    nativeSetContrast(mEngine,mContrast);
                     return true;
             }
             return false;
@@ -270,7 +320,7 @@ public class FinEngine {
         }
 
         private void init() {
-            mEngine = nativeInit(mOutputSurface);
+            mEngine = nativeInit(mOutputSurface,mAssetManager,mCleanFilePath);
             isPrepared = mEngine != 0;
             if (isPrepared) {
                 Log.w(TAG, "FinEngine" + mEngineId + "初始化成功");
@@ -300,11 +350,15 @@ public class FinEngine {
     /**
      * @return 0 means failed
      */
-    private native long nativeInit(Surface output);
+    private native long nativeInit(Surface output, AssetManager mAssetManager, String mCleanFilePath);
 
     private native void nativeRelease(long engine);
 
     private native void nativeSwitchFilter(long engine, AssetManager mAssetManager, int mFilterType, String mVertexName, String mFragmentName);
+
+    private native void nativeSetBrightness(long engine, float mBrightness);
+
+    private native void nativeSetContrast(long engine, float mContrast);
 
     private native void nativeSwitchToModeMonaLisa(long engine, String filePath,Context ctx,String trackDataPath);
     private native void nativeSwitchToModeNormal(long engine);

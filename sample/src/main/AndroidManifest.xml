@@ -35,6 +35,7 @@
         </activity>
         <activity android:process=":face" android:name=".singleswitch.SingleActivity"/>
         <activity android:process=":face" android:name=".unity.UnityActivity"/>
+        <activity android:name=".TestActivity"/>
     </application>
 
 </manifest>

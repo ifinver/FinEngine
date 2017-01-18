@@ -64,6 +64,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.menu_activity_switch:
                 startActivity(new Intent(this, SingleActivity.class));
                 return true;
+            case R.id.menu_activity_test:
+                startActivity(new Intent(this,TestActivity.class));
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }

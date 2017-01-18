@@ -44,6 +44,9 @@ jboolean initPrograms(GLContextHolder *engineHolder) {
     engineHolder->posUniMirror = (GLuint) glGetUniformLocation(programYUV, "mirror");
     engineHolder->posUniTextureY = (GLuint) glGetUniformLocation(programYUV, "yTexture");
     engineHolder->posUniTextureUV = (GLuint) glGetUniformLocation(programYUV, "uvTexture");
+    engineHolder->posUniTextureClean = (GLuint) glGetUniformLocation(programYUV, "cleanTexture");
+    engineHolder->posUniBrightness = (GLuint) glGetUniformLocation(programYUV, "brightness");
+    engineHolder->posUniContrast = (GLuint) glGetUniformLocation(programYUV, "contrast");
 
     //point program
     ShaderPoint pShader;
@@ -62,7 +65,7 @@ jboolean initPrograms(GLContextHolder *engineHolder) {
 }
 
 JNIEXPORT jlong JNICALL
-Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSurface) {
+Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSurface,jobject mAssetManager,jstring _cleanFilePath) {
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
         checkGlError("eglGetDisplay");
@@ -133,8 +136,8 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
     }
 
     //tex
-    GLuint *textures = new GLuint[2];
-    glGenTextures(2, textures);
+    GLuint *textures = new GLuint[3];
+    glGenTextures(3, textures);
     glBindTexture(GL_TEXTURE_2D, textures[0]);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -145,9 +148,32 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D, textures[2]);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    engineHolder->textureNums = 2;
+    engineHolder->textureNums = 3;
     engineHolder->textures = textures;
+
+    //加载clean滤镜
+    AAssetManager *mgr = AAssetManager_fromJava(env, mAssetManager);
+    if (mgr != NULL) {
+        AAsset *filterAss = AAssetManager_open(mgr, "encoded.fil", AASSET_MODE_BUFFER);
+        int width,height;
+        AAsset_read(filterAss, &width, (size_t) 4);
+        AAsset_read(filterAss, &height, (size_t) 4);
+        int dataLen = width * height * 3;
+        char *filterData = new char[dataLen];
+        AAsset_read(filterAss, filterData, (size_t) dataLen);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, filterData);
+    }
+//    const char *filePath = env->GetStringUTFChars(_cleanFilePath, 0);
+//    Mat cleanMat = imread(filePath);
+//    env->ReleaseStringUTFChars(_cleanFilePath, filePath);
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, cleanMat.cols, cleanMat.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, cleanMat.data);
+
 
     glDepthMask(GL_FALSE);
     glDisable(GL_BLEND);
@@ -429,6 +455,15 @@ void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jin
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, width / 2, height / 2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, data + (width * height));
     glUniform1i(engineHolder->posUniTextureUV, 1);
 
+    //设置clean滤镜
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D,engineHolder->textures[2]);
+    glUniform1i(engineHolder->posUniTextureClean,2);
+
+    //亮度对比度
+    glUniform1f(engineHolder->posUniBrightness,engineHolder->brightness);
+    glUniform1f(engineHolder->posUniContrast,engineHolder->contrast);
+
     //处理旋转和镜像
     degree %= 360;
     if (degree < 0) degree += 360;
@@ -462,4 +497,13 @@ void releaseGLContext(GLContextHolder *engineHolder) {
         eglDestroyContext(engineHolder->eglDisplay, engineHolder->eglContext);
         delete (engineHolder);
     }
+}
+
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSetBrightness(JNIEnv *env, jclass type,jlong engine, jfloat brightness){
+    GLContextHolder *engineHolder = (GLContextHolder *) engine;
+    engineHolder->brightness = brightness;
+}
+JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSetContrast(JNIEnv *env, jclass type,jlong engine, jfloat contrast){
+    GLContextHolder *engineHolder = (GLContextHolder *) engine;
+    engineHolder->contrast = contrast;
 }

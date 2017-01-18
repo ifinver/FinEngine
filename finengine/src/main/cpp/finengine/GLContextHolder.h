@@ -41,6 +41,11 @@ public:
     GLuint posAttrTexCoords;
     GLuint posUniTextureY;
     GLuint posUniTextureUV;
+    GLuint posUniTextureClean;
+    GLuint posUniBrightness;
+    GLuint posUniContrast;
+    float contrast = 1.0f;
+    float brightness = 0.f;
 
     GLuint programRGB;
     GLuint posRgbAttrVertices;

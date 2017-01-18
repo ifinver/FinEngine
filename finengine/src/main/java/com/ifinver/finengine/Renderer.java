@@ -16,8 +16,10 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
     private RenderListener mListener;
     private FinRender mRenderEngine;
     private FinEngine mFinEngine;
+    private Context ctx;
 
-    public Renderer(RenderListener listener){
+    public Renderer(Context ctx,RenderListener listener){
+        this.ctx = ctx;
         this.mListener = listener;
     }
 
@@ -46,7 +48,7 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
 
     @Override
     public void onRenderPrepared(boolean isPrepared, SurfaceTexture inputSurface, int texName, long eglContext, int surfaceWidth, int surfaceHeight) {
-        mFinEngine = FinEngine.prepare(new Surface(inputSurface), surfaceWidth, surfaceHeight);
+        mFinEngine = FinEngine.prepare(ctx,new Surface(inputSurface), surfaceWidth, surfaceHeight);
         if(mListener != null){
             mListener.onRenderPrepared(surfaceWidth,surfaceHeight);
         }
@@ -91,13 +93,13 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
         this.mRecorder = mRecorder;
     }
 
-    public void nextFilter(Context ctx) {
-        switchFilter(ctx,FinFiltersManager.nextFilter(mFinEngine));
+    public void nextFilter() {
+        switchFilter(FinFiltersManager.nextFilter(mFinEngine));
     }
 
-    public void switchFilter(Context ctx,int filter){
+    public void switchFilter(int filter){
         if(mFinEngine != null){
-            mFinEngine.switchFilter(ctx, filter);
+            mFinEngine.switchFilter( filter);
         }
     }
 
@@ -116,6 +118,18 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
     public void switchModeToMonaLisa(Context ctx) {
         if(mFinEngine != null){
             mFinEngine.switchModeToMonaLisa(ctx);
+        }
+    }
+
+    public void setBrightness(float brightness) {
+        if(mFinEngine != null){
+            mFinEngine.setBrightness(brightness);
+        }
+    }
+
+    public void setContrast(float contrast){
+        if(mFinEngine != null){
+            mFinEngine.setContrast(contrast);
         }
     }
 

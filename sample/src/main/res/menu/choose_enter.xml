@@ -12,4 +12,10 @@
           android:icon="@mipmap/ic_launcher"
           android:enabled="true"
           android:visible="true"/>
+    <item android:title="TestActivity"
+        android:id="@+id/menu_activity_test"
+        android:icon="@mipmap/ic_launcher"
+        android:enabled="true"
+        android:visible="true"/>
+
 </menu>
