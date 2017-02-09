@@ -20,6 +20,13 @@ JNIEXPORT void JNICALL Java_com_ifinver_unitytransfer_UnityTransfer_onVideoBuffe
     env->ReleaseByteArrayElements(data_, data, JNI_ABORT);
 }
 
+JNIEXPORT void JNICALL
+Java_com_ifinver_unitytransfer_UnityTransfer_onMonalisaData(JNIEnv *env, jclass type, jlong msgPtr) {
+    if(mConnector != nullptr){
+        mConnector->transformMonalisa(msgPtr);
+    }
+}
+
 /**
  * will be invoked by unity's scripts
  */
@@ -37,5 +44,9 @@ void setFaceTransferByUnity(UnityTransfer::FaceTransfer transfer){
     mConnector->setFaceTransferByUnity(transfer);
 }
 
-
-
+void setMonalisaCallbackByUnity(UnityTransfer::MonalisaTransfer transfer){
+    if (mConnector == nullptr) {
+        mConnector = new UnityTransfer();
+    }
+    mConnector->setMonalisaTransferByUnity(transfer);
+}

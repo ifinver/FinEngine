@@ -276,6 +276,7 @@ Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeMonaLisa(JNIEnv *env, job
         if (result > 0) {
             LOGE("%s", "检测图片成功！");
             engineHolder->engineMode = ENGINE_MODE_MONA_LISA;
+            engineHolder->monaFaceResult = result;
         } else {
             LOGE("图片人脸检测失败！");
         }
@@ -345,7 +346,7 @@ void renderFrame(GLContextHolder *engineHolder, jbyte *data, jint width, jint he
         }
         case ENGINE_MODE_MONA_LISA: {
             cv::Mat *monaLisaMat = effect_monaLisa(data, width, height, facePtr);
-            renderRgb(engineHolder, monaLisaMat->data, monaLisaMat->cols, monaLisaMat->rows, 0, JNI_FALSE, outWidth, outHeight, 0);
+            renderRgb(engineHolder, monaLisaMat->data, monaLisaMat->cols, monaLisaMat->rows, 0, JNI_FALSE, outWidth, outHeight, facePtr);
             break;
         }
     }
@@ -386,8 +387,8 @@ void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, j
 
     glUseProgram(engineHolder->currentProgram);
 
-    //画点
-//    drawFacePoints(engineHolder, facePtr, width, height, odd);
+    //画点 这里有bug，这个方法只适用于yuv的
+//    drawFacePoints(engineHolder, facePtr, width, height, 0);
 
     eglSwapBuffers(engineHolder->eglDisplay, engineHolder->eglSurface);
 

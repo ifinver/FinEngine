@@ -1,6 +1,7 @@
 package com.ifinver.finenginesample.unity;
 
 import android.content.ContextWrapper;
+import android.util.Log;
 
 import com.unity3d.player.UnityPlayer;
 
@@ -19,4 +20,13 @@ public class FinUnityPlayer extends UnityPlayer {
         //super.kill() will kill process
         super.kill();
     }
+
+    public void MonaLisaMode(String off){
+        if("on".equals(off)){
+            Log.e("FinEngine","MonaLisaMode on");
+        }else if("off".equals(off)){
+            Log.e("FinEngine","MonaLisaMode off");
+        }
+    }
+
 }

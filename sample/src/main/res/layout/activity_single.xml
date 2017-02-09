@@ -40,64 +40,64 @@
         android:shadowColor="@color/black"
         android:textColor="@android:color/holo_red_dark"/>
 
-    <TextView
-        android:layout_marginTop="20dp"
-        android:id="@+id/tv_contrast"
-        android:text="对比度:100"
-        android:layout_below="@id/tv_fps"
-        android:layout_width="wrap_content"
-        android:shadowColor="@color/black"
-        android:textColor="@android:color/holo_red_dark"
-        android:layout_height="wrap_content"/>
+    <!--<TextView-->
+        <!--android:layout_marginTop="20dp"-->
+        <!--android:id="@+id/tv_contrast"-->
+        <!--android:text="对比度:100"-->
+        <!--android:layout_below="@id/tv_fps"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:shadowColor="@color/black"-->
+        <!--android:textColor="@android:color/holo_red_dark"-->
+        <!--android:layout_height="wrap_content"/>-->
 
-    <TextView
-        android:id="@+id/tv_brightness"
-        android:text="亮度:100"
-        android:layout_below="@id/tv_contrast"
-        android:shadowColor="@color/black"
-        android:textColor="@android:color/holo_red_dark"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+    <!--<TextView-->
+        <!--android:id="@+id/tv_brightness"-->
+        <!--android:text="亮度:100"-->
+        <!--android:layout_below="@id/tv_contrast"-->
+        <!--android:shadowColor="@color/black"-->
+        <!--android:textColor="@android:color/holo_red_dark"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"/>-->
 
-    <SeekBar
-        android:id="@+id/seek_self_contrast"
-        android:layout_above="@+id/seek_self_brightness"
-        android:max="200"
-        android:progress="100"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+    <!--<SeekBar-->
+        <!--android:id="@+id/seek_self_contrast"-->
+        <!--android:layout_above="@+id/seek_self_brightness"-->
+        <!--android:max="200"-->
+        <!--android:progress="100"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"/>-->
 
-    <SeekBar
-        android:id="@+id/seek_self_brightness"
-        android:layout_above="@+id/btn_toggle"
-        android:layout_width="match_parent"
-        android:max="200"
-        android:progress="100"
-        android:layout_height="wrap_content"/>
+    <!--<SeekBar-->
+        <!--android:id="@+id/seek_self_brightness"-->
+        <!--android:layout_above="@+id/btn_toggle"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:max="200"-->
+        <!--android:progress="100"-->
+        <!--android:layout_height="wrap_content"/>-->
 
-    <Button
-        android:id="@+id/btn_toggle"
-        android:layout_above="@+id/seek_bright"
-        android:layout_width="match_parent"
-        android:layout_marginBottom="15dp"
-        android:text="toggle face"
-        android:layout_height="wrap_content"/>
+    <!--<Button-->
+        <!--android:id="@+id/btn_toggle"-->
+        <!--android:layout_above="@+id/seek_bright"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_marginBottom="15dp"-->
+        <!--android:text="toggle face"-->
+        <!--android:layout_height="wrap_content"/>-->
 
-    <SeekBar
-        android:visibility="invisible"
-        android:layout_above="@+id/seek_bright"
-        android:id="@+id/seek_face_skin"
-        android:layout_width="match_parent"
-        android:max="100"
-        android:progress="100"
-        android:layout_height="wrap_content"/>
-    <SeekBar
-        android:layout_alignParentBottom="true"
-        android:id="@+id/seek_bright"
-        android:layout_width="match_parent"
-        android:max="100"
-        android:progress="80"
-        android:layout_height="wrap_content"/>
+    <!--<SeekBar-->
+        <!--android:visibility="invisible"-->
+        <!--android:layout_above="@+id/seek_bright"-->
+        <!--android:id="@+id/seek_face_skin"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:max="100"-->
+        <!--android:progress="100"-->
+        <!--android:layout_height="wrap_content"/>-->
+    <!--<SeekBar-->
+        <!--android:layout_alignParentBottom="true"-->
+        <!--android:id="@+id/seek_bright"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:max="100"-->
+        <!--android:progress="80"-->
+        <!--android:layout_height="wrap_content"/>-->
 
     <LinearLayout
         android:id="@+id/ll_filters"

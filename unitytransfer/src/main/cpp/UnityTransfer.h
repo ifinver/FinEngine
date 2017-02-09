@@ -31,10 +31,20 @@ public:
     }FaceMsg;
     typedef void (*FaceTransfer)(void * intPtr);
 
+    typedef struct MonalisaMessage{
+        int width;
+        int height;
+        int texSize;
+        unsigned char* texData;
+    }MonalisaMsg;
+    typedef void (*MonalisaTransfer)(void * intPtr);
+
     UnityTransfer();
     void setTransferByUnity(Transfer);
     void setFaceTransferByUnity(FaceTransfer);
+    void setMonalisaTransferByUnity(MonalisaTransfer);
     void transformToUnity(jbyte*,int width,int height,int degree,jboolean mirror,jlong facePtr);
+    void transformMonalisa(jlong monalisaMsgPtr);
     //will never be destroyed after app starting.
 //    ~UnityConnector();
 private:
@@ -43,6 +53,10 @@ private:
 
     FaceMsg *mFaceMsg = nullptr;
     FaceTransfer mFaceTransfer = nullptr;
+
+//    MonalisaMsg *mMonalisaMsg = nullptr;
+    MonalisaTransfer  mMonalisaTransfer = nullptr;
+
     inline void transform(){
         if(mTransfer != nullptr && mUnityMsg != nullptr){
             mTransfer(mUnityMsg);

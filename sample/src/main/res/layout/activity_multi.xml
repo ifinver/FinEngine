@@ -15,5 +15,12 @@
         android:id="@+id/tv_fps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+    
+    <!--<Button-->
+        <!--android:text="dump"-->
+        <!--android:id="@+id/btn_dump"-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"/>-->
+
 
 </RelativeLayout>

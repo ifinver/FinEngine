@@ -64,6 +64,7 @@ public:
     GLuint posPointUniRotation;
 
     int engineMode;
+    jlong monaFaceResult;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

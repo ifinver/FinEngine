@@ -3,6 +3,7 @@ package com.ifinver.finenginesample.unity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
@@ -12,10 +13,13 @@ import android.widget.Toast;
 
 import com.ifinver.finengine.CameraHolder;
 import com.ifinver.finengine.FaceDetector;
+import com.ifinver.finengine.FinEffect;
 import com.ifinver.finenginesample.FrameMeter;
 import com.ifinver.finenginesample.R;
 import com.ifinver.unitytransfer.UnityTransfer;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -34,6 +38,9 @@ public class UnityActivity extends UnityBaseActivity implements SurfaceHolder.Ca
     private Timer mFpsTimer;
     private TextView tvFPS;
 
+    boolean dump = false;
+    boolean monaMode = false;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,12 +55,51 @@ public class UnityActivity extends UnityBaseActivity implements SurfaceHolder.Ca
 
         //帧率
         initFPS();
+
+//        findViewById(R.id.btn_dump).setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                dump = true;
+//            }
+//        });
+    }
+
+    public void MonaLisaMode(String off){
+        if("on".equals(off)){
+            monaMode = FinEffect.Monalisa.init(this);
+        }else if("off".equals(off)){
+            monaMode = false;
+            FinEffect.Monalisa.release();
+        }
     }
 
     @Override
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean frontCurrent) {
+        if(dump){
+            try {
+                FileOutputStream fos = new FileOutputStream("/sdcard/before.data");
+                fos.write(data);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         long facePtr = FaceDetector.process(data, frameWidth, frameHeight);
-        UnityTransfer.onVideoBuffer(data,frameWidth,frameHeight,degree,frontCurrent,facePtr);
+        if(dump){
+            try {
+                FileOutputStream fos = new FileOutputStream("/sdcard/after.data");
+                fos.write(data);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Log.w("dump","dump success");
+            dump = false;
+        }
+        if(monaMode){
+            long matPtr = FinEffect.Monalisa.process(data,frameWidth,frameHeight,facePtr);
+            UnityTransfer.onMonalisaData(matPtr);
+        }else {
+            UnityTransfer.onVideoBuffer(data, frameWidth, frameHeight, degree, frontCurrent, facePtr);
+        }
 
         mFrameMeter.meter();
     }
