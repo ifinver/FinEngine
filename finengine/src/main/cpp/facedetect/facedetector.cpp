@@ -13,7 +13,7 @@ using namespace cv;
 using namespace std;
 
 
-#define LOG_TAG "facedetector"
+#define LOG_TAG "FinEngine"
 
 ArcSoftSpotlight *mXcFaceDetector;
 

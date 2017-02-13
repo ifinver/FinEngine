@@ -28,7 +28,7 @@ public class FinEffect {
                     Log.e(TAG, "Monalisa初始化失败！");
                     return false;
                 }
-                File trackFile = new File(ctx.getFilesDir() + "/track_data.dat");
+                File trackFile = new File(ctx.getFilesDir() + "/track.dat");
                 if (!FinUtils.checkFile(ctx, trackFile)) {
                     Log.e(TAG, "图片人脸检测初始化失败!无法操作track_data文件");
                     return false;

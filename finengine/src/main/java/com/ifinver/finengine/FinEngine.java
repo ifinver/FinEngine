@@ -201,11 +201,11 @@ public class FinEngine {
             this.mAppCtx = ctx.getApplicationContext();
             synchronized (FinEngineThread.class) {
                 //检查文件
-                File trackFile = new File(ctx.getFilesDir()+"/track_data.dat");
+                File trackFile = new File(ctx.getFilesDir()+ "/track.dat");
                 if(!trackFile.exists()){
                     //不存在了
                     try {
-                        InputStream in = ctx.getAssets().open("track_data.dat");
+                        InputStream in = ctx.getAssets().open("track.dat");
                         FileOutputStream fos = new FileOutputStream(trackFile);
                         byte[] buffer = new byte[1024];
                         int readCount;
