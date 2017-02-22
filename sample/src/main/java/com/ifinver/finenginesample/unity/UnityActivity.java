@@ -122,7 +122,7 @@ public class UnityActivity extends UnityBaseActivity implements SurfaceHolder.Ca
 
     @Override
     protected void onResume() {
-        CameraHolder.getInstance().start(640, 480, this, this);
+        CameraHolder.getInstance().start(1280, 720, this, this);
         super.onResume();
     }
 
