@@ -255,7 +255,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
     }
 
     @Override
-    public void onFlashLightOpenComplete(boolean success) {
+    public void onFlashLightOpenComplete(boolean success, boolean isOpen) {
 
     }
 
