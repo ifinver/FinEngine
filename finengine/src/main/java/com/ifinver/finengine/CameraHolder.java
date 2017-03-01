@@ -132,7 +132,7 @@ public class CameraHolder {
 
         FinEngineThread() {
             super("CameraHolderThread", Process.THREAD_PRIORITY_DISPLAY);
-            mCameraIndex = Camera.CameraInfo.CAMERA_FACING_BACK;
+            mCameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
             mMainHandler = new Handler(Looper.getMainLooper());
         }
 
