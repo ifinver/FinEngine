@@ -156,7 +156,11 @@ public class FinRender {
         private void process() {
             if (isPrepared) {
                 synchronized (mLocker) {
-                    nativeRenderOut(mRenderEngine, mInputSurface);
+                    try {
+                        nativeRenderOut(mRenderEngine, mInputSurface);
+                    } catch (Exception e) {
+                        Log.e(TAG, e.toString());
+                    }
                 }
                 if (mListener != null) {
                     mListener.onFrameRendered();

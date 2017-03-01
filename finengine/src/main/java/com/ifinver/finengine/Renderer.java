@@ -12,15 +12,15 @@ import android.view.TextureView;
 
 public class Renderer implements TextureView.SurfaceTextureListener, FinRender.FinRenderListener {
 
+    private final Context mAppCtx;
     private FinRecorder mRecorder;
     private RenderListener mListener;
     private FinRender mRenderEngine;
     private FinEngine mFinEngine;
-    private Context ctx;
 
-    public Renderer(Context ctx,RenderListener listener){
-        this.ctx = ctx;
+    public Renderer(Context appCtx,RenderListener listener){
         this.mListener = listener;
+        this.mAppCtx = appCtx.getApplicationContext();
     }
 
     @Override
@@ -48,7 +48,7 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
 
     @Override
     public void onRenderPrepared(boolean isPrepared, SurfaceTexture inputSurface, int texName, long eglContext, int surfaceWidth, int surfaceHeight) {
-        mFinEngine = FinEngine.prepare(ctx,new Surface(inputSurface), surfaceWidth, surfaceHeight);
+        mFinEngine = FinEngine.prepare(mAppCtx,new Surface(inputSurface), surfaceWidth, surfaceHeight);
         if(mListener != null){
             mListener.onRenderPrepared(surfaceWidth,surfaceHeight);
         }
@@ -71,7 +71,7 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
         }
     }
 
-    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera, long facePtr) {
+    public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera,long facePtr) {
         if(mFinEngine != null) {
             mFinEngine.process(data,frameWidth,frameHeight,degree,isFrontCamera,facePtr);
         }
@@ -99,37 +99,7 @@ public class Renderer implements TextureView.SurfaceTextureListener, FinRender.F
 
     public void switchFilter(int filter){
         if(mFinEngine != null){
-            mFinEngine.switchFilter( filter);
-        }
-    }
-
-    public void switchModeToNormal() {
-        if(mFinEngine != null){
-            mFinEngine.switchModeToNormal();
-        }
-    }
-
-    public void switchModeToSwapFace() {
-        if(mFinEngine != null){
-            mFinEngine.switchModeToSwapFace();
-        }
-    }
-
-    public void switchModeToMonaLisa(Context ctx) {
-        if(mFinEngine != null){
-            mFinEngine.switchModeToMonaLisa(ctx);
-        }
-    }
-
-    public void setBrightness(float brightness) {
-        if(mFinEngine != null){
-            mFinEngine.setBrightness(brightness);
-        }
-    }
-
-    public void setContrast(float contrast){
-        if(mFinEngine != null){
-            mFinEngine.setContrast(contrast);
+            mFinEngine.switchFilter(filter);
         }
     }
 

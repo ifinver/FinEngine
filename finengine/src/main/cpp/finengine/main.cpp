@@ -1,30 +1,42 @@
 #include "main.h"
 #include "../glslutils.h"
 #include <android/native_window_jni.h>
+#include <sstream>
 #include <android/asset_manager_jni.h>
-#include "../effects/faceswap/faceswap.h"
-#include "../effects/monalisa/monalisa.h"
-#include "../effects/inc/faceresult.h"
 
 using namespace std;
 
 jboolean initPrograms(GLContextHolder *engineHolder) {
 
-    //rgb program
-    ShaderRGB rgbShader;
-    GLuint programRGB = createProgram(rgbShader.vertexShader, rgbShader.fragmentShader);
-    if (programRGB == 0) {
-        return JNI_FALSE;
-    }
+    //point program
+//    ShaderPoint pShader;
+//    GLuint programPoint = createProgram(pShader.vertexShader, pShader.fragmentShader);
+//    if (programPoint == 0) {
+//        return JNI_FALSE;
+//    }
+//    glUseProgram(programPoint);
+//    engineHolder->programPoint = programPoint;
+//    engineHolder->posPointAttrVertices = (GLuint) glGetAttribLocation(programPoint, "aPosition");
+//    engineHolder->posPointAttrScaleX = (GLuint) glGetAttribLocation(programPoint, "aScaleX");
+//    engineHolder->posPointAttrScaleY = (GLuint) glGetAttribLocation(programPoint, "aScaleY");
+//    engineHolder->posPointUniColor = (GLuint) glGetUniformLocation(programPoint, "color");
+//    engineHolder->posPointUniRotation = (GLuint) glGetUniformLocation(programPoint, "uRotation");
+//
+//    //rgb program
+//    ShaderRGB rgbShader;
+//    GLuint programRGB = createProgram(rgbShader.vertexShader, rgbShader.fragmentShader);
+//    if (programRGB == 0) {
+//        return JNI_FALSE;
+//    }
 //    glUseProgram(programRGB);
-    engineHolder->programRGB = programRGB;
-    engineHolder->posRgbAttrVertices = (GLuint) glGetAttribLocation(programRGB, "aPosition");
-    engineHolder->posRgbAttrTexCoords = (GLuint) glGetAttribLocation(programRGB, "aTexCoord");
-    engineHolder->posRgbUniScaleX = (GLuint) glGetUniformLocation(programRGB, "uScaleX");
-    engineHolder->posRgbUniScaleY = (GLuint) glGetUniformLocation(programRGB, "uScaleY");
-    engineHolder->posRgbUniRotation = (GLuint) glGetUniformLocation(programRGB, "uRotation");
-    engineHolder->posRgbUniMirror = (GLuint) glGetUniformLocation(programRGB, "mirror");
-    engineHolder->posRgbUniTexture = (GLuint) glGetUniformLocation(programRGB, "sTexture");
+//    engineHolder->programRGB = programRGB;
+//    engineHolder->posRgbAttrVertices = (GLuint) glGetAttribLocation(programRGB, "aPosition");
+//    engineHolder->posRgbAttrTexCoords = (GLuint) glGetAttribLocation(programRGB, "aTexCoord");
+//    engineHolder->posRgbUniScaleX = (GLuint) glGetUniformLocation(programRGB, "uScaleX");
+//    engineHolder->posRgbUniScaleY = (GLuint) glGetUniformLocation(programRGB, "uScaleY");
+//    engineHolder->posRgbUniRotation = (GLuint) glGetUniformLocation(programRGB, "uRotation");
+//    engineHolder->posRgbUniMirror = (GLuint) glGetUniformLocation(programRGB, "mirror");
+//    engineHolder->posRgbUniTexture = (GLuint) glGetUniformLocation(programRGB, "sTexture");
 
     //yuv program
     ShaderNV21 yuvShader;
@@ -44,28 +56,12 @@ jboolean initPrograms(GLContextHolder *engineHolder) {
     engineHolder->posUniMirror = (GLuint) glGetUniformLocation(programYUV, "mirror");
     engineHolder->posUniTextureY = (GLuint) glGetUniformLocation(programYUV, "yTexture");
     engineHolder->posUniTextureUV = (GLuint) glGetUniformLocation(programYUV, "uvTexture");
-    engineHolder->posUniTextureClean = (GLuint) glGetUniformLocation(programYUV, "cleanTexture");
-    engineHolder->posUniBrightness = (GLuint) glGetUniformLocation(programYUV, "brightness");
-    engineHolder->posUniContrast = (GLuint) glGetUniformLocation(programYUV, "contrast");
-
-    //point program
-    ShaderPoint pShader;
-    GLuint programPoint = createProgram(pShader.vertexShader, pShader.fragmentShader);
-    if (programPoint == 0) {
-        return JNI_FALSE;
-    }
-//    glUseProgram(programPoint);
-    engineHolder->programPoint = programPoint;
-    engineHolder->posPointAttrVertices = (GLuint) glGetAttribLocation(programPoint, "aPosition");
-    engineHolder->posPointAttrScaleX = (GLuint) glGetAttribLocation(programPoint, "aScaleX");
-    engineHolder->posPointAttrScaleY = (GLuint) glGetAttribLocation(programPoint, "aScaleY");
-    engineHolder->posPointUniColor = (GLuint) glGetUniformLocation(programPoint, "color");
-    engineHolder->posPointUniRotation = (GLuint) glGetUniformLocation(programPoint, "uRotation");
+    engineHolder->posUniTextureFilter = (GLuint) glGetUniformLocation(programYUV, "filterTexture");
     return JNI_TRUE;
 }
 
 JNIEXPORT jlong JNICALL
-Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSurface,jobject mAssetManager,jstring _cleanFilePath) {
+Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSurface,jobject mAssetManager) {
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
         checkGlError("eglGetDisplay");
@@ -156,8 +152,7 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
 
     engineHolder->textureNums = 3;
     engineHolder->textures = textures;
-
-    //加载clean滤镜
+    //加载默认滤镜
     AAssetManager *mgr = AAssetManager_fromJava(env, mAssetManager);
     if (mgr != NULL) {
         AAsset *filterAss = AAssetManager_open(mgr, "encoded.fil", AASSET_MODE_BUFFER);
@@ -167,13 +162,12 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
         int dataLen = width * height * 3;
         char *filterData = new char[dataLen];
         AAsset_read(filterAss, filterData, (size_t) dataLen);
+        AAsset_close(filterAss);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, filterData);
+        LOGE("%s","加载默认滤镜成功！");
+    }else{
+        LOGE("%s","加载默认滤镜失败！");
     }
-//    const char *filePath = env->GetStringUTFChars(_cleanFilePath, 0);
-//    Mat cleanMat = imread(filePath);
-//    env->ReleaseStringUTFChars(_cleanFilePath, filePath);
-//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, cleanMat.cols, cleanMat.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, cleanMat.data);
-
 
     glDepthMask(GL_FALSE);
     glDisable(GL_BLEND);
@@ -183,9 +177,6 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
-
-    //mode
-    engineHolder->engineMode = ENGINE_MODE_NORMAL;
 
     return (jlong) engineHolder;
 }
@@ -252,147 +243,14 @@ JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchFilter(J
     engineHolder->currentFilter = mFilterType;
 }
 
-JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeNormal(JNIEnv *env, jobject instance, jlong engine) {
-    GLContextHolder *engineHolder = (GLContextHolder *) engine;
-    engineHolder->engineMode = ENGINE_MODE_NORMAL;
-    LOGI("%s", "switched mode to normal!");
-}
-
-JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeFaceSwap(JNIEnv *env, jobject instance, jlong engine) {
-    GLContextHolder *engineHolder = (GLContextHolder *) engine;
-    engineHolder->engineMode = ENGINE_MODE_FACE_SWAP;
-    LOGI("%s", "switched mode to swap face!");
-}
-
-JNIEXPORT void JNICALL
-Java_com_ifinver_finengine_FinEngine_nativeSwitchToModeMonaLisa(JNIEnv *env, jobject, jlong engine, jstring filePath_, jobject ctx,
-                                                                jstring trackPath) {
-    const char *filePath = env->GetStringUTFChars(filePath_, 0);
-    LOGI("%s", "switching mode to mona lisa ..");
-    GLContextHolder *engineHolder = (GLContextHolder *) engine;
-    if (initMonalisa(env, ctx, trackPath) == 0) {
-        //初始化成功
-        jlong result = detectMonaFace(filePath);
-        if (result > 0) {
-            LOGE("%s", "检测图片成功！");
-            engineHolder->engineMode = ENGINE_MODE_MONA_LISA;
-            engineHolder->monaFaceResult = result;
-        } else {
-            LOGE("图片人脸检测失败！");
-        }
-    }
-
-    env->ReleaseStringUTFChars(filePath_, filePath);
-}
-
 void caculateScale(GLContextHolder *engineHolder, jint outWidth, jint outHeight, jint odd, jint &width, jint &height);
-
-GLfloat points[202];
-
-void drawFacePoints(GLContextHolder *engineHolder, jlong facePtr, jint width, jint height, jint rot) {
-    FaceDetectResult *faceData = NULL;
-    try {
-        if (facePtr != 0) {
-            faceData = (FaceDetectResult *) facePtr;
-        }
-    } catch (...) {
-        LOGE("%s", "不能转换出face detect result");
-    }
-    if (faceData == NULL) {
-        return;
-    }
-    MInt32 localFaces = faceData->nFaceCountInOut;
-    if (localFaces > 0) {
-        glUseProgram(engineHolder->programPoint);
-
-        for (int j = 0; j < localFaces; j++) {
-            int idx = 0;
-            for (int i = 0; i < faceData->faceOutlinePointCount; i++) {
-                MPOINT ptIndex = faceData->pFaceOutlinePointOut[j * faceData->faceOutlinePointCount + i];
-                points[idx++] = (GLfloat) ptIndex.x / width * 2 - 1;
-                points[idx++] = (GLfloat) ptIndex.y / height * 2 - 1;
-            }
-            glEnableVertexAttribArray(engineHolder->posPointAttrVertices);
-            glVertexAttribPointer(engineHolder->posPointAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, points);
-            glVertexAttrib1f(engineHolder->posPointAttrScaleX, engineHolder->frameScaleX);
-            glVertexAttrib1f(engineHolder->posPointAttrScaleY, engineHolder->frameScaleY);
-            glUniform1i(engineHolder->posPointUniRotation, rot);
-            glUniform4f(engineHolder->posPointUniColor, 0.0f, 1.0f, 0.0f, 1.0f);
-            glDrawArrays(GL_POINTS, 0, 101);
-            glDisableVertexAttribArray(engineHolder->posPointAttrVertices);
-        }
-
-        glUseProgram(engineHolder->currentProgram);
-    }
-}
 
 //.........................................................................................................................
 void renderFrame(GLContextHolder *engineHolder, jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight,
                  jlong facePtr) {
-    switch (engineHolder->engineMode) {
-        default:
-        case ENGINE_MODE_NORMAL: {
-            renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight, facePtr);
-            break;
-        }
-        case ENGINE_MODE_FACE_SWAP: {
-            unsigned char *swappedRgbaFrame = effect_swapFace(data, width, height, (long long) facePtr);
-            if (swappedRgbaFrame == NULL) {
-                renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight, facePtr);
-            } else {
-                renderRgb(engineHolder, swappedRgbaFrame, width, height, degree, mirror, outWidth, outHeight, facePtr);
-            }
-            break;
-        }
-        case ENGINE_MODE_MONA_LISA: {
-            cv::Mat *monaLisaMat = effect_monaLisa(data, width, height, facePtr);
-            renderRgb(engineHolder, monaLisaMat->data, monaLisaMat->cols, monaLisaMat->rows, 0, JNI_FALSE, outWidth, outHeight, facePtr);
-            break;
-        }
-    }
-
+    renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight, facePtr);
 }
 
-void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
-               jint outHeight, jlong facePtr) {
-    glUseProgram(engineHolder->programRGB);
-
-    //输入顶点
-    glEnableVertexAttribArray(engineHolder->posRgbAttrVertices);
-    glVertexAttribPointer(engineHolder->posRgbAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, VERTICES_COORD);
-
-    //输入纹理坐标，处理旋转和镜像
-    glEnableVertexAttribArray(engineHolder->posRgbAttrTexCoords);
-    glVertexAttribPointer(engineHolder->posRgbAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD);
-
-    //上传RGB纹理
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, engineHolder->textures[0]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-
-    //处理旋转和镜像
-    degree %= 360;
-    if (degree < 0) degree += 360;
-    jint odd = degree / 90;
-    glUniform1i(engineHolder->posRgbUniRotation, odd);
-    glUniform1i(engineHolder->posRgbUniMirror, mirror ? 1 : 0);
-    caculateScale(engineHolder, outWidth, outHeight, odd, width, height);
-    glUniform1f(engineHolder->posRgbUniScaleX, engineHolder->frameScaleX);
-    glUniform1f(engineHolder->posRgbUniScaleY, engineHolder->frameScaleY);
-
-    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-
-    glDisableVertexAttribArray(engineHolder->posRgbAttrVertices);
-    glDisableVertexAttribArray(engineHolder->posRgbAttrTexCoords);
-
-    glUseProgram(engineHolder->currentProgram);
-
-    //画点 这里有bug，这个方法只适用于yuv的
-//    drawFacePoints(engineHolder, facePtr, width, height, 0);
-
-    eglSwapBuffers(engineHolder->eglDisplay, engineHolder->eglSurface);
-
-}
 
 void caculateScale(GLContextHolder *engineHolder, jint outWidth, jint outHeight, jint odd, jint &width, jint &height) {
     if (engineHolder->frameWidth != width
@@ -427,7 +285,7 @@ void caculateScale(GLContextHolder *engineHolder, jint outWidth, jint outHeight,
 }
 
 void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
-               jint outHeight, jlong facePtr) {
+               jint outHeight, jlong) {
     if (engineHolder->targetProgram != engineHolder->currentProgram) {
         glUseProgram(engineHolder->targetProgram);
         if (engineHolder->currentProgram != engineHolder->defaultProgram) { //默认滤镜不删
@@ -456,14 +314,10 @@ void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jin
     glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE_ALPHA, width / 2, height / 2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, data + (width * height));
     glUniform1i(engineHolder->posUniTextureUV, 1);
 
-    //设置clean滤镜
+    //上传滤镜
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D,engineHolder->textures[2]);
-    glUniform1i(engineHolder->posUniTextureClean,2);
-
-    //亮度对比度
-    glUniform1f(engineHolder->posUniBrightness,engineHolder->brightness);
-    glUniform1f(engineHolder->posUniContrast,engineHolder->contrast);
+    glUniform1i(engineHolder->posUniTextureFilter,2);
 
     //处理旋转和镜像
     degree %= 360;
@@ -479,8 +333,6 @@ void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jin
 
     glDisableVertexAttribArray(engineHolder->posAttrVertices);
     glDisableVertexAttribArray(engineHolder->posAttrTexCoords);
-
-    drawFacePoints(engineHolder, facePtr, width, height, odd);
 
 //    glFinish();
     eglSwapBuffers(engineHolder->eglDisplay, engineHolder->eglSurface);
@@ -498,13 +350,5 @@ void releaseGLContext(GLContextHolder *engineHolder) {
         eglDestroyContext(engineHolder->eglDisplay, engineHolder->eglContext);
         delete (engineHolder);
     }
-}
 
-JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSetBrightness(JNIEnv *env, jclass type,jlong engine, jfloat brightness){
-    GLContextHolder *engineHolder = (GLContextHolder *) engine;
-    engineHolder->brightness = brightness;
-}
-JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeSetContrast(JNIEnv *env, jclass type,jlong engine, jfloat contrast){
-    GLContextHolder *engineHolder = (GLContextHolder *) engine;
-    engineHolder->contrast = contrast;
 }

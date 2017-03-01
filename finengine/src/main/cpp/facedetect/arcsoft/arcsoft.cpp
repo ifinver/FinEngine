@@ -7,7 +7,7 @@
 #include "../../log.h"
 #include "inc/arcsoft_spotlight.h"
 
-#define LOG_TAG "FinEngine"
+#define LOG_TAG "face detect"
 
 ArcSoftSpotlight::ArcSoftSpotlight() {
     m_hEngine = MNull;

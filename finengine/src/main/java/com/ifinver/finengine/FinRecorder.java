@@ -117,9 +117,9 @@ public class FinRecorder {
             if (mRecorder != 0) {
                 synchronized (mLocker) {
                     nativeProcess(mRecorder, mInputTex);
-                    if(mListener != null){
-                        mListener.onFrameRendered();
-                    }
+                }
+                if(mListener != null){
+                    mListener.onFrameRendered();
                 }
             }
         }

@@ -212,18 +212,18 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
     @Override
     public void onModeClicked(int position) {
-        switch (position){
-            default:
-            case 0:
-                mRenderer.switchModeToNormal();
-                break;
-            case 1:
-                mRenderer.switchModeToSwapFace();
-                break;
-            case 2:
-                mRenderer.switchModeToMonaLisa(this);
-                break;
-        }
+//        switch (position){
+//            default:
+//            case 0:
+//                mRenderer.switchModeToNormal();
+//                break;
+//            case 1:
+//                mRenderer.switchModeToSwapFace();
+//                break;
+//            case 2:
+//                mRenderer.switchModeToMonaLisa(this);
+//                break;
+//        }
     }
 
     @Override
@@ -232,11 +232,31 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
     }
 
     @Override
+    public void onCameraStart(boolean success, RuntimeException e) {
+        FaceDetector.init(this);
+    }
+
+    @Override
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean frontCurrent) {
 //        if(toggle) {
             long facePtr = FaceDetector.process(data, frameWidth, frameHeight);
 //        }
         mRenderer.onVideoBuffer(data, frameWidth, frameHeight, degree, frontCurrent,facePtr);
+    }
+
+    @Override
+    public void onToggleCameraComplete(boolean success, int cameraIndex) {
+
+    }
+
+    @Override
+    public void onZoomCamera(int state) {
+
+    }
+
+    @Override
+    public void onFlashLightOpenComplete(boolean success) {
+
     }
 
     @Override
@@ -287,17 +307,6 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
         CameraHolder.getInstance().stopCamera();
         FaceDetector.release();
     }
-
-    @Override
-    public void onToggleCameraComplete(boolean success) {
-        Log.w(TAG, "onToggleCameraComplete,success= " + success);
-    }
-
-    @Override
-    public void onCameraStart(boolean success) {
-        FaceDetector.init(this);
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

@@ -74,6 +74,11 @@ public class UnityActivity extends UnityBaseActivity implements SurfaceHolder.Ca
     }
 
     @Override
+    public void onCameraStart(boolean success, RuntimeException e) {
+        FaceDetector.init(this);
+    }
+
+    @Override
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean frontCurrent) {
         if(dump){
             try {
@@ -105,12 +110,17 @@ public class UnityActivity extends UnityBaseActivity implements SurfaceHolder.Ca
     }
 
     @Override
-    public void onCameraStart(boolean success) {
-        FaceDetector.init(this);
+    public void onToggleCameraComplete(boolean success, int cameraIndex) {
+
     }
 
     @Override
-    public void onToggleCameraComplete(boolean success) {
+    public void onZoomCamera(int state) {
+
+    }
+
+    @Override
+    public void onFlashLightOpenComplete(boolean success, boolean isOpen) {
 
     }
 
@@ -149,7 +159,6 @@ public class UnityActivity extends UnityBaseActivity implements SurfaceHolder.Ca
             }
         }, 1000, 300);
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
