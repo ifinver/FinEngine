@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -16,8 +17,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.ifinver.finenginesample.singleswitch.SingleActivity;
+import com.ifinver.finengine.FinCv;
 import com.ifinver.finenginesample.unity.UnityActivity;
+import com.ifinver.finenginesample.singleswitch.SingleActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -28,14 +30,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ImageView ivOri = (ImageView) findViewById(R.id.iv_show_ori);
-        ImageView ivGrey = (ImageView) findViewById(R.id.iv_show_grey);
+        ImageView ivOri = findViewById(R.id.iv_show_ori);
+        ImageView ivGrey = findViewById(R.id.iv_show_grey);
 
         ivOri.setImageResource(R.drawable.t);
         ivGrey.setImageBitmap(generateGreyBmp(R.drawable.t));
 
-        ivOri.setOnClickListener(this);
-        ivGrey.setOnClickListener(this);
+        findViewById(R.id.fl_show_ori).setOnClickListener(this);
+        findViewById(R.id.fl_show_grey).setOnClickListener(this);
 
         //permission
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -46,10 +48,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.iv_show_ori:
+            case R.id.fl_show_ori:
                 startActivity(new Intent(this, SingleActivity.class));
                 break;
-            case R.id.iv_show_grey:
+            case R.id.fl_show_grey:
                 startActivity(new Intent(this, UnityActivity.class));
                 break;
         }
@@ -58,14 +60,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_activity_unity:
+            case R.id.menu_activity_multi:
                 startActivity(new Intent(this, UnityActivity.class));
                 return true;
             case R.id.menu_activity_switch:
                 startActivity(new Intent(this, SingleActivity.class));
-                return true;
-            case R.id.menu_activity_test:
-                startActivity(new Intent(this,TestActivity.class));
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -90,21 +89,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private Bitmap generateGreyBmp(int res) {
-//        try {
-//            Bitmap resultImg;
-//            Bitmap bmp = BitmapFactory.decodeResource(getResources(), res);
-//            int width = bmp.getWidth();
-//            int height = bmp.getHeight();
-//            int[] pixels = new int[width * height];
-//            bmp.getPixels(pixels,0, width,0,0, width, height);
-////            int[] resultPixels = FinCv.BGRA2Grey(pixels, width, height);
-//            resultImg = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
-//            resultImg.setPixels(resultPixels,0,width,0,0,width,height);
-//            return resultImg;
-//        }catch (Throwable ignored){
-//            return null;
-//        }
-        return null;
+        try {
+            Bitmap resultImg;
+            Bitmap bmp = BitmapFactory.decodeResource(getResources(), res);
+            int width = bmp.getWidth();
+            int height = bmp.getHeight();
+            int[] pixels = new int[width * height];
+            bmp.getPixels(pixels,0, width,0,0, width, height);
+            int[] resultPixels = FinCv.BGRA2Grey(pixels, width, height);
+            resultImg = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
+            resultImg.setPixels(resultPixels,0,width,0,0,width,height);
+            return resultImg;
+        }catch (Throwable ignored){
+            return null;
+        }
     }
 
     @Override

@@ -26,7 +26,11 @@ import java.util.List;
 public class CameraHolder {
 
     private static final String TAG = "FinEngine";
+    public static int CAMERA_START = 1;
+    public static int CAMERA_INITED = 2;
 
+    public static int CAMERA_ZOOM_MAX = 0;
+    public static int CAMERA_ZOOM_MIN= 1;
     private Context mAppCtx;
 
     private FinEngineThread mEngineThread;
@@ -50,9 +54,28 @@ public class CameraHolder {
         return mInstance;
     }
 
-    public void start(int expectedWidth, int expectedHeight, Context ctx, CameraListener listener) {
-        this.mAppCtx = ctx.getApplicationContext();
-        mEngineThread.start(expectedWidth, expectedHeight, listener);
+    public int start(int expectedWidth, int expectedHeight, Context ctx, CameraListener listener) {
+        if (mEngineThread.mCamera == null || mEngineThread.exited) {
+            this.mAppCtx = ctx.getApplicationContext();
+            Log.d("wetoo", " mAppCtx = null ? " + (mAppCtx));
+            mEngineThread.start(expectedWidth, expectedHeight, listener);
+            return CAMERA_START;
+        } else {
+            Log.e(TAG, "初始化摄像头时,摄像头已经初始化过了！");
+            return CAMERA_INITED;
+        }
+    }
+
+    public int start(int expectedWidth, int expectedHeight, Context ctx, int cameraId, CameraListener listener) {
+        if (mEngineThread.mCamera == null || mEngineThread.exited) {
+            this.mAppCtx = ctx.getApplicationContext();
+            Log.d(TAG, " mAppCtx = null ? " + (mAppCtx));
+            mEngineThread.start(expectedWidth, expectedHeight, cameraId, listener);
+            return CAMERA_START;
+        } else {
+            Log.e(TAG, "初始化摄像头时,摄像头已经初始化过了！");
+            return CAMERA_INITED;
+        }
     }
 
     public boolean toggleCamera() {
@@ -60,8 +83,35 @@ public class CameraHolder {
     }
 
     public void stopCamera() {
+
         mAppCtx = null;
         mEngineThread.exit();
+    }
+
+    public boolean isFrontCamera() {
+        if (mEngineThread != null) {
+            return mEngineThread.isFrontCurrent();
+        }
+        return false;
+    }
+
+    public void zoomCamera(boolean isEnlarge) {
+        if (mEngineThread != null) {
+            mEngineThread.zoomCamera(isEnlarge);
+        }
+    }
+
+    public boolean isCameraSupportZoom() {
+        if (mEngineThread != null) {
+            return mEngineThread.isCameraSupportZoom();
+        }
+        return false;
+    }
+
+    public void openFlashLight(boolean isOpen){
+        if (mEngineThread != null) {
+            mEngineThread.openFlashLight(isOpen);
+        }
     }
 
     @SuppressWarnings({"WeakerAccess", "deprecation"})
@@ -70,6 +120,8 @@ public class CameraHolder {
         private final int MSG_INIT = 0x101;
         private final int MSG_STOP = 0x103;
         private final int MSG_TOGGLE = 0x104;
+        private final int MSG_ZOOM = 0x105;
+        private final int MSG_OPEN_FLASH_LIGHT = 0x106;
         private final int TEXTURE_ID = 20;
 
         private int mExpectedWidth;
@@ -88,6 +140,8 @@ public class CameraHolder {
         private Camera mCamera;
         public int mCameraIndex;
         private int mCameraOrientation = 0;
+        private int mZoomValue;
+        private volatile int mRequestCameraId = -1;
 
         FinEngineThread() {
             super("CameraHolderThread", Process.THREAD_PRIORITY_DISPLAY);
@@ -97,23 +151,40 @@ public class CameraHolder {
 
         @Override
         public void onPreviewFrame(byte[] data, Camera camera) {
-            if (!exited) {
-                //prepare another frame
-                mVideoBufferIdx = 1 - mVideoBufferIdx;
-                if (mCamera != null) {
-                    mCamera.addCallbackBuffer(mVideoBuffer[mVideoBufferIdx].array());
-                }
+//            Log.d(TAG, "=================onPreviewFrame========================= exited = ");
 
+            //prepare another frame
+            mVideoBufferIdx = 1 - mVideoBufferIdx;
+            if (mCamera != null) {
+                mCamera.addCallbackBuffer(mVideoBuffer[mVideoBufferIdx].array());
+            }
+            if (!exited) {
                 if (mListener != null) {
-                    mListener.onVideoBuffer(data, mFrameWidth, mFrameHeight, mCameraOrientation, isFrontCurrent());
+                    mListener.onVideoBuffer(data, mFrameWidth, mFrameHeight, mCameraOrientation,
+                            mRequestCameraId == -1 ? isFrontCurrent() : isRequestCameraIdFrontCurrent());
                 }
             }
         }
 
-        private boolean isFrontCurrent() {
+        public boolean isFrontCurrent() {
             return mCameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT;
         }
 
+        public boolean isRequestCameraIdFrontCurrent() {
+            return mRequestCameraId == Camera.CameraInfo.CAMERA_FACING_FRONT;
+        }
+
+        public boolean isCameraSupportZoom() {
+            if (mCamera == null) {
+                return false;
+            }
+            try {
+                return mCamera.getParameters().isZoomSupported();
+            } catch (Exception e) {
+                Log.e(TAG, "isCameraSupportZoom", e);
+            }
+            return false;
+        }
 
         public void start(int expectedWidth, int expectedHeight, CameraListener listener) {
             this.mExpectedWidth = expectedWidth;
@@ -131,6 +202,62 @@ public class CameraHolder {
                 }
             }
         }
+
+        public void start(int expectedWidth, int expectedHeight, int cameraId, CameraListener listener) {
+            this.mExpectedWidth = expectedWidth;
+            this.mExpectedHeight = expectedHeight;
+            this.mRequestCameraId = cameraId;
+            this.mListener = listener;
+            Message msg = mSelfHandler.obtainMessage();
+            msg.what = MSG_INIT;
+            msg.obj = cameraId;
+            if (mSelfHandler != null) {
+                mSelfHandler.sendMessage(msg);
+            } else {
+                synchronized (FinEngineThread.class) {
+                    if (mSelfHandler == null) {
+                        delayStart = true;
+                    } else {
+                        mSelfHandler.sendMessage(msg);
+                    }
+                }
+            }
+        }
+
+        public void zoomCamera(boolean isEnlarge) {
+            Log.d("onZoom", "zoomCamera");
+            synchronized (FinEngineThread.class) {
+                if (mSelfHandler != null) {
+                    Message message = Message.obtain();
+                    message.what = MSG_ZOOM;
+                    message.obj = isEnlarge;
+                    mSelfHandler.sendMessage(message);
+                }
+            }
+        }
+
+        public void openFlashLight(boolean isOpen) {
+            Log.d(TAG, "openFlashLight");
+            if (mCameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                return;
+            }
+            synchronized (FinEngineThread.class) {
+                if (mSelfHandler != null) {
+                    Message message = Message.obtain();
+                    message.what = MSG_OPEN_FLASH_LIGHT;
+                    message.obj = isOpen;
+                    mSelfHandler.sendMessage(message);
+                }
+            }
+        }
+//
+//        public void setCameraId(int cameraId) {
+//            Log.d(TAG, "openFlashLight");
+//            if (mCameraIndex == cameraId || mRequestCameraId == -1) {
+//                return;
+//            }
+//            mRequestCameraId = cameraId;
+//        }
 
         @Override
         protected void onLooperPrepared() {
@@ -168,7 +295,7 @@ public class CameraHolder {
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
                 case MSG_INIT:
-                    initCamera();
+                    initCamera(msg);
                     return true;
                 case MSG_STOP:
                     stopCamera();
@@ -176,11 +303,20 @@ public class CameraHolder {
                 case MSG_TOGGLE:
                     toggleCameraInternal();
                     return true;
+                case MSG_ZOOM:
+                    zoomCamera(msg);
+                    return true;
+                case MSG_OPEN_FLASH_LIGHT:
+                    openFlashLight(msg);
+                    return true;
             }
             return false;
         }
 
         private void toggleCameraInternal() {
+            if (mRequestCameraId != -1) {
+                return;
+            }
             Log.w(TAG, "toggleCamera");
             stopCamera();
             if (mCameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT) {
@@ -188,50 +324,154 @@ public class CameraHolder {
             } else {
                 mCameraIndex = Camera.CameraInfo.CAMERA_FACING_FRONT;
             }
-            final boolean finalSuccess = initCamera();
+            final boolean finalSuccess = initCamera(null);
             if (mListener != null) {
                 mMainHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        mListener.onToggleCameraComplete(finalSuccess);
+                        mListener.onToggleCameraComplete(finalSuccess, mCameraIndex);
                     }
                 });
             }
         }
 
-        private void stopCamera() {
+        private void zoomCamera(Message msg) {
+            Log.d("onZoom", "zoomCamera");
             synchronized (this) {
-                if (mCamera != null) {
-                    mCamera.stopPreview();
-                    mCamera.setPreviewCallback(null);
+                try {
+                    if (mCamera != null) {
+                        Camera.Parameters parameters = mCamera.getParameters();
+                        if (parameters.isZoomSupported()) {
+                            int maxZoom = parameters.getMaxZoom();
+                            boolean isEnlarge = (boolean) msg.obj;
+                            if (isEnlarge) {
+                                mZoomValue = (mZoomValue + 1) >= maxZoom ? maxZoom : (mZoomValue + 1);
+                            } else {
+                                mZoomValue = (mZoomValue - 1) <= 0 ? 0 : (mZoomValue - 1);
+                            }
+                            Log.d("onZoom", "zoomCamera mZoomValue = " + mZoomValue);
+                            if (parameters.isSmoothZoomSupported()) {
+                                mCamera.stopSmoothZoom();
+                                mCamera.startSmoothZoom(mZoomValue);
+                            } else {
+                                parameters.setZoom(mZoomValue);
+                                mCamera.setParameters(parameters);
+                            }
+                            if ((mZoomValue == 0 || mZoomValue == maxZoom) && mListener != null) {
+                                mMainHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        if (mZoomValue == 0) {
+                                            mListener.onZoomCamera(CAMERA_ZOOM_MIN);
+                                        } else {
+                                            mListener.onZoomCamera(CAMERA_ZOOM_MAX);
+                                        }
 
-                    mCamera.release();
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    Log.w(TAG, "zoomCamera");
+                } catch (Exception e) {
+                    Log.e(TAG, "zoomCamera", e);
                 }
-                mCamera = null;
-                Log.w(TAG, "摄像机已释放");
             }
         }
 
-        public boolean initCamera() {
-            if (mCamera != null) {
-                Log.e(TAG, "初始化摄像头时,摄像头已经初始化过了！");
-                return false;
+        private void openFlashLight(Message message) {
+            synchronized (this) {
+                if (mCamera != null) {
+                    final boolean isOpen = (boolean) message.obj;
+                    boolean result;
+                    try {
+                        Camera.Parameters parameters = mCamera.getParameters();
+                        List<String> flashModes = parameters.getSupportedFlashModes();
+                        if (flashModes == null) {
+                            result = false;
+                        } else {
+                            if (isOpen && flashModes.contains(Camera.Parameters.FLASH_MODE_TORCH)) {
+                                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                                result = true;
+                            } else if (!isOpen && flashModes.contains(Camera.Parameters.FLASH_MODE_OFF)) {
+                                parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                                result = true;
+                            } else {
+                                result = false;
+                            }
+                        }
+                        mCamera.setParameters(parameters);
+
+                    } catch (Exception e) {
+                        result = false;
+                        Log.e(TAG, "open flash light fail" + e.toString());
+                    }
+                    if (mListener != null) {
+                        final boolean finalResult = result;
+                        mMainHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                mListener.onFlashLightOpenComplete(finalResult, isOpen);
+                            }
+                        });
+                    }
+                }
             }
+        }
+
+        private void stopCamera() {
+            synchronized (this) {
+                try {
+                    if (mCamera != null) {
+                        mCamera.stopPreview();
+                        mCamera.setPreviewCallback(null);
+                        mCamera.release();
+                        mZoomValue = 0;
+                    }
+                    mRequestCameraId = -1;
+                    mCamera = null;
+                    Log.w(TAG, "摄像机已释放");
+                } catch (Exception e) {
+                    Log.e(TAG, "stopCamera", e);
+                }
+            }
+        }
+
+        public boolean initCamera(Message msg) {
             Log.w(TAG, "摄像头开始初始化");
             boolean init = false;
             synchronized (this) {
+                if (mCamera != null) {
+                    Log.e(TAG, "initCamera 初始化摄像头时,摄像头已经初始化过了！");
+                    return false;
+                }
                 mCamera = null;
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
                     try {
-                        mCamera = Camera.open(mCameraIndex);
-                        if (mCameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                            Log.w(TAG, "已打开前置摄像头");
+                        if (msg != null && msg.obj != null) {
+                            mRequestCameraId = (int)msg.obj;
+                            mCamera = Camera.open(mRequestCameraId);
+                            Log.w(TAG, "mRequestCameraId = " + mRequestCameraId);
                         } else {
-                            Log.w(TAG, "已打开后置摄像头");
+                            mCamera = Camera.open(mCameraIndex);
+                            if (mCameraIndex == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                                Log.w(TAG, "已打开前置摄像头");
+                            } else {
+                                Log.w(TAG, "已打开后置摄像头");
+                            }
                         }
-                    } catch (RuntimeException e) {
+                    } catch (final RuntimeException e) {
                         Log.e(TAG, "摄像头 #" + mCameraIndex + "打开失败!", e);
+                        if (mListener != null) {
+                            mMainHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mListener.onCameraStart(false, e);
+                                }
+                            });
+                        }
+                        return false;
                     }
                 }
 
@@ -266,7 +506,7 @@ public class CameraHolder {
                             params = mCamera.getParameters();
                             Log.w(TAG, "帧率设置为:[" + max + "," + max + "]");
                         } catch (Exception e) {
-                            Log.e(TAG, "WTF,不能设置为:[" + max + "," + max + "]，尝试设置为[" + ((int)(max * 0.9)) + "," + max + "]");
+                            Log.e(TAG, "WTF,不能设置为:[" + max + "," + max + "]，尝试设置为[" + ((int) (max * 0.9)) + "," + max + "]");
                             localParam = mCamera.getParameters();
                             try {
                                 localParam.setPreviewFpsRange((int) (max * 0.9), max);
@@ -290,6 +530,12 @@ public class CameraHolder {
                     if (FocusModes != null && FocusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
                         params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
                     }
+                    //相机缩放
+                    if(params.isSmoothZoomSupported()) {
+                        mZoomValue = 0;
+                        params.setZoom(mZoomValue);
+                    }
+
                     mCamera.setParameters(params);
                     //记录宽高
                     params = mCamera.getParameters();
@@ -309,6 +555,7 @@ public class CameraHolder {
                     updateCameraDegree();
                     Log.w(TAG, "开始Camera预览");
                     init = true;
+
                 } catch (Exception e) {
                     Log.e(TAG, "开启Camera失败！", e);
                 }
@@ -316,6 +563,7 @@ public class CameraHolder {
             if (init) {
                 Log.w(TAG, "摄像头初始化成功！");
             } else {
+                exited = true;
                 if (mVideoBuffer != null) {
                     mVideoBuffer[0] = null;
                     mVideoBuffer[1] = null;
@@ -335,7 +583,7 @@ public class CameraHolder {
                 mMainHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        mListener.onCameraStart(finalInit);
+                        mListener.onCameraStart(finalInit, null);
                     }
                 });
             }
@@ -365,7 +613,11 @@ public class CameraHolder {
             }
             if (mCamera != null) {
                 Camera.CameraInfo info = new Camera.CameraInfo();
-                Camera.getCameraInfo(mCameraIndex, info);
+                if (mRequestCameraId != -1) {
+                    Camera.getCameraInfo(mRequestCameraId, info);
+                } else {
+                    Camera.getCameraInfo(mCameraIndex, info);
+                }
 
                 if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
                     mCameraOrientation = (info.orientation + mWindowDegree) % 360;
@@ -376,7 +628,6 @@ public class CameraHolder {
                 mCamera.setDisplayOrientation(mCameraOrientation);
                 Log.w(TAG, "摄像机角度 = " + mCameraOrientation);
             }
-
         }
 
         /**
@@ -406,14 +657,18 @@ public class CameraHolder {
 
     public interface CameraListener {
 
-        void onCameraStart(boolean success);
+        void onCameraStart(boolean success, RuntimeException e);
 
         /**
          * notice that this method may be invoked before onCameraStart.
          */
         void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean frontCurrent);
 
-        void onToggleCameraComplete(boolean success);
+        void onToggleCameraComplete(boolean success, int cameraIndex);
+
+        void onZoomCamera(int state);
+
+        void onFlashLightOpenComplete(boolean success, boolean isOpen);
     }
 
     private class CameraSize {

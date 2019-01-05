@@ -9,10 +9,6 @@ import android.os.Process;
 import android.util.Log;
 import android.view.Surface;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-
 /**
  * Created by iFinVer on 2016/11/27.
  * ilzq@foxmail.com
@@ -40,10 +36,10 @@ public class FinEngine {
     private final FinEngineThread mEngineThread;
     private final int mEngineId;
 
-    private FinEngine(Context ctx, Surface output, int width, int height) {
+    private FinEngine(Context ctx,Surface output, int width, int height) {
         mEngineThread = new FinEngineThread(ctx,output, width, height);
         mEngineThread.start();
-        mEngineId = ++sFinEngineCount;
+        mEngineId  = ++sFinEngineCount;
     }
 
     public static FinEngine prepare(Context ctx,Surface output, int width, int height) {
@@ -51,7 +47,7 @@ public class FinEngine {
     }
 
     public void process(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera, long facePtr) {
-        mEngineThread.process(data, frameWidth, frameHeight, degree, isFrontCamera, facePtr);
+        mEngineThread.process(data, frameWidth, frameHeight, degree, isFrontCamera,facePtr);
     }
 
     public void release() {
@@ -66,45 +62,6 @@ public class FinEngine {
         mEngineThread.switchFilter(filterType);
     }
 
-    public void switchModeToNormal(){
-        mEngineThread.switchModeToNormal();
-    }
-
-    public void switchModeToSwapFace(){
-        mEngineThread.switchModeToSwapFace();
-    }
-
-    public void switchModeToMonaLisa(Context ctx) {
-        synchronized (this) {
-            File monaFile = new File(ctx.getFilesDir() + "/monalisa.jpg");
-            if (!monaFile.exists()) {
-                //不存在了
-                try {
-                    InputStream in = ctx.getAssets().open("monalisa.jpg");
-                    FileOutputStream fos = new FileOutputStream(monaFile);
-                    byte[] buffer = new byte[1024];
-                    int readCount;
-                    while ((readCount = in.read(buffer)) != -1) {
-                        fos.write(buffer, 0, readCount);
-                    }
-                    in.close();
-                    fos.close();
-                } catch (Exception ignored) {
-                    Log.e(TAG, "切换引擎模式失败！", ignored);
-                }
-            }
-            mEngineThread.switchModeToMonaLisa(ctx,monaFile.getAbsolutePath());
-        }
-    }
-
-    public void setBrightness(float brightness){
-        mEngineThread.setBrightness(brightness);
-    }
-
-    public void setContrast(float contrast){
-        mEngineThread.setContrast(contrast);
-    }
-
     public int getCurrentFilter() {
         return mEngineThread.mFilterType;
     }
@@ -114,11 +71,6 @@ public class FinEngine {
         private final int MSG_RELEASE = 0x104;
         private final int MSG_PROCESS = 0x105;
         private final int MSG_SWITCH_FILTER = 0x106;
-        private final int MSG_SWITCH_MODE_NORMAL = 0x107;
-        private final int MSG_SWITCH_MODE_MONALISA = 0x108;
-        private final int MSG_SWITCH_MODE_SWAP_FACE = 0x109;
-        private final int MSG_SET_BRIGHTNESS = 0x110;
-        private final int MSG_SET_CONTRAST = 0x111;
 
         private Handler mSelfHandler;
         private boolean delayStart = false;
@@ -135,47 +87,20 @@ public class FinEngine {
         private int mFilterType;
         private long mEngine;
         private long mFacePtr;
-        private String mMonaLisaFilePath;
-        private Context mAppCtx;
-        private String mTrackDataFilePath;
-        private final String mCleanFilePath;
-        private float mBrightness = 0.0f;
-        private float mContrast = 1.0f;
 
-        FinEngineThread(Context ctx, Surface output, int width, int height) {
+        FinEngineThread(Context ctx,Surface output, int width, int height) {
             super("FinEngineThread", Process.THREAD_PRIORITY_URGENT_DISPLAY);
             this.mAssetManager = ctx.getApplicationContext().getAssets();
             this.mFilterType = FILTER_TYPE_NORMAL;
             this.mOutputSurface = output;
             this.mOutWidth = width;
             this.mOutHeight = height;
-
-            synchronized (this) {
-                File cleanFile = new File(ctx.getFilesDir() + "/nature.png");
-                if (!cleanFile.exists()) {
-                    //不存在了
-                    try {
-                        InputStream in = ctx.getAssets().open("nature.png");
-                        FileOutputStream fos = new FileOutputStream(cleanFile);
-                        byte[] buffer = new byte[1024];
-                        int readCount;
-                        while ((readCount = in.read(buffer)) != -1) {
-                            fos.write(buffer, 0, readCount);
-                        }
-                        in.close();
-                        fos.close();
-                    } catch (Exception ignored) {
-                        Log.e(TAG, "切换引擎模式失败！", ignored);
-                    }
-                }
-                this.mCleanFilePath = cleanFile.getAbsolutePath();
-            }
         }
 
         @Override
         protected void onLooperPrepared() {
             mSelfHandler = new Handler(getLooper(), this);
-            Log.w(TAG, "FinEngine" + mEngineId + "开始初始化");
+            Log.w(TAG, "FinEngine"+mEngineId+"开始初始化");
             mSelfHandler.sendEmptyMessage(MSG_INIT);
         }
 
@@ -183,47 +108,7 @@ public class FinEngine {
             synchronized (FinEngineThread.class) {
                 this.mFilterType = filterType;
             }
-            mSelfHandler.removeCallbacksAndMessages(null);
             mSelfHandler.sendEmptyMessage(MSG_SWITCH_FILTER);
-        }
-
-        public void switchModeToNormal(){
-            mSelfHandler.removeCallbacksAndMessages(null);
-            mSelfHandler.sendEmptyMessage(MSG_SWITCH_MODE_NORMAL);
-        }
-
-        public void switchModeToSwapFace() {
-            mSelfHandler.removeCallbacksAndMessages(null);
-            mSelfHandler.sendEmptyMessage(MSG_SWITCH_MODE_SWAP_FACE);
-        }
-
-        public void switchModeToMonaLisa(Context ctx,String path) {
-            this.mAppCtx = ctx.getApplicationContext();
-            synchronized (FinEngineThread.class) {
-                //检查文件
-                File trackFile = new File(ctx.getFilesDir()+"/track_data.dat");
-                if(!trackFile.exists()){
-                    //不存在了
-                    try {
-                        InputStream in = ctx.getAssets().open("track_data.dat");
-                        FileOutputStream fos = new FileOutputStream(trackFile);
-                        byte[] buffer = new byte[1024];
-                        int readCount;
-                        while ((readCount = in.read(buffer)) != -1){
-                            fos.write(buffer,0,readCount);
-                        }
-                        in.close();
-                        fos.close();
-                    }catch (Exception ignored){
-                        Log.e(TAG, "图片人脸检测初始化失败!无法操作track_data文件");
-                        return ;
-                    }
-                }
-                this.mMonaLisaFilePath = path;
-                this.mTrackDataFilePath = trackFile.getAbsolutePath();
-                mSelfHandler.removeCallbacksAndMessages(null);
-                mSelfHandler.sendEmptyMessage(MSG_SWITCH_MODE_MONALISA);
-            }
         }
 
         public void process(byte[] data, int frameWidth, int frameHeight, int degree, boolean isFrontCamera, long facePtr) {
@@ -238,16 +123,6 @@ public class FinEngine {
             }
         }
 
-        public void setBrightness(float brightness) {
-            this.mBrightness = brightness;
-            mSelfHandler.sendEmptyMessage(MSG_SET_BRIGHTNESS);
-        }
-
-        public void setContrast(float contrast) {
-            this.mContrast = contrast;
-            mSelfHandler.sendEmptyMessage(MSG_SET_CONTRAST);
-        }
-
         @Override
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
@@ -256,88 +131,60 @@ public class FinEngine {
                     return true;
                 case MSG_RELEASE:
                     nativeRelease(mEngine);
-                    Log.w(TAG, "FinEngine" + mEngineId + "已释放");
-                    sFinEngineCount--;
+                    Log.w(TAG, "FinEngine"+mEngineId+"已释放");
+                    sFinEngineCount --;
                     isPrepared = false;
                     return true;
                 case MSG_SWITCH_FILTER:
                     switchFilterInternal();
                     return true;
-                case MSG_SWITCH_MODE_MONALISA:
-                    switchToMonaLisaInternal();
-                    return true;
-                case MSG_SWITCH_MODE_NORMAL:
-                    switchToNormalModeInternal();
-                    return true;
-                case MSG_SWITCH_MODE_SWAP_FACE:
-                    switchToFaceSwapModeInternal();
-                    return true;
                 case MSG_PROCESS:
                     if (isPrepared && mData != null) {
-                        nativeRender(mEngine, mData, mFrameWidth, mFrameHeight, mDegree, isFrontCamera, mOutWidth, mOutHeight, mFacePtr);
+                        nativeRender(mEngine,mData, mFrameWidth, mFrameHeight, mDegree, isFrontCamera, mOutWidth, mOutHeight,mFacePtr);
                     }
-                    return true;
-                case MSG_SET_BRIGHTNESS:
-                    nativeSetBrightness(mEngine,mBrightness);
-                    return true;
-                case MSG_SET_CONTRAST:
-                    nativeSetContrast(mEngine,mContrast);
                     return true;
             }
             return false;
         }
 
-        private void switchToMonaLisaInternal() {
-            if (isPrepared) {
-                synchronized (FinEngineThread.class) {
-                    nativeSwitchToModeMonaLisa(mEngine, mMonaLisaFilePath,mAppCtx,mTrackDataFilePath);
-                }
-            }
-        }
-        private void switchToFaceSwapModeInternal() {
-            if (isPrepared) {
-                synchronized (FinEngineThread.class) {
-                    nativeSwitchToModeFaceSwap(mEngine);
-                }
-            }
-        }
-        private void switchToNormalModeInternal() {
-            if (isPrepared) {
-                synchronized (FinEngineThread.class) {
-                    nativeSwitchToModeNormal(mEngine);
-                }
-            }
-        }
-
         private void switchFilterInternal() {
             if (isPrepared) {
-                Log.w(TAG, "FinEngine" + mEngineId + "开始切换滤镜");
+                Log.w(TAG, "FinEngine"+mEngineId+"开始切换滤镜");
                 synchronized (FinEngineThread.class) {
                     FinFiltersManager.Shader shader = FinFiltersManager.findShader(mFilterType);
-                    nativeSwitchFilter(mEngine, mAssetManager, mFilterType, shader.vertex, shader.fragment);
+                    nativeSwitchFilter(mEngine,mAssetManager, mFilterType, shader.vertex, shader.fragment);
                 }
             }
         }
 
         private void init() {
-            mEngine = nativeInit(mOutputSurface,mAssetManager,mCleanFilePath);
-            isPrepared = mEngine != 0;
-            if (isPrepared) {
-                Log.w(TAG, "FinEngine" + mEngineId + "初始化成功");
-            } else {
-                Log.e(TAG, "FinEngine" + mEngineId + "初始化失败!");
-                sendReleaseMsg();
+            synchronized (FinEngine.class) {
+                mEngine = nativeInit(mOutputSurface, mAssetManager);
+                isPrepared = mEngine != 0;
+                if (isPrepared) {
+                    Log.w(TAG, "FinEngine" + mEngineId + "初始化成功");
+                } else {
+                    Log.e(TAG, "FinEngine" + mEngineId + "初始化失败!");
+                    sendReleaseMsg();
+                }
             }
         }
 
         private void sendReleaseMsg() {
             isPrepared = false;
-            mSelfHandler.removeCallbacksAndMessages(null);
-            mSelfHandler.sendEmptyMessage(MSG_RELEASE);
+            if (mSelfHandler != null) {
+                mSelfHandler.sendEmptyMessage(MSG_RELEASE);
+            } else {
+                nativeRelease(mEngine);
+                Log.w(TAG, "FinEngine"+mEngineId+"已释放");
+                sFinEngineCount --;
+                isPrepared = false;
+            }
+
         }
 
         public void release() {
-            Log.w(TAG, "FinEngine" + mEngineId + "开始释放");
+            Log.w(TAG, "FinEngine"+mEngineId+"开始释放");
             sendReleaseMsg();
         }
 
@@ -347,22 +194,15 @@ public class FinEngine {
         }
     }
 
+
     /**
      * @return 0 means failed
      */
-    private native long nativeInit(Surface output, AssetManager mAssetManager, String mCleanFilePath);
+    private native long nativeInit(Surface output,AssetManager mAssetManager);
 
     private native void nativeRelease(long engine);
 
-    private native void nativeSwitchFilter(long engine, AssetManager mAssetManager, int mFilterType, String mVertexName, String mFragmentName);
-
-    private native void nativeSetBrightness(long engine, float mBrightness);
-
-    private native void nativeSetContrast(long engine, float mContrast);
-
-    private native void nativeSwitchToModeMonaLisa(long engine, String filePath,Context ctx,String trackDataPath);
-    private native void nativeSwitchToModeNormal(long engine);
-    private native void nativeSwitchToModeFaceSwap(long engine);
+    private native void nativeSwitchFilter(long engine,AssetManager mAssetManager, int mFilterType, String mVertexName, String mFragmentName);
 
     private native void nativeRender(long engine, byte[] data, int frameWidth, int frameHeight, int degree, boolean mirror, int mOutWidth, int mOutHeight, long mFacePtr);
 }

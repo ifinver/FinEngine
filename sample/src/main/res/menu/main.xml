@@ -9,12 +9,5 @@
           android:checkable="false"
           android:enabled="true"
           android:visible="true"/>
-    <item android:title="@string/tools"
-          android:id="@+id/toggle_tools"
-          android:icon="@mipmap/ic_launcher"
-          app:showAsAction="always"
-          android:checkable="false"
-          android:enabled="true"
-          android:visible="true"/>
 
 </menu>

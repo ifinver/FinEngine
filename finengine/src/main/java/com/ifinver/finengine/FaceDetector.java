@@ -23,11 +23,12 @@ public class FaceDetector {
 
     private static boolean initialized = false;
 
-    public static boolean init(Context ctx){
+    public static boolean init(Context ctx, String trackDataPath){
         if(!initialized) {
             //检查文件
-            File trackFile = new File(ctx.getFilesDir()+"/track_data.dat");
+            File trackFile = new File(trackDataPath);
             if(!trackFile.exists()){
+                Log.e(TAG, "trackDataPath 文件不存在");
                 //不存在了
                 try {
                     InputStream in = ctx.getAssets().open("track_data.dat");

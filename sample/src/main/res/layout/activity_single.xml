@@ -7,7 +7,6 @@
 
     <TextureView
         android:id="@+id/tex"
-        android:keepScreenOn="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
@@ -16,7 +15,8 @@
         android:layout_width="180dp"
         android:layout_height="330dp"
         android:padding="1dp"
-        android:layout_above="@+id/ll_filters">
+        android:layout_above="@+id/ll_filters"
+        android:visibility="gone">
 
         <TextureView
             android:id="@+id/tex_l"
@@ -40,65 +40,6 @@
         android:shadowColor="@color/black"
         android:textColor="@android:color/holo_red_dark"/>
 
-    <TextView
-        android:layout_marginTop="20dp"
-        android:id="@+id/tv_contrast"
-        android:text="对比度:100"
-        android:layout_below="@id/tv_fps"
-        android:layout_width="wrap_content"
-        android:shadowColor="@color/black"
-        android:textColor="@android:color/holo_red_dark"
-        android:layout_height="wrap_content"/>
-
-    <TextView
-        android:id="@+id/tv_brightness"
-        android:text="亮度:100"
-        android:layout_below="@id/tv_contrast"
-        android:shadowColor="@color/black"
-        android:textColor="@android:color/holo_red_dark"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <SeekBar
-        android:id="@+id/seek_self_contrast"
-        android:layout_above="@+id/seek_self_brightness"
-        android:max="200"
-        android:progress="100"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
-    <SeekBar
-        android:id="@+id/seek_self_brightness"
-        android:layout_above="@+id/btn_toggle"
-        android:layout_width="match_parent"
-        android:max="200"
-        android:progress="100"
-        android:layout_height="wrap_content"/>
-
-    <Button
-        android:id="@+id/btn_toggle"
-        android:layout_above="@+id/seek_bright"
-        android:layout_width="match_parent"
-        android:layout_marginBottom="15dp"
-        android:text="toggle face"
-        android:layout_height="wrap_content"/>
-
-    <SeekBar
-        android:visibility="invisible"
-        android:layout_above="@+id/seek_bright"
-        android:id="@+id/seek_face_skin"
-        android:layout_width="match_parent"
-        android:max="100"
-        android:progress="100"
-        android:layout_height="wrap_content"/>
-    <SeekBar
-        android:layout_alignParentBottom="true"
-        android:id="@+id/seek_bright"
-        android:layout_width="match_parent"
-        android:max="100"
-        android:progress="80"
-        android:layout_height="wrap_content"/>
-
     <LinearLayout
         android:id="@+id/ll_filters"
         android:layout_width="match_parent"
@@ -106,10 +47,11 @@
         android:layout_alignParentBottom="true"
         android:orientation="vertical">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rv_mode"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/tip_choose_filter"
+            android:textColor="@color/red"/>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rv_filter"

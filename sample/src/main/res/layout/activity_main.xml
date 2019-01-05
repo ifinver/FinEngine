@@ -1,31 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/iv_show_ori"
+    <FrameLayout
+        android:id="@+id/fl_show_ori"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:contentDescription="@string/iv_show"
-        android:scaleType="centerCrop"/>
+        android:layout_weight="1">
+
+        <ImageView
+            android:id="@+id/iv_show_ori"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/iv_show"
+            android:scaleType="centerCrop" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="启动FinEngine"
+            android:textColor="@color/white" />
+    </FrameLayout>
+
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#FF0000"/>
+        android:background="#FF0000" />
 
-    <ImageView
-        android:id="@+id/iv_show_grey"
+    <FrameLayout
+        android:id="@+id/fl_show_grey"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:contentDescription="@string/iv_show"
-        android:scaleType="centerCrop"/>
+        android:layout_weight="1">
+
+        <ImageView
+            android:id="@+id/iv_show_grey"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/iv_show"
+            android:scaleType="centerCrop" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="启动Unity"
+            android:textColor="@color/colorAccent" />
+    </FrameLayout>
 
 </LinearLayout>

@@ -48,23 +48,37 @@ public class UnityActivity extends UnityBaseActivity implements SurfaceHolder.Ca
 
         //帧率
         initFPS();
+
+        FaceDetector.init(this,getFilesDir()+"/track_data.dat");
+    }
+
+    @Override
+    public void onCameraStart(boolean success, RuntimeException e) {
+
     }
 
     @Override
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean frontCurrent) {
-        long facePtr = FaceDetector.process(data, frameWidth, frameHeight);
+
+        long facePtr = FaceDetector.process(data,frameWidth,frameHeight);
+
         UnityTransfer.onVideoBuffer(data,frameWidth,frameHeight,degree,frontCurrent,facePtr);
 
         mFrameMeter.meter();
     }
 
     @Override
-    public void onCameraStart(boolean success) {
-        FaceDetector.init(this);
+    public void onToggleCameraComplete(boolean success, int cameraIndex) {
+
     }
 
     @Override
-    public void onToggleCameraComplete(boolean success) {
+    public void onZoomCamera(int state) {
+
+    }
+
+    @Override
+    public void onFlashLightOpenComplete(boolean success, boolean isOpen) {
 
     }
 
@@ -76,14 +90,13 @@ public class UnityActivity extends UnityBaseActivity implements SurfaceHolder.Ca
 
     @Override
     protected void onResume() {
-        CameraHolder.getInstance().start(640, 480, this, this);
+        CameraHolder.getInstance().start(1280, 720, this, this);
         super.onResume();
     }
 
     @Override
     protected void onPause() {
         CameraHolder.getInstance().stopCamera();
-        FaceDetector.release();
         super.onPause();
     }
 
@@ -127,6 +140,7 @@ public class UnityActivity extends UnityBaseActivity implements SurfaceHolder.Ca
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        FaceDetector.init(this,getFilesDir()+"/track_data.dat");
         mFpsTimer.cancel();
     }
 }

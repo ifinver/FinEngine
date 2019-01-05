@@ -1,8 +1,13 @@
 package com.ifinver.finenginesample.singleswitch;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,7 +19,6 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,7 +28,10 @@ import com.ifinver.finengine.FinRecorder;
 import com.ifinver.finengine.Renderer;
 import com.ifinver.finenginesample.FrameMeter;
 import com.ifinver.finenginesample.R;
+import com.ifinver.finenginesample.recording.VideoRecordManager;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -34,29 +41,22 @@ import java.util.TimerTask;
  */
 
 @SuppressWarnings({"FieldCanBeLocal", "deprecation"})
-public class SingleActivity extends AppCompatActivity implements FilterAdapter.OnItemClickListener, CameraHolder.CameraListener, View.OnTouchListener, Renderer.RenderListener, ModeAdapter.OnItemClickListener {
+public class SingleActivity extends AppCompatActivity implements FilterAdapter.OnItemClickListener, CameraHolder.CameraListener, View.OnTouchListener, Renderer.RenderListener {
 
     private static final String TAG = "SingleActivity";
+    private static final int PERMISSION_RECORD_VIDEO_REQUEST_CODE = 10001;
 
     private TextView tvFps;
-    private TextView tvBrightness;
-    private TextView tvContrast;
     private Timer mFpsTimer;
     private Handler mHandler;
     private Renderer mRenderer;
     private FrameMeter mFrameMeter;
-    private TextureView tvLittle;
-    private FinRecorder mRecorder;
     private FrameLayout flContainer;
     private TextureView tvRender;
     private RecyclerView rvFilter;
-    private RecyclerView rvMode;
-    private boolean isToolsShown = true;
-    private SeekBar mSbFaceSkin;
-    private SeekBar mSbBright;
-    private SeekBar mSbBrightSelf;
-    private SeekBar mSbContrast;
+    private VideoRecordManager mVideoRecorder;
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,145 +64,53 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
         // init views
         tvFps = (TextView) findViewById(R.id.tv_fps);
-        tvBrightness = (TextView) findViewById(R.id.tv_brightness);
-        tvContrast = (TextView) findViewById(R.id.tv_contrast);
-        tvLittle = (TextureView) findViewById(R.id.tex_l);
-        flContainer = (FrameLayout) findViewById(R.id.tv_container);
+//        flContainer = (FrameLayout) findViewById(R.id.tv_container);
         tvRender = (TextureView) findViewById(R.id.tex);
         rvFilter = (RecyclerView) findViewById(R.id.rv_filter);
-        rvMode = (RecyclerView) findViewById(R.id.rv_mode);
-        mSbFaceSkin = (SeekBar) findViewById(R.id.seek_face_skin);
-        mSbBright = (SeekBar) findViewById(R.id.seek_bright);
-        mSbBrightSelf = (SeekBar) findViewById(R.id.seek_self_brightness);
-        mSbContrast = (SeekBar) findViewById(R.id.seek_self_contrast);
+        //init video and audio recorder
+        mVideoRecorder = new VideoRecordManager();
 
-        mRenderer = new Renderer(this.getApplicationContext(),this);
+        mRenderer = new Renderer(this,null);
         tvRender.setSurfaceTextureListener(mRenderer);
 
         rvFilter.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         rvFilter.addItemDecoration(new SpaceItemDecoration(10));
         rvFilter.setAdapter(new FilterAdapter(this, this));
 
-        rvMode.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        rvMode.addItemDecoration(new SpaceItemDecoration(10));
-        rvMode.setAdapter(new ModeAdapter(this, this));
-
         //fps
         initFPS();
         //touch event
         tvRender.setOnTouchListener(this);
-
-        mSbFaceSkin.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                FaceDetector.setFaceSkinSoftenLevel(progress);
-                Log.w("Face","FaceSkin="+progress);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-
-        mSbBright.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                FaceDetector.setFaceBrightLevel(progress);
-                Log.w("Face","Bright="+progress);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-
-        mSbBrightSelf.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                float brightness = (float)(progress - 100 ) / 100;
-                mRenderer.setBrightness(brightness);
-                tvBrightness.setText("亮度:"+progress);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-
-        mSbContrast.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                float contrast = (float)progress /100;
-                mRenderer.setContrast(contrast);
-                tvContrast.setText("对比度:"+progress);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-
-            }
-        });
-        findViewById(R.id.btn_toggle).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggle = !toggle;
-                Log.w("face",toggle?"open face beauty":"close face beauty");
-            }
-        });
     }
-
-    boolean toggle = true;
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if (v == tvRender) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
+                    if (!grantCameraAndAudioPermission()) {
+                        return false;
+                    }
                     Log.w("FinEngine", "开始录制");
-                    flContainer.setVisibility(View.VISIBLE);
-                    mRecorder = FinRecorder.prepare(
-                            new Surface(tvLittle.getSurfaceTexture()),
-                            mRenderer.getInputTex(),
-                            mRenderer.getSharedCtx(),
-                            mRenderer.getLocker(),
-                            new FinRecorder.RecorderListener() {
+                    mVideoRecorder.startRecording(mRenderer.getInputTex(), mRenderer.getSharedCtx(),
+                            mRenderer.getLocker(), new VideoRecordManager.RecordStoppedListener() {
                                 @Override
-                                public void onFrameRendered() {
+                                public void onRecordStopped(final String filePath) {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            Toast.makeText(SingleActivity.this, "录制完成，录制文件保存在:"
+                                                    + filePath, Toast.LENGTH_LONG).show();
+                                        }
+                                    });
 
                                 }
                             });
-                    mRenderer.setRecorder(mRecorder);
-                    flContainer.setBackgroundColor(getResources().getColor(R.color.red));
                     break;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
                     Log.w("FinEngine", "停止录制");
-                    mRecorder.release();
-                    mRenderer.setRecorder(null);
-                    flContainer.setVisibility(View.INVISIBLE);
+                    mVideoRecorder.stopRecording();
                     break;
             }
             return true;
@@ -210,20 +118,30 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
         return false;
     }
 
-    @Override
-    public void onModeClicked(int position) {
-        switch (position){
-            default:
-            case 0:
-                mRenderer.switchModeToNormal();
-                break;
-            case 1:
-                mRenderer.switchModeToSwapFace();
-                break;
-            case 2:
-                mRenderer.switchModeToMonaLisa(this);
-                break;
+    private boolean grantCameraAndAudioPermission() {
+
+        List<String> permissionList = new ArrayList<>();
+        addPermission(permissionList, Manifest.permission.CAMERA);
+        addPermission(permissionList, Manifest.permission.RECORD_AUDIO);
+        addPermission(permissionList, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permissionList.size() > 0) {
+            ActivityCompat.requestPermissions(
+                    SingleActivity.this,
+                    permissionList.toArray(new String[permissionList.size()]),
+                    PERMISSION_RECORD_VIDEO_REQUEST_CODE
+            );
+            return false;
         }
+        return true;
+    }
+
+    private boolean addPermission(List<String> permissionList, String permission) {
+        if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+            permissionList.add(permission);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -232,11 +150,30 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
     }
 
     @Override
+    public void onCameraStart(boolean success, RuntimeException e) {
+        FaceDetector.init(this,getFilesDir()+"/track_data.dat");
+    }
+
+    //驱动
+    @Override
     public void onVideoBuffer(byte[] data, int frameWidth, int frameHeight, int degree, boolean frontCurrent) {
-        if(toggle) {
-            long facePtr = FaceDetector.process(data, frameWidth, frameHeight);
-        }
-        mRenderer.onVideoBuffer(data, frameWidth, frameHeight, degree, frontCurrent,0);
+        long facePtr = FaceDetector.process(data,frameWidth,frameHeight);
+        mRenderer.onVideoBuffer(data, frameWidth, frameHeight, degree, frontCurrent,facePtr);
+    }
+
+    @Override
+    public void onToggleCameraComplete(boolean success, int cameraIndex) {
+
+    }
+
+    @Override
+    public void onZoomCamera(int state) {
+
+    }
+
+    @Override
+    public void onFlashLightOpenComplete(boolean success, boolean isOpen) {
+
     }
 
     @Override
@@ -248,11 +185,6 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
                 } else {
                     Toast.makeText(this, "can't switch", Toast.LENGTH_SHORT).show();
                 }
-                return true;
-            case R.id.toggle_tools:
-                isToolsShown = !isToolsShown;
-                rvMode.setVisibility(isToolsShown ? View.VISIBLE : View.INVISIBLE);
-                rvFilter.setVisibility(isToolsShown ? View.VISIBLE : View.INVISIBLE);
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -288,16 +220,6 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
         FaceDetector.release();
     }
 
-    @Override
-    public void onToggleCameraComplete(boolean success) {
-        Log.w(TAG, "onToggleCameraComplete,success= " + success);
-    }
-
-    @Override
-    public void onCameraStart(boolean success) {
-        FaceDetector.init(this);
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -307,10 +229,18 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
     @Override
     public void onRenderPrepared(int outputWidth, int outputHeight) {
+        if (mVideoRecorder != null) {
+            mVideoRecorder.setPreviewSize(outputWidth, outputHeight);
+        }
+
     }
 
     @Override
     public void onFrameRendered() {
+        if (mVideoRecorder != null) {
+            mVideoRecorder.recordVideo();
+        }
+
         //计算帧率
         mFrameMeter.meter();
     }

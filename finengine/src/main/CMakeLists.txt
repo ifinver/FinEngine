@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.4.1)
 
 #加载open cv
 add_library(lib_opencv SHARED IMPORTED)
-include_directories(D:/opencv-sdk/native/jni/include)
+include_directories(${PROJECT_SOURCE_DIR}/../../src/main/cpp/include)
 set_target_properties(lib_opencv
                       PROPERTIES IMPORTED_LOCATION
                       ${PROJECT_SOURCE_DIR}/../../libs/armeabi-v7a/libopencv_java3.so)
@@ -41,6 +41,8 @@ add_library(fin-engine-lib
             ${PROJECT_SOURCE_DIR}/cpp/effects/faceswap/FaceSwapper.cpp
             ${PROJECT_SOURCE_DIR}/cpp/effects/monalisa/monalisa.cpp
             ${PROJECT_SOURCE_DIR}/cpp/effects/monalisa/MonaLisaEffect.cpp
+            #===============openCv blew=================================
+            ${PROJECT_SOURCE_DIR}/cpp/opencv/xcv.cpp
             )
 target_link_libraries(fin-engine-lib
                     lib_opencv

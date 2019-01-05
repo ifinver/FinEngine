@@ -12,14 +12,14 @@
 ArcSoftSpotlight::ArcSoftSpotlight() {
     m_hEngine = MNull;
     skinFaceLevel = 100;
-    brightLevel = 55;
+    brightLevel = 0;
     processModel = ASL_PROCESS_MODEL_FACEOUTLINE | ASL_PROCESS_MODEL_FACEBEAUTY;
 }
 
 ArcSoftSpotlight::ArcSoftSpotlight(int mode) {
     m_hEngine = MNull;
     skinFaceLevel = 100;
-    brightLevel = 55;
+    brightLevel = 0;
     processModel = ASL_PROCESS_MODEL_FACEOUTLINE;
 }
 

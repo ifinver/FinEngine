@@ -8,8 +8,6 @@
 #include <EGL/egl.h>
 #include <GLES2/gl2.h>
 #include <jni.h>
-#include <string>
-#include <amcomdef.h>
 #include "shaders.h"
 
 class GLContextHolder{
@@ -41,11 +39,7 @@ public:
     GLuint posAttrTexCoords;
     GLuint posUniTextureY;
     GLuint posUniTextureUV;
-    GLuint posUniTextureClean;
-    GLuint posUniBrightness;
-    GLuint posUniContrast;
-    float contrast = 1.0f;
-    float brightness = 0.f;
+    GLuint posUniTextureFilter;
 
     GLuint programRGB;
     GLuint posRgbAttrVertices;
@@ -62,8 +56,6 @@ public:
     GLuint posPointAttrScaleY;
     GLuint posPointUniColor;
     GLuint posPointUniRotation;
-
-    int engineMode;
 };
 
 #endif //MYOPENGLES_GL_CONTEXT_H

@@ -77,7 +77,9 @@ public class FinRecorder {
         }
 
         private void release() {
-            mSelfHandler.sendEmptyMessage(MSG_RELEASE);
+            if (mSelfHandler != null) {
+                mSelfHandler.sendEmptyMessage(MSG_RELEASE);
+            }
         }
 
         private void process() {
@@ -109,7 +111,9 @@ public class FinRecorder {
                 Log.w(TAG, "录制引擎"+mEngineId+"初始化成功");
             } else {
                 Log.w(TAG, "录制引擎"+mEngineId+"初始化失败!");
-                mSelfHandler.sendEmptyMessage(MSG_RELEASE);
+                if (mSelfHandler != null) {
+                    mSelfHandler.sendEmptyMessage(MSG_RELEASE);
+                }
             }
         }
 
@@ -117,9 +121,9 @@ public class FinRecorder {
             if (mRecorder != 0) {
                 synchronized (mLocker) {
                     nativeProcess(mRecorder, mInputTex);
-                    if(mListener != null){
-                        mListener.onFrameRendered();
-                    }
+                }
+                if(mListener != null){
+                    mListener.onFrameRendered();
                 }
             }
         }

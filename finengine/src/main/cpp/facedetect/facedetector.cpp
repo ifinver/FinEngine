@@ -18,7 +18,7 @@ using namespace std;
 ArcSoftSpotlight *mXcFaceDetector;
 
 JNIEXPORT jint JNICALL Java_com_ifinver_finengine_FaceDetector_nativeInit(JNIEnv *env, jclass ,jobject ctx, jstring trackDataPath) {
-    if (mXcFaceDetector == NULL) {
+    if (!mXcFaceDetector) {
         mXcFaceDetector = new ArcSoftSpotlight();
         const char *path = env->GetStringUTFChars(trackDataPath, 0);
         int ret = mXcFaceDetector->init(env, ctx, path);
@@ -31,8 +31,8 @@ JNIEXPORT jint JNICALL Java_com_ifinver_finengine_FaceDetector_nativeInit(JNIEnv
 JNIEXPORT jlong JNICALL
 Java_com_ifinver_finengine_FaceDetector_nativeProcess(JNIEnv *env, jclass, jbyteArray data_, jint width, jint height) {
     jlong result = 0;
-    if (mXcFaceDetector != NULL) {
-        jbyte *data = env->GetByteArrayElements(data_, NULL);
+    if (mXcFaceDetector) {
+        jbyte *data = env->GetByteArrayElements(data_, nullptr);
         result = mXcFaceDetector->process(data, width, height,0);
         env->ReleaseByteArrayElements(data_, data, 0);
     }
@@ -40,24 +40,25 @@ Java_com_ifinver_finengine_FaceDetector_nativeProcess(JNIEnv *env, jclass, jbyte
 }
 
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FaceDetector_nativeRelease(JNIEnv *, jclass ) {
-    if (mXcFaceDetector != NULL) {
-        delete mXcFaceDetector;
-        mXcFaceDetector = NULL;
+    if (mXcFaceDetector) {
+        //todo 这里会导致 Invalid address 0x12db0070 passed to free: value not allocated
+//        delete mXcFaceDetector;
+        mXcFaceDetector = nullptr;
     }
 }
 
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FaceDetector_nativeSetProcessModel(JNIEnv *, jclass , jlong model){
-    if(mXcFaceDetector != NULL){
+    if(mXcFaceDetector){
         mXcFaceDetector->setProcessModel((long) model);
     }
 }
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FaceDetector_nativeSetFaceBrightLevel(JNIEnv *, jclass , jint brightLevel){
-    if(mXcFaceDetector != NULL){
+    if(mXcFaceDetector){
         mXcFaceDetector->setFaceBrightLevel(brightLevel);
     }
 }
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FaceDetector_nativeSetFaceSkinSoftenLevel(JNIEnv *, jclass , jint skinSoftenLevel){
-    if(mXcFaceDetector != NULL){
+    if(mXcFaceDetector){
         mXcFaceDetector->setFaceSkinSoftenLevel(skinSoftenLevel);
     }
 }
