@@ -70,7 +70,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
         //init video and audio recorder
         mVideoRecorder = new VideoRecordManager();
 
-        mRenderer = new Renderer(this,null);
+        mRenderer = new Renderer(getApplicationContext(),this);
         tvRender.setSurfaceTextureListener(mRenderer);
 
         rvFilter.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));

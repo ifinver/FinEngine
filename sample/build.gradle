@@ -6,7 +6,7 @@ android {
     defaultConfig {
         applicationId "com.ifinver.android"
         minSdkVersion 18
-        targetSdkVersion 28
+        targetSdkVersion 23
         versionCode 1
         versionName "1.0"
 
@@ -16,6 +16,12 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+            ndk {
+                abiFilters "armeabi-v7a"
+            }
+        }
+
     }
     sourceSets {
         main {
