@@ -16,6 +16,7 @@
 1. OpenGL : [OpenGL® ES 2.0 Programming Guide](https://download.csdn.net/download/oldwhy/9262285)
 ### 环境
 ndk-bundle : r16b (更高的版本未测试)
+targetSdkVersion : 23 (升级这个Unity模块会报错)
 ### 注意
 1. 人脸识别模块是商业版权付费的，已过期不可用，So，人脸交换、蒙娜丽莎的微笑等特效也不可以玩了，但是代码和交互数据的方式都在，请参考face_swap分支。
 1. 人脸模块有使用OpenCV，首页的灰度图处理也用到了它。
