@@ -14,6 +14,8 @@
 ### 参考
 1. 人脸交换：https://github.com/hrastnik/FaceSwap/blob/master/main.cpp 、 https://yq.aliyun.com/articles/62520
 1. OpenGL : [OpenGL® ES 2.0 Programming Guide](https://download.csdn.net/download/oldwhy/9262285)
+### 环境
+ndk-bundle : r16b (更高的版本未测试)
 ### 注意
 1. 人脸识别模块是商业版权付费的，已过期不可用，So，人脸交换、蒙娜丽莎的微笑等特效也不可以玩了，但是代码和交互数据的方式都在，请参考face_swap分支。
 1. 人脸模块有使用OpenCV，首页的灰度图处理也用到了它。
@@ -31,7 +33,3 @@
     - 人脸贴图、人脸交换的opengl实现
 ## Work Flow
 ![Work Flow](/workflow.png)
-
-### 其它
-
-本项目的开源协议为`gpl-2.0`，忍痛开源，祝大家 Happy New Year!
