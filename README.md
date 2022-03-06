@@ -15,7 +15,7 @@ Keywords: Android, Android ndk jni, OpenGL, GLSL shader, Unity, Cocos2d, OpenCV,
 
 ### 参考
 1. 人脸交换：https://github.com/hrastnik/FaceSwap/blob/master/main.cpp 、 https://yq.aliyun.com/articles/62520
-1. OpenGL : [OpenGL® ES 2.0 Programming Guide](https://download.csdn.net/download/oldwhy/9262285)
+1. OpenGL : [OpenGL® ES 2.0 Programming Guide](https://github.com/ifinver/FinEngine/blob/master/OpenGL%20ES%202.0%20Programming%20Guide.pdf)
 1. OpenGL ：[OpenGL® ES 2.0 Programming Guide 中文版](https://github.com/ifgyong/iOSDataFactory/blob/master/OpenGL%20ES%202.0%20编程指南%20中文版.pdf)
 ### 环境
 ndk-bundle : r16b (更高的版本未测试)
