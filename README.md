@@ -1,6 +1,8 @@
 # Fine Engine & Fin Render 
 [![License](LICENSES/GPL-blue.svg)](LICENSES/gpl-2.0.md)
 
+Keywords: Android, Android ndk jni, OpenGL, GLSL shader, Unity, Cocos2d, OpenCV, Video Filter, Face swap, Face beauty, Video recorder, Face map.
+
 与游戏引擎进行交互的模块，特别是视频数据的处理与交互。不仅适用于Unity，还可以接入Cocos2d等图形引擎。
 
 涉及OpenGL、OpenCV、视频录制、滤镜、美颜、人脸交换、人脸贴图等技术。
