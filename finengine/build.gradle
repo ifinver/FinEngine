@@ -4,12 +4,13 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        minSdkVersion 18
+        minSdkVersion 21
         targetSdkVersion 23
         externalNativeBuild {
             cmake {
                 cppFlags "-std=c++11 -frtti -fexceptions"
                 abiFilters 'armeabi-v7a'
+                arguments "-DANDROID_STL=c++_shared"
             }
         }
     }

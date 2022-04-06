@@ -6,7 +6,7 @@
 #include <jni.h>
 using namespace cv;
 
-JNIEXPORT jintArray JNICALL Java_com_ifinver_finengine_FinCv_BGRA2Grey(JNIEnv *env, jclass type, jintArray data_, jint w, jint h) {
+extern "C" JNIEXPORT jintArray JNICALL Java_com_ifinver_finengine_FinCv_BGRA2Grey(JNIEnv *env, jclass type, jintArray data_, jint w, jint h) {
     jint *pixels = env->GetIntArrayElements(data_, NULL);
     //转换成单通道
     cv::Mat imgData(h, w, CV_8UC4, pixels);

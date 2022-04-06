@@ -7,9 +7,10 @@
           android:icon="@mipmap/ic_launcher"
           android:visible="true"
           android:enabled="true"/>
-    <item android:title="实时滤镜切换"
-          android:id="@+id/menu_activity_switch"
-          android:icon="@mipmap/ic_launcher"
-          android:enabled="true"
-          android:visible="true"/>
+    <item
+        android:id="@+id/menu_activity_switch"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:title="OpenCV测试"
+        android:visible="true" />
 </menu>

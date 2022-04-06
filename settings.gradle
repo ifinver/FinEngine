@@ -1,1 +1,6 @@
 include ':sample', ':finengine', ':unitytransfer'
+include ':java'
+include ':java'
+include ':java'
+include ':java'
+include ':java'

@@ -12,12 +12,14 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.ifinver.finengine.FinCv;
+import com.ifinver.finenginesample.singleswitch.OpenCVActivity;
 import com.ifinver.finenginesample.unity.UnityActivity;
 import com.ifinver.finenginesample.singleswitch.SingleActivity;
 
@@ -31,10 +33,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         ImageView ivOri = findViewById(R.id.iv_show_ori);
-        ImageView ivGrey = findViewById(R.id.iv_show_grey);
 
         ivOri.setImageResource(R.drawable.t);
-        ivGrey.setImageBitmap(generateGreyBmp(R.drawable.t));
+//        ivGrey.setImageBitmap(generateGreyBmp(R.drawable.t));
 
         findViewById(R.id.fl_show_ori).setOnClickListener(this);
         findViewById(R.id.fl_show_grey).setOnClickListener(this);
@@ -43,6 +44,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_CODE_REQUEST_PERMISSION);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ImageView ivGrey = findViewById(R.id.iv_show_grey);
+        ivGrey.setImageBitmap(generateGreyBmp(R.drawable.t));
     }
 
     @Override
@@ -64,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(new Intent(this, UnityActivity.class));
                 return true;
             case R.id.menu_activity_switch:
-                startActivity(new Intent(this, SingleActivity.class));
+                startActivity(new Intent(this, OpenCVActivity.class));
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -100,7 +108,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             resultImg = Bitmap.createBitmap(width,height, Bitmap.Config.ARGB_8888);
             resultImg.setPixels(resultPixels,0,width,0,0,width,height);
             return resultImg;
-        }catch (Throwable ignored){
+        }catch (Throwable e){
+            Log.e("opencv","cannot convert",e);
             return null;
         }
     }

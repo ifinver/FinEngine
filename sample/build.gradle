@@ -5,7 +5,7 @@ android {
 
     defaultConfig {
         applicationId "com.ifinver.android"
-        minSdkVersion 18
+        minSdkVersion 21
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -30,6 +30,7 @@ android {
     }
 }
 def outputDir = file("${rootDir}/release/")
+
 android.applicationVariants.all { variant ->
     def taskName = variant.name
 

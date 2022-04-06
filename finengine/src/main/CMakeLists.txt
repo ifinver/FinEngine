@@ -7,14 +7,14 @@ add_library(lib_opencv SHARED IMPORTED)
 include_directories(${PROJECT_SOURCE_DIR}/../../src/main/cpp/include)
 set_target_properties(lib_opencv
                       PROPERTIES IMPORTED_LOCATION
-                      ${PROJECT_SOURCE_DIR}/../../libs/armeabi-v7a/libopencv_java3.so)
+                      ${PROJECT_SOURCE_DIR}/../../libs/armeabi-v7a/libopencv_java4.so)
 
 #加载人脸检测
-add_library(arc_soft_spotlight SHARED IMPORTED)
-include_directories(${PROJECT_SOURCE_DIR}/cpp/facedetect/arcsoft/inc/)
-set_target_properties(arc_soft_spotlight
-                      PROPERTIES IMPORTED_LOCATION
-                      ${PROJECT_SOURCE_DIR}/../../libs/armeabi-v7a/libArcSoftSpotlight.so)
+#add_library(arc_soft_spotlight SHARED IMPORTED)
+#include_directories(${PROJECT_SOURCE_DIR}/cpp/facedetect/arcsoft/inc/)
+#set_target_properties(arc_soft_spotlight
+#                      PROPERTIES IMPORTED_LOCATION
+#                      ${PROJECT_SOURCE_DIR}/../../libs/armeabi-v7a/libArcSoftSpotlight.so)
 
 
 #加载fin engine lib
@@ -33,20 +33,19 @@ add_library(fin-engine-lib
             ${PROJECT_SOURCE_DIR}/cpp/finrender/finrender.cpp
             ${PROJECT_SOURCE_DIR}/cpp/finrender/FinRenderHolder.cpp
             #===============face detect blew=============================
-            ${PROJECT_SOURCE_DIR}/cpp/facedetect/facedetector.cpp
-            ${PROJECT_SOURCE_DIR}/cpp/facedetect/arcsoft/arcsoft.cpp
+#            ${PROJECT_SOURCE_DIR}/cpp/facedetect/facedetector.cpp
+#            ${PROJECT_SOURCE_DIR}/cpp/facedetect/arcsoft/arcsoft.cpp
             #===============effects blew=================================
-            ${PROJECT_SOURCE_DIR}/cpp/effects/effects.cpp
-            ${PROJECT_SOURCE_DIR}/cpp/effects/faceswap/faceswap.cpp
-            ${PROJECT_SOURCE_DIR}/cpp/effects/faceswap/FaceSwapper.cpp
-            ${PROJECT_SOURCE_DIR}/cpp/effects/monalisa/monalisa.cpp
-            ${PROJECT_SOURCE_DIR}/cpp/effects/monalisa/MonaLisaEffect.cpp
+#            ${PROJECT_SOURCE_DIR}/cpp/effects/effects.cpp
+#            ${PROJECT_SOURCE_DIR}/cpp/effects/faceswap/faceswap.cpp
+#            ${PROJECT_SOURCE_DIR}/cpp/effects/faceswap/FaceSwapper.cpp
+#            ${PROJECT_SOURCE_DIR}/cpp/effects/monalisa/monalisa.cpp
+#            ${PROJECT_SOURCE_DIR}/cpp/effects/monalisa/MonaLisaEffect.cpp
             #===============openCv blew=================================
             ${PROJECT_SOURCE_DIR}/cpp/opencv/xcv.cpp
             )
 target_link_libraries(fin-engine-lib
                     lib_opencv
-                    arc_soft_spotlight
                     EGL
                     GLESv2
                     log
