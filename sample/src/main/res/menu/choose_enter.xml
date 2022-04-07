@@ -2,11 +2,6 @@
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
       xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:title="多屏同时渲染"
-          android:id="@+id/menu_activity_multi"
-          android:icon="@mipmap/ic_launcher"
-          android:visible="true"
-          android:enabled="true"/>
     <item
         android:id="@+id/menu_activity_switch"
         android:enabled="true"

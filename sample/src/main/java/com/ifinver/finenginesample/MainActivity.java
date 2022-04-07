@@ -19,7 +19,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.ifinver.finengine.FinCv;
-import com.ifinver.finenginesample.singleswitch.OpenCVActivity;
+import com.ifinver.finenginesample.facedetector.FdActivity;
 import com.ifinver.finenginesample.unity.UnityActivity;
 import com.ifinver.finenginesample.singleswitch.SingleActivity;
 
@@ -68,11 +68,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_activity_multi:
-                startActivity(new Intent(this, UnityActivity.class));
-                return true;
             case R.id.menu_activity_switch:
-                startActivity(new Intent(this, OpenCVActivity.class));
+                startActivity(new Intent(this, FdActivity.class));
                 return true;
         }
         return super.onOptionsItemSelected(item);

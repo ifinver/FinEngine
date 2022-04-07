@@ -44,12 +44,7 @@ Java_com_ifinver_finengine_FaceDetector_nativeProcess(JNIEnv *env, jclass, jbyte
 //        cvtColor( frame, frame_gray, COLOR_BGR2GRAY );
         equalizeHist( small, small );
         vector<Rect> *result = new vector<Rect>;
-        mXcFaceDetector->detectMultiScale(small, *result, 1.1, 2,
-                                          0
-                                          //                                          |CASCADE_FIND_BIGGEST_OBJECT
-                                          //                                          |CASCADE_DO_ROUGH_SEARCH
-                                          | CASCADE_SCALE_IMAGE,
-                                          Size(30, 30));
+        mXcFaceDetector->detectMultiScale(small, *result);
         for(int i = 0; i < result->size();i++){
             (*result)[i].width /= scale;
             (*result)[i].height /= scale;

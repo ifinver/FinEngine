@@ -35,6 +35,7 @@ add_library(fin-engine-lib
             ${PROJECT_SOURCE_DIR}/cpp/finrender/FinRenderHolder.cpp
             #===============face detect blew=============================
             ${PROJECT_SOURCE_DIR}/cpp/facedetect/facedetector.cpp
+            ${PROJECT_SOURCE_DIR}/cpp/facedetect/DetectionBasedTracker_jni.cpp
 #            ${PROJECT_SOURCE_DIR}/cpp/facedetect/arcsoft/arcsoft.cpp
             #===============effects blew=================================
 #            ${PROJECT_SOURCE_DIR}/cpp/effects/effects.cpp

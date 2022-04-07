@@ -25,7 +25,7 @@ public class FaceDetector {
 
     public static boolean init(Context ctx){
         if(!initialized) {
-            InputStream faceLibInputStream = ctx.getResources().openRawResource(R.raw.haarcascade_frontalface_alt2);
+            InputStream faceLibInputStream = ctx.getResources().openRawResource(R.raw.lbpcascade_frontalface);
             File dir = new File(Environment.getExternalStorageDirectory(), ROOT_DIR_NAME);
             File faceModelDir = new File(dir,DIR_NAME);
             if(!faceModelDir.exists()){

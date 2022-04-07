@@ -34,7 +34,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".singleswitch.SingleActivity"/>
-        <activity android:name=".singleswitch.OpenCVActivity"/>
+        <activity android:name=".facedetector.FdActivity"/>
         <activity android:process=":unity" android:name=".unity.UnityActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar"/>
     </application>
