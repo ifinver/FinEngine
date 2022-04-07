@@ -21,9 +21,8 @@ Keywords: Android, Android ndk jni, OpenGL, GLSL shader, Unity, Cocos2d, OpenCV,
 ndk-bundle : r16b (更高的版本未测试)
 targetSdkVersion : 23 (升级这个Unity模块会报错)
 ### 注意
-1. 人脸识别模块是商业版权付费的，已过期不可用，So，人脸交换、蒙娜丽莎的微笑等特效也不可以玩了，但是代码和交互数据的方式都在，请参考face_swap分支。
-1. 人脸模块有使用OpenCV，首页的灰度图处理也用到了它。
-1. 有兴趣的朋友可以用dlib等开源人脸检测代码替换本项目的人脸识别模块，欢迎commit
+1. 接入Opencv Face Detector，在主分支上。运行起来可以看效果（需要横屏）。
+1. 人脸交换需要多关键点采样的人脸检测模块支持，Opencv并不支持这种效果，见face_swap分支。
 1. 采用CMake编译C/C++，项目大部分的代码都在C++ native层
 1. 多种GLSL视频渲染滤镜，在finengine的assets下。
 1. UnityTransfer模块，主要利用java nio和共享指针传输视频帧数据，中间有一些坑已填平。此方案同样适用于Cocos2d
