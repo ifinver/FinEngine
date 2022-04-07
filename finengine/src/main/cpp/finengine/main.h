@@ -17,7 +17,7 @@
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
 extern "C" {
-JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass type, jobject jSurface,jobject mAssetManager);
+JNIEXPORT jlong JNICALL Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass type, jobject jSurface,jobject mAssetManager, jstring stickerPath);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeRelease(JNIEnv *env, jclass type,jlong engine);
 JNIEXPORT void JNICALL Java_com_ifinver_finengine_FinEngine_nativeRender(JNIEnv *env, jclass,jlong engine,jbyteArray data_, jint frameWidth, jint frameHeight,
                                                     jint degree, jboolean mirror,jint outWidth,jint outHeight,jlong facePtr);
@@ -29,7 +29,9 @@ void releaseGLContext(GLContextHolder *engineHolder);
 void renderFrame(GLContextHolder *engineHolder,jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight,jlong facePtr);
 
 void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
-               jint outHeight,jlong facePtr);
+               jint outHeight);
+
+void renderStick(GLContextHolder *engineHolder,jint width, jint height,jlong facePtr);
 
 void renderRgb(GLContextHolder *engineHolder, unsigned char *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
                jint outHeight, jlong i);

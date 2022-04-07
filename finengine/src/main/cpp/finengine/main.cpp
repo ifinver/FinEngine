@@ -1,8 +1,11 @@
 #include "main.h"
 #include "../glslutils.h"
+#include "../facedetect/faceresultcv.h"
 #include <android/native_window_jni.h>
 #include <sstream>
 #include <android/asset_manager_jni.h>
+#include <opencv2/imgcodecs.hpp>
+#include "../Matrix.h"
 
 using namespace std;
 
@@ -22,21 +25,19 @@ jboolean initPrograms(GLContextHolder *engineHolder) {
 //    engineHolder->posPointUniColor = (GLuint) glGetUniformLocation(programPoint, "color");
 //    engineHolder->posPointUniRotation = (GLuint) glGetUniformLocation(programPoint, "uRotation");
 //
-//    //rgb program
-//    ShaderRGB rgbShader;
-//    GLuint programRGB = createProgram(rgbShader.vertexShader, rgbShader.fragmentShader);
-//    if (programRGB == 0) {
-//        return JNI_FALSE;
-//    }
-//    glUseProgram(programRGB);
-//    engineHolder->programRGB = programRGB;
-//    engineHolder->posRgbAttrVertices = (GLuint) glGetAttribLocation(programRGB, "aPosition");
-//    engineHolder->posRgbAttrTexCoords = (GLuint) glGetAttribLocation(programRGB, "aTexCoord");
-//    engineHolder->posRgbUniScaleX = (GLuint) glGetUniformLocation(programRGB, "uScaleX");
-//    engineHolder->posRgbUniScaleY = (GLuint) glGetUniformLocation(programRGB, "uScaleY");
-//    engineHolder->posRgbUniRotation = (GLuint) glGetUniformLocation(programRGB, "uRotation");
-//    engineHolder->posRgbUniMirror = (GLuint) glGetUniformLocation(programRGB, "mirror");
-//    engineHolder->posRgbUniTexture = (GLuint) glGetUniformLocation(programRGB, "sTexture");
+    //贴纸 program
+    ShaderSticker stickerShader;
+    GLuint programSticker = createProgram(stickerShader.vertexShader, stickerShader.fragmentShader);
+    if (programSticker == 0) {
+        return JNI_FALSE;
+    }
+    glUseProgram(programSticker);
+    engineHolder->programSticker = programSticker;
+    engineHolder->posStickerAttrVertices = (GLuint) glGetAttribLocation(programSticker, "aPosition");
+    engineHolder->posStickerAttrTexCoords = (GLuint) glGetAttribLocation(programSticker, "aTexCoord");
+    engineHolder->posStickerUniTexture = (GLuint) glGetUniformLocation(programSticker, "sTexture");
+    engineHolder->posStickerUniMvpMatrix = (GLuint) glGetUniformLocation(programSticker, "mvpMatrix");
+    engineHolder->stickerMatrix = new float[16];
 
     //yuv program
     ShaderNV21 yuvShader;
@@ -61,7 +62,7 @@ jboolean initPrograms(GLContextHolder *engineHolder) {
 }
 
 JNIEXPORT jlong JNICALL
-Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSurface,jobject mAssetManager) {
+Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSurface,jobject mAssetManager, jstring stickerPath) {
     EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (display == EGL_NO_DISPLAY) {
         checkGlError("eglGetDisplay");
@@ -132,8 +133,8 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
     }
 
     //tex
-    GLuint *textures = new GLuint[3];
-    glGenTextures(3, textures);
+    GLuint *textures = new GLuint[4];
+    glGenTextures(4, textures);
     glBindTexture(GL_TEXTURE_2D, textures[0]);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -144,16 +145,29 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    //加载眼镜贴纸
+    glBindTexture(GL_TEXTURE_2D, textures[3]);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    AAssetManager *mgr = AAssetManager_fromJava(env, mAssetManager);
+    if (mgr != NULL) {
+        const char *stickerPathC = env->GetStringUTFChars(stickerPath, 0);
+        const Mat &mat = cv::imread(stickerPathC);
+        engineHolder->stickerWidth = mat.cols;
+        engineHolder->stickerHeight = mat.rows;
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, mat.cols, mat.rows, 0, GL_RGB, GL_UNSIGNED_BYTE, mat.data);
+        LOGE("%s","加载眼镜贴纸成功！");
+    }else{
+        LOGE("%s","加载眼镜贴纸失败！");
+    }
+    //加载默认滤镜
     glBindTexture(GL_TEXTURE_2D, textures[2]);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    engineHolder->textureNums = 3;
-    engineHolder->textures = textures;
-    //加载默认滤镜
-    AAssetManager *mgr = AAssetManager_fromJava(env, mAssetManager);
     if (mgr != NULL) {
         AAsset *filterAss = AAssetManager_open(mgr, "encoded.fil", AASSET_MODE_BUFFER);
         int width,height;
@@ -168,6 +182,9 @@ Java_com_ifinver_finengine_FinEngine_nativeInit(JNIEnv *env, jclass, jobject jSu
     }else{
         LOGE("%s","加载默认滤镜失败！");
     }
+
+    engineHolder->textureNums = 4;
+    engineHolder->textures = textures;
 
     glDepthMask(GL_FALSE);
     glDisable(GL_BLEND);
@@ -249,7 +266,9 @@ void caculateScale(GLContextHolder *engineHolder, jint outWidth, jint outHeight,
 //.........................................................................................................................
 void renderFrame(GLContextHolder *engineHolder, jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth, jint outHeight,
                  jlong facePtr) {
-    renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight, facePtr);
+    renderYuv(engineHolder, data, width, height, degree, mirror, outWidth, outHeight);
+    renderStick(engineHolder,width, height,facePtr);
+    eglSwapBuffers(engineHolder->eglDisplay, engineHolder->eglSurface);
 }
 
 
@@ -285,8 +304,59 @@ void caculateScale(GLContextHolder *engineHolder, jint outWidth, jint outHeight,
     }
 }
 
+void renderStick(GLContextHolder *engineHolder,jint width, jint height,jlong faceDataPtr){
+    FaceDetectResultCV *faceData = nullptr;
+    try {
+        if (faceDataPtr != 0) {
+            faceData = (FaceDetectResultCV *) faceDataPtr;
+        }
+    } catch (...) {
+        LOGE("%s", "不能转换出face detect result");
+    }
+    if (faceData != nullptr && faceData->nFaceCountInOut > 0) {
+        int faceX,faceY,faceWidth,faceHeight;
+        faceWidth = (*faceData->rcFaceRectOut)[0].width;
+        faceHeight = (*faceData->rcFaceRectOut)[0].height;
+        faceX = (*faceData->rcFaceRectOut)[0].x;
+        faceY = (*faceData->rcFaceRectOut)[0].y;
+        //根据人脸画上贴纸
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+        matrixIdentityFunction(engineHolder->stickerMatrix);
+
+        // todo 处理旋转和平移。
+        float tX = 0,tY = 0;
+        matrixTranslate(engineHolder->stickerMatrix,tX,tY,0);
+
+        //处理缩放
+        matrixScale(engineHolder->stickerMatrix,faceHeight * 1.0 / height,faceWidth * 1.0 / width,1);//交换宽高是因为要横着显示。
+
+        glUseProgram(engineHolder->programSticker);
+        //输入顶点
+        glEnableVertexAttribArray(engineHolder->posStickerAttrVertices);
+        glVertexAttribPointer(engineHolder->posStickerAttrVertices, 2, GL_FLOAT, GL_FALSE, 0, VERTICES_COORD);
+        //输入纹理
+        glEnableVertexAttribArray(engineHolder->posStickerAttrTexCoords);
+        glVertexAttribPointer(engineHolder->posStickerAttrTexCoords, 2, GL_FLOAT, GL_FALSE, 0, TEXTURE_COORD_STICKER);
+        //
+        glUniformMatrix4fv(engineHolder->posStickerUniMvpMatrix, 1, GL_FALSE, engineHolder->stickerMatrix);
+        //
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, engineHolder->textures[3]);
+        glUniform1i(engineHolder->posStickerUniTexture, 0);
+        //
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+        //release
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+
+        glDisable(GL_BLEND);
+    }
+}
+
 void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jint height, jint degree, jboolean mirror, jint outWidth,
-               jint outHeight, jlong) {
+               jint outHeight) {
+    glUseProgram(engineHolder->currentProgram);
     if (engineHolder->targetProgram != engineHolder->currentProgram) {
         glUseProgram(engineHolder->targetProgram);
         if (engineHolder->currentProgram != engineHolder->defaultProgram) { //默认滤镜不删
@@ -345,9 +415,6 @@ void renderYuv(GLContextHolder *engineHolder, const jbyte *data, jint width, jin
 
     glDisableVertexAttribArray(engineHolder->posAttrVertices);
     glDisableVertexAttribArray(engineHolder->posAttrTexCoords);
-
-//    glFinish();
-    eglSwapBuffers(engineHolder->eglDisplay, engineHolder->eglSurface);
 }
 
 //释放指定上下文

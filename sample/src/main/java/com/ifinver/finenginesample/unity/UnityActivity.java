@@ -49,7 +49,7 @@ public class UnityActivity extends UnityBaseActivity implements SurfaceHolder.Ca
         //帧率
         initFPS();
 
-        FaceDetector.init(this,getFilesDir()+"/track_data.dat");
+        FaceDetector.init(this);
     }
 
     @Override
@@ -140,7 +140,7 @@ public class UnityActivity extends UnityBaseActivity implements SurfaceHolder.Ca
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        FaceDetector.init(this,getFilesDir()+"/track_data.dat");
+        FaceDetector.release();
         mFpsTimer.cancel();
     }
 }

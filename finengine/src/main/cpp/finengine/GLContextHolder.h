@@ -41,14 +41,14 @@ public:
     GLuint posUniTextureUV;
     GLuint posUniTextureFilter;
 
-    GLuint programRGB;
-    GLuint posRgbAttrVertices;
-    GLuint posRgbAttrTexCoords;
-    GLuint posRgbUniTexture;
-    GLuint posRgbUniScaleX;
-    GLuint posRgbUniScaleY;
-    GLuint posRgbUniRotation;
-    GLuint posRgbUniMirror;
+    GLuint programSticker;
+    GLuint posStickerAttrVertices;
+    GLuint posStickerAttrTexCoords;
+    GLuint posStickerUniTexture;
+    GLuint posStickerUniMvpMatrix;
+    int stickerWidth;
+    int stickerHeight;
+    float* stickerMatrix;
 
     GLuint programPoint;
     GLuint posPointAttrVertices;

@@ -2,12 +2,17 @@ package com.ifinver.finengine;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
 import android.os.Process;
 import android.util.Log;
 import android.view.Surface;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 
 /**
  * Created by iFinVer on 2016/11/27.
@@ -67,6 +72,10 @@ public class FinEngine {
     }
 
     private class FinEngineThread extends HandlerThread implements Handler.Callback {
+        private static final String TAG = "FinEngineThread";
+        private static final String ROOT_DIR_NAME = "FinEngine";
+        private static final String DIR_NAME = "FaceDetection";
+
         private final int MSG_INIT = 0x101;
         private final int MSG_RELEASE = 0x104;
         private final int MSG_PROCESS = 0x105;
@@ -87,6 +96,7 @@ public class FinEngine {
         private int mFilterType;
         private long mEngine;
         private long mFacePtr;
+        private String faceStickerPath;
 
         FinEngineThread(Context ctx,Surface output, int width, int height) {
             super("FinEngineThread", Process.THREAD_PRIORITY_URGENT_DISPLAY);
@@ -95,6 +105,34 @@ public class FinEngine {
             this.mOutputSurface = output;
             this.mOutWidth = width;
             this.mOutHeight = height;
+            try {
+                InputStream faceLibInputStream = ctx.getResources().getAssets().open("monalisa.jpg");
+                File dir = new File(Environment.getExternalStorageDirectory(), ROOT_DIR_NAME);
+                File faceModelDir = new File(dir, DIR_NAME);
+                if (!faceModelDir.exists()) {
+                    if (!faceModelDir.mkdirs() || !faceModelDir.canWrite()) {
+                        Log.e(TAG, "can not write face detector file");
+                    }
+                }
+                File faceModel = new File(faceModelDir, "glass.png.f");
+//                if (!faceModel.exists()) {
+                    try {
+                        FileOutputStream out = new FileOutputStream(faceModel);
+                        byte[] buffer = new byte[4096];
+                        int n;
+                        while ((n = faceLibInputStream.read(buffer)) > 0) {
+                            out.write(buffer, 0, n);
+                        }
+                        out.close();
+                        faceLibInputStream.close();
+                    } catch (Throwable t) {
+                        Log.e(TAG, "can not write face detector file", t);
+                    }
+//                }
+                faceStickerPath = faceModel.getAbsolutePath();
+            }catch (Throwable t){
+                Log.e(TAG,"",t);
+            }
         }
 
         @Override
@@ -159,7 +197,7 @@ public class FinEngine {
 
         private void init() {
             synchronized (FinEngine.class) {
-                mEngine = nativeInit(mOutputSurface, mAssetManager);
+                mEngine = nativeInit(mOutputSurface, mAssetManager,faceStickerPath);
                 isPrepared = mEngine != 0;
                 if (isPrepared) {
                     Log.w(TAG, "FinEngine" + mEngineId + "初始化成功");
@@ -198,7 +236,7 @@ public class FinEngine {
     /**
      * @return 0 means failed
      */
-    private native long nativeInit(Surface output,AssetManager mAssetManager);
+    private native long nativeInit(Surface output,AssetManager mAssetManager,String stickerPath);
 
     private native void nativeRelease(long engine);
 

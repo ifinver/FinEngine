@@ -81,6 +81,6 @@ public class OpenCVActivity extends CameraActivity implements CameraBridgeViewBa
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        return inputFrame.gray();
+        return null;
     }
 }

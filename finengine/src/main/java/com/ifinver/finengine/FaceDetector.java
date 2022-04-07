@@ -1,6 +1,7 @@
 package com.ifinver.finengine;
 
 import android.content.Context;
+import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
@@ -13,40 +14,43 @@ import java.io.InputStream;
  */
 
 public class FaceDetector {
-    public static int ASL_PROCESS_MODEL_FACEOUTLINE = 1;
-    public static int ASL_PROCESS_MODEL_FACEBEAUTY = 2;
+    private static final String TAG = "FaceDetector";
+    private static final String ROOT_DIR_NAME = "FinEngine";
+    private static final String DIR_NAME = "FaceDetection";
     static {
         System.loadLibrary("fin-engine-lib");
     }
 
-    private static final String TAG = "FaceDetector";
-
     private static boolean initialized = false;
 
-    public static boolean init(Context ctx, String trackDataPath){
+    public static boolean init(Context ctx){
         if(!initialized) {
-            //检查文件
-            File trackFile = new File(trackDataPath);
-            if(!trackFile.exists()){
-                Log.e(TAG, "trackDataPath 文件不存在");
-                //不存在了
-                try {
-                    InputStream in = ctx.getAssets().open("track_data.dat");
-                    FileOutputStream fos = new FileOutputStream(trackFile);
-                    byte[] buffer = new byte[1024];
-                    int readCount;
-                    while ((readCount = in.read(buffer)) != -1){
-                        fos.write(buffer,0,readCount);
-                    }
-                    in.close();
-                    fos.close();
-                }catch (Exception ignored){
-                    Log.e(TAG, "人脸检测初始化失败!无法操作track_data文件");
+            InputStream faceLibInputStream = ctx.getResources().openRawResource(R.raw.haarcascade_frontalface_alt2);
+            File dir = new File(Environment.getExternalStorageDirectory(), ROOT_DIR_NAME);
+            File faceModelDir = new File(dir,DIR_NAME);
+            if(!faceModelDir.exists()){
+                if (!faceModelDir.mkdirs() || !faceModelDir.canWrite()) {
+                    Log.e(TAG,"can not write face detector file");
                     return false;
                 }
             }
-
-            int ret = nativeInit(ctx,trackFile.getAbsolutePath());
+            File faceModel = new File(faceModelDir,"haarcascade_frontalface.f");
+            if(!faceModel.exists()) {
+                try {
+                    FileOutputStream out = new FileOutputStream(faceModel);
+                    byte[] buffer = new byte[4096];
+                    int n;
+                    while ((n = faceLibInputStream.read(buffer)) > 0) {
+                        out.write(buffer, 0, n);
+                    }
+                    out.close();
+                    faceLibInputStream.close();
+                } catch (Throwable t) {
+                    Log.e(TAG, "can not write face detector file", t);
+                    return false;
+                }
+            }
+            int ret = nativeInit(ctx,faceModel.getAbsolutePath());
             if (ret != 0) {
                 Log.e(TAG, "人脸检测初始化失败!");
                 initialized = false;
@@ -74,35 +78,8 @@ public class FaceDetector {
         Log.d(TAG,"人脸检测已释放");
     }
 
-    public static void setProcessModel(long model) {
-        if(initialized) {
-            nativeSetProcessModel(model);
-        }
-    }
-
-    public static void setFaceBrightLevel(int brightLevel) {
-        if(initialized) {
-            nativeSetFaceBrightLevel(brightLevel);
-        }
-    }
-
-    public static void setFaceSkinSoftenLevel(int skinSoftenLevel) {
-        if(initialized) {
-            nativeSetFaceSkinSoftenLevel(skinSoftenLevel);
-        }
-    }
-
-
     private static native int nativeInit(Context ctx, String absolutePath);
-
     private static native long nativeProcess(byte[] data, int width, int height);
-
     private static native void nativeRelease();
-
-    private static native void nativeSetProcessModel(long model);
-    private static native void nativeSetFaceBrightLevel(int brightLevel);
-    private static native void nativeSetFaceSkinSoftenLevel(int skinSoftenLevel);
-
     public static native void decodePNGData(String filePath);
-
 }

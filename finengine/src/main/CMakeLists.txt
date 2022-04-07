@@ -22,6 +22,7 @@ add_library(fin-engine-lib
             SHARED
             #===============utils blew===================================
             ${PROJECT_SOURCE_DIR}/cpp/glslutils.cpp
+            ${PROJECT_SOURCE_DIR}/cpp/Matrix.cpp
             #===============engine blew==================================
             ${PROJECT_SOURCE_DIR}/cpp/finengine/main.cpp
             ${PROJECT_SOURCE_DIR}/cpp/finengine/shaders.cpp
@@ -33,7 +34,7 @@ add_library(fin-engine-lib
             ${PROJECT_SOURCE_DIR}/cpp/finrender/finrender.cpp
             ${PROJECT_SOURCE_DIR}/cpp/finrender/FinRenderHolder.cpp
             #===============face detect blew=============================
-#            ${PROJECT_SOURCE_DIR}/cpp/facedetect/facedetector.cpp
+            ${PROJECT_SOURCE_DIR}/cpp/facedetect/facedetector.cpp
 #            ${PROJECT_SOURCE_DIR}/cpp/facedetect/arcsoft/arcsoft.cpp
             #===============effects blew=================================
 #            ${PROJECT_SOURCE_DIR}/cpp/effects/effects.cpp

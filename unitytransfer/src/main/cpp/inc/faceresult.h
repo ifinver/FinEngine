@@ -2,7 +2,7 @@
 // Created by iFinVer on 2016/12/15.
 //
 
-#ifndef FINENGINE_FACERESULT_H
+#ifndef FINENGINE_FACERESULTCV_H
 #define FINENGINE_FACERESULT_H
 
 #include "amcomdef.h"
@@ -14,4 +14,4 @@ typedef struct FaceDetectResult{
     MRECT *rcFaceRectOut;
     MFloat *faceOrientOut;
 } FaceData;
-#endif //FINENGINE_FACERESULT_H
+#endif //FINENGINE_FACERESULTCV_H

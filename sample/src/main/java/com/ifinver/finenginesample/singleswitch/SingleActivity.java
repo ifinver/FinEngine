@@ -15,7 +15,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -24,7 +23,6 @@ import android.widget.Toast;
 
 import com.ifinver.finengine.CameraHolder;
 import com.ifinver.finengine.FaceDetector;
-import com.ifinver.finengine.FinRecorder;
 import com.ifinver.finengine.Renderer;
 import com.ifinver.finenginesample.FrameMeter;
 import com.ifinver.finenginesample.R;
@@ -151,7 +149,7 @@ public class SingleActivity extends AppCompatActivity implements FilterAdapter.O
 
     @Override
     public void onCameraStart(boolean success, RuntimeException e) {
-        FaceDetector.init(this,getFilesDir()+"/track_data.dat");
+        FaceDetector.init(this);
     }
 
     //驱动

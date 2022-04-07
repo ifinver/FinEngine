@@ -40,7 +40,9 @@ public class MediaMuxerWrapper {
 	private static final boolean DEBUG = true;	// TODO set false on release
 	private static final String TAG = "MediaMuxerWrapper";
 
-	private static final String DIR_NAME = "FinEngine";
+	private static final String ROOT_DIR_NAME = "FinEngine";
+
+	private static final String DIR_NAME = "Recording";
 
     private static final SimpleDateFormat mDateTimeFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US);
 
@@ -60,7 +62,7 @@ public class MediaMuxerWrapper {
 	public MediaMuxerWrapper(String ext) throws IOException {
 		if (TextUtils.isEmpty(ext)) ext = ".mp4";
 		try {
-			mOutputPath = getCaptureFile(Environment.DIRECTORY_MOVIES, ext).toString();
+			mOutputPath = getCaptureFile(ext).toString();
 		} catch (final NullPointerException e) {
 			throw new RuntimeException("This app has no permission of writing external storage");
 		}
@@ -178,13 +180,12 @@ public class MediaMuxerWrapper {
 //**********************************************************************
     /**
      * generate output file
-     * @param type Environment.DIRECTORY_MOVIES / Environment.DIRECTORY_DCIM etc.
      * @param ext .mp4(.m4a for audio) or .png
      * @return return null when this app has no writing permission to external storage.
      */
-    public static final File getCaptureFile(final String type, final String ext) {
-		final File dir = new File(Environment.getExternalStoragePublicDirectory(type), DIR_NAME);
-		Log.d(TAG, "path=" + dir.toString());
+    public static final File getCaptureFile(final String ext) {
+    	File dir = new File(Environment.getExternalStorageDirectory(), ROOT_DIR_NAME);
+		dir = new File(dir,DIR_NAME);
 		dir.mkdirs();
         if (dir.canWrite()) {
         	return new File(dir, getDateTimeString() + ext);

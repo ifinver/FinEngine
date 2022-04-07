@@ -25,6 +25,14 @@ const GLfloat TEXTURE_COORD[] =
                 1.0f, 0.0f,
         };
 
+const GLfloat TEXTURE_COORD_STICKER[] =
+        {
+                1.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+        };
+
 class ShaderBase {
 public:
     const char *vertexShader;
@@ -155,38 +163,30 @@ public:
     }
 };
 
-class ShaderPoint {
+class ShaderSticker {
 public:
     const char *vertexShader;
     const char *fragmentShader;
 
-    ShaderPoint() {
+    ShaderSticker() {
         vertexShader =
                 "precision highp float;                                         \n"
                         "attribute highp vec2 aPosition;                        \n"
-                        "attribute highp float aScaleX;                         \n"
-                        "attribute highp float aScaleY;                         \n"
-                        "uniform highp int uRotation;                           \n"
+                        "attribute highp vec2 aTexCoord;                        \n"
+                        "uniform mat4 mvpMatrix;                                \n"
+                        "varying highp vec2 vTexCoord;                          \n"
                         "void main(){                                           \n"
-                        "   vec2 rotPos = aPosition;                      \n"
-                        "   if(uRotation == 1){                           \n"
-                        "       rotPos = aPosition * mat2(0,-1,1,0);      \n"
-                        "   }else if(uRotation == 2){                     \n"
-                        "       rotPos = aPosition * mat2(-1,0,0,-1);     \n"
-                        "   }else if(uRotation == 3){                     \n"
-                        "       rotPos = aPosition * mat2(0,1,-1,0);      \n"
-                        "   }                                             \n"
-                        "   highp mat2 aScaleMtx = mat2(aScaleX,0,0,aScaleY);   \n"
-                        "   gl_Position = vec4(aScaleMtx * rotPos,1.0,1.0);     \n"
-                        "   gl_PointSize = 10.0;                                \n"
+                        "   vTexCoord = aTexCoord;                              \n"
+                        "   gl_Position = mvpMatrix * vec4(aPosition.x,aPosition.y,1.0,1.0);              \n"
                         "}                                                      \n";
 
         fragmentShader =
-                "precision highp float;                     \n"
-                        "uniform vec4 color;                \n"
-                        "void main(){                       \n"
-                        "   gl_FragColor = color;           \n"
-                        "}                                  \n";
+                "precision highp float;                                         \n"
+                        "varying highp vec2 vTexCoord;                          \n"
+                        "uniform sampler2D sTexture;                            \n"
+                        "void main(){                                           \n"
+                        "   gl_FragColor = texture2D(sTexture,vTexCoord);       \n"
+                        "}                                                      \n";
 
     }
 };
